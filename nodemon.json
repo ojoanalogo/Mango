@@ -6,5 +6,5 @@
   "ignore": [
     "*.spec.ts"
   ],
-  "exec": "npx ts-node ./server/src/server"
+  "exec": "npx ts-node --project ./server/tsconfig.json ./server/src/server"
 }

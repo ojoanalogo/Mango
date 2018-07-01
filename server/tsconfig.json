@@ -3,7 +3,7 @@
     "baseUrl": "./src",
     "outDir": "../dist/server",
     "module": "commonjs",
-    "sourceMap": false,
+    "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,

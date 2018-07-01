@@ -1,15 +1,18 @@
-import { Controller, Get, Giuseppe, Query } from "giuseppe";
+import {Controller, Param, Body, Get, Post, Put, Delete, UseBefore } from 'routing-controllers';
+import morgan = require('morgan');
 
-@Controller('')
+@Controller()
+@UseBefore(morgan('dev'))
 export class IndexController {
-    @Get()
+
+    @Get('')
     public index() {
         return {
-            "msg": "Hello world"
-        }
+            'msgs': 'Helloaaa Stranger'
+        };
     }
-    @Get("/hello")
-    public sayHello(@Query('name') name: string) : string {
-        return `Hello ${name}`
+    @Get('/hello/:name')
+    public sayHello(@Param('name') name: string = 'aaa'): string {
+        return 'Hello, your rwerwr name was: ' + name;
     }
 }
