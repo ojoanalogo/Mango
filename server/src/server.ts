@@ -3,6 +3,7 @@ import * as expressApp from 'routing-controllers';
 import * as express from 'express';
 import * as moongose from 'mongoose';
 import { IndexController } from './controllers/index.controller';
+import { UserController } from './controllers/user.controller';
 import colors = require('colors');
 import path = require('path');
 import 'reflect-metadata';
@@ -19,7 +20,7 @@ class Server {
   constructor() {
     this.app = expressApp.createExpressServer({
         routePrefix: '/api',
-        controllers: [IndexController]
+        controllers: [IndexController, UserController]
     });
     this.app.listen(this._port, () => {
         console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
