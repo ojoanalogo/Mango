@@ -1,20 +1,30 @@
 import {Controller, Param, Body, Get, Post, Put, Delete, UseBefore } from 'routing-controllers';
 import morgan = require('morgan');
-import { User, IUser } from '../models/user.model';
+import { User, UserModel } from '../models/user.model';
 
 @Controller('/user')
 @UseBefore(morgan('dev'))
 export class UserController {
 
     @Get('/')
-    public index() {
+    public async index() {
+        const rs = await new UserModel().getUsers();
         return {
-            'msg': 'helo'
+            'msg': rs
         };
     }
 
     @Get('/new/:name')
     public async newUser(@Param('name') name: string) {
-        const rs = await new User().createUser(new IUser('Alfonso', 'Reyes', 'arc980103@gmail.com'));
+        const rs = await new UserModel().createUser();
+        if (rs) {
+            return {
+                'msg': 'User created!'
+            };
+        } else {
+            return {
+                'msg': 'Error creating user'
+            };
+        }
     }
 }
