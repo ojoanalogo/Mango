@@ -1,30 +1,33 @@
-import {Controller, Param, Body, Get, Post, Put, Delete, UseBefore } from 'routing-controllers';
+import {Controller, Param, Body, Get, Post, Put, Delete, UseBefore, JsonController, Req, Res } from 'routing-controllers';
 import morgan = require('morgan');
-import { User, UserModel } from '../models/user.model';
+import { UserService } from '../services/user.service';
 
-@Controller('/user')
+@JsonController('/v1/users')
 @UseBefore(morgan('dev'))
 export class UserController {
 
     @Get('/')
-    public async index() {
-        const rs = await new UserModel().getUsers();
-        return {
-            'msg': rs
-        };
+    index(@Req() req: any, @Res() res: Response) {
+        return new UserService().getUsers();
     }
 
-    @Get('/new/:name')
-    public async newUser(@Param('name') name: string) {
-        const rs = await new UserModel().createUser();
-        if (rs) {
-            return {
-                'msg': 'User created!'
-            };
-        } else {
-            return {
-                'msg': 'Error creating user'
-            };
-        }
+    @Post()
+    addUser() {
+
     }
+
+    @Get(':id')
+    getUser(@Param('id') id: number) {
+
+    }
+
+    @Put(':id')
+    updateUser(@Body() data: any) {
+
+    }
+    @Delete(':id')
+    deleteUser(@Param('id') id: number) {
+
+    }
+
 }
