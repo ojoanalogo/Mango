@@ -1,30 +1,32 @@
-import {Controller, Param, Body, Get, Post, Put, Delete, UseBefore } from 'routing-controllers';
+import {Controller, Param, Body, Get, Post, Put, Delete, Res, Req, UseBefore, JsonController,
+     Interceptor, InterceptorInterface } from 'routing-controllers';
 import morgan = require('morgan');
-import { User, UserModel } from '../models/user.model';
+import {Response} from 'express';
+import { UserService } from '../services/user.service';
 
-@Controller('/user')
+
+@JsonController('/v1/user/')
 @UseBefore(morgan('dev'))
 export class UserController {
 
-    @Get('/')
-    public async index() {
-        const rs = await new UserModel().getUsers();
-        return {
-            'msg': rs
-        };
+    @Get()
+    public async getUsers(@Req() request: any, @Res() response: Response) {
+        const data = await UserService.getUsers(100);
+        data ? response.statusCode = 200 : response.statusCode = 500;
+        return response.json({
+            'code': 1,
+            'payload': data
+        });
     }
 
-    @Get('/new/:name')
-    public async newUser(@Param('name') name: string) {
-        const rs = await new UserModel().createUser();
-        if (rs) {
-            return {
-                'msg': 'User created!'
-            };
-        } else {
-            return {
-                'msg': 'Error creating user'
-            };
-        }
+    @Get(':name')
+    public async getUser(@Req() request: any, @Res() response: Response, @Param('name') email: string, @Res() res: Response) {
+        const data = await UserService.getUserByEmail(email);
+        data ? response.statusCode = 200 : response.statusCode = 500;
+        return response.json({
+            'code': 1,
+            'payload': data
+        });
     }
+
 }

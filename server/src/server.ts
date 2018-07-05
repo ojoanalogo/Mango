@@ -2,8 +2,6 @@ import * as bodyParser from 'body-parser';
 import * as expressApp from 'routing-controllers';
 import * as express from 'express';
 import * as moongose from 'mongoose';
-import { IndexController } from './controllers/index.controller';
-import { UserController } from './controllers/user.controller';
 import colors = require('colors');
 import path = require('path');
 import 'reflect-metadata';
@@ -13,14 +11,14 @@ require('dotenv').config();
 class Server {
 
   public app: express.Application;
-  // tslint:disable-next-line:radix
   private _port: number = parseInt(process.env.SERVER_PORT) || 1337;
   private _databaseURI: string = process.env.DATABASE_STRING_URL || 'mongodb://127.0.0.1/mangoapp';
+  private reconnect_seconds = 15;
 
   constructor() {
     this.app = expressApp.createExpressServer({
         routePrefix: '/api',
-        controllers: [IndexController, UserController]
+        controllers: [__dirname + '/controllers/*{.js,.ts}']
     });
     this.app.listen(this._port, () => {
         console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
@@ -46,11 +44,15 @@ class Server {
 
   private setupDatabase() {
    moongose.connect(this._databaseURI, {
-     autoReconnect: true,
+     autoReconnect: true
    }).then(() => {
      console.log(colors.green(`Connected to database (${this._databaseURI}) successfully`));
    }).catch((error) => {
      console.error(colors.red(`Can't connect to the mongodb database!\nReason => ` + colors.white(`${error}`)));
+     console.log(colors.white(`Trying to reconnect in ${this.reconnect_seconds}`));
+     setTimeout(() => {
+       this.setupDatabase();
+     }, 1000 * this.reconnect_seconds);
    });
   }
 }
