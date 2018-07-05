@@ -4,6 +4,7 @@ import * as express from 'express';
 import * as moongose from 'mongoose';
 import colors = require('colors');
 import path = require('path');
+
 import 'reflect-metadata';
 
 require('dotenv').config();
@@ -18,7 +19,11 @@ class Server {
   constructor() {
     this.app = expressApp.createExpressServer({
         routePrefix: '/api',
+<<<<<<< HEAD
         controllers: [__dirname + '/controllers/*{.js,.ts}']
+=======
+        controllers: [__dirname + "/controllers/*{.js,.ts}"]
+>>>>>>> ea77462352e4c6feb2052119d1602e2ff19d8318
     });
     this.app.listen(this._port, () => {
         console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
