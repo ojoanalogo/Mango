@@ -8,7 +8,7 @@ export class IndexController {
     @Get('')
     public index() {
         return {
-            'msgs': 'Helloaaa Stranger'
+            'msgs': 'Hello Stranger'
         };
     }
     @Get('/hello/:name')
