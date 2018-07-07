@@ -10,7 +10,9 @@
     "start:prod": "pm2 start ./dist/server/server.js --no-daemon",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\" ",
     "dev:client": "ng serve --progress false",
-    "dev:backend": "nodemon"
+    "e2e": "ng e2e",
+    "dev:backend": "nodemon",
+    "test": "ng test"
   },
   "repository": {
     "type": "git",
@@ -62,7 +64,7 @@
     "@angular/language-service": "^6.0.3",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.0",
-    "@types/jasmine": "~2.8.6",
+    "@types/jasmine": "^2.8.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/mongodb": "^3.1.0",
     "@types/mongoose": "^5.0.18",
