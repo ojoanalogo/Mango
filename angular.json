@@ -23,7 +23,8 @@
               "./client/src/assets"
             ],
             "styles": [
-              "./client/src/styles.css"
+              "./client/src/styles.css",
+              "./node_modules/bulma/css/bulma.min.css"
             ],
             "scripts": []
           },

@@ -9,7 +9,7 @@ export class AppPage {
     return browser.getTitle();
   }
 
-  getParagraphText() {
+  getPageTitle() {
     return element(by.css('app-root h1')).getText();
   }
 }

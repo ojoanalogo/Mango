@@ -9,11 +9,11 @@ describe('workspace-project App', () => {
 
   it('should display page title', () => {
     page.navigateTo();
-    expect(page.getTitle()).toEqual('Client');
+    expect(page.getTitle()).toEqual('Mango');
   });
 
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual('Welcome to app!');
+    expect(page.getPageTitle()).toContain('Hello Mango');
   });
 });
