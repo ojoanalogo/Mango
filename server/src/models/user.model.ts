@@ -1,4 +1,4 @@
-import { prop, Typegoose, ModelType, InstanceType, staticMethod } from 'typegoose';
+import { prop, Typegoose, staticMethod } from 'typegoose';
 
 export class User extends Typegoose {
   @prop({index: true})

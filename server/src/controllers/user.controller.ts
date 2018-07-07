@@ -1,31 +1,31 @@
-import {Param, Get, Res, UseBefore, JsonController } from 'routing-controllers';
-import morgan = require('morgan');
-import {Response} from 'express';
+import { Param, Get, Res, UseBefore, JsonController } from 'routing-controllers';
+import { Response} from 'express';
 import { UserService } from '../services/user.service';
-
+import { ResponseHandler, ResponseCode } from '../util/response.handler';
+import * as morgan from 'morgan';
 
 @JsonController('/v1/user/')
 @UseBefore(morgan('dev'))
-export class UserController {
+export class UserController extends ResponseHandler {
 
     @Get()
     public async getUsers(@Res() response: Response) {
-        const data = await UserService.getUsers(100);
-        data ? response.statusCode = 200 : response.statusCode = 500;
-        return response.json({
-            'code': 1,
-            'payload': data
-        });
+        try {
+            const userData = await UserService.getUsers(100);
+            return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
+        } catch (ex) {
+            return this.createResponse(response, 'Unable to get users', 500, ResponseCode.ERROR);
+        }
     }
 
-    @Get(':name')
-    public async getUser(@Res() response: Response, @Param('name') email: string) {
-        const data = await UserService.getUserByEmail(email);
-        data ? response.statusCode = 200 : response.statusCode = 500;
-        return response.json({
-            'code': 1,
-            'payload': data
-        });
+    @Get(':email')
+    public async getUserByEmail(@Res() response: Response, @Param('email') email: string) {
+        try {
+            const userData = await UserService.getUserByEmail(email);
+            return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
+        } catch (ex) {
+            return this.createResponse(response, 'Unable to get user', 500, ResponseCode.ERROR);
+        }
     }
 
 }

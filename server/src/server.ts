@@ -6,24 +6,31 @@ import colors = require('colors');
 import path = require('path');
 
 import 'reflect-metadata';
+import dotenv = require('dotenv');
 
-require('dotenv').config();
+(process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test')
+? dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env'});
 
 class Server {
 
   public app: express.Application;
   private _port: number = parseInt(process.env.SERVER_PORT) || 1337;
   private _databaseURI: string = process.env.DATABASE_STRING_URL || 'mongodb://127.0.0.1/mangoapp';
-  private reconnect_seconds = 15;
+  private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
+  private reconnect_seconds = 10;
+  private reconnect_try = 1;
 
   constructor() {
+    // bootstrap express server with routing-controller
     this.app = expressApp.createExpressServer({
         routePrefix: '/api',
-        controllers: [__dirname + '/controllers/*{.js,.ts}']
+        controllers: [__dirname + '/controllers/*{.js,.ts}'],
+        classTransformer: false // this option defaults to true, but caused some problems with typegoose model transformation
     });
     this.app.listen(this._port, () => {
         console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
     });
+    // setup middleware
     this.config();
     this.setupDatabase();
   }
@@ -43,15 +50,27 @@ class Server {
     });
   }
 
+  /**
+   * Setups database
+   */
   private setupDatabase() {
    moongose.connect(this._databaseURI, {
-     autoReconnect: true
+     autoReconnect: true, // use this option to allow database to reconnect
    }).then(() => {
      console.log(colors.green(`Connected to database (${this._databaseURI}) successfully`));
    }).catch((error) => {
+     // we should try to reconnect a few times
      console.error(colors.red(`Can't connect to the mongodb database!\nReason => ` + colors.white(`${error}`)));
-     console.log(colors.white(`Trying to reconnect in ${this.reconnect_seconds}`));
+     console.log(colors.white(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
+     `| ${this.reconnect_try}/${this.reconnect_max_try}`));
+
      setTimeout(() => {
+      this.reconnect_try++;
+          // if we can't reconnect to database after X times, we will stop trying to do so
+          if (this.reconnect_try > this.reconnect_max_try) {
+            console.error(colors.red('Timed out trying to reconnect to mongodb database'));
+            return false;
+          }
        this.setupDatabase();
      }, 1000 * this.reconnect_seconds);
    });

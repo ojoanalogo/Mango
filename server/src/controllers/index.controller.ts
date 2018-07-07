@@ -1,4 +1,4 @@
-import {Controller, Param, Body, Get, Post, Put, Delete, UseBefore } from 'routing-controllers';
+import { Controller, Param, Get, UseBefore } from 'routing-controllers';
 import morgan = require('morgan');
 
 @Controller()
