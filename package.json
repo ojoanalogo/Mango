@@ -12,7 +12,7 @@
     "dev:client": "ng serve --progress false",
     "e2e": "ng e2e",
     "dev:backend": "nodemon",
-    "test": "ng test"
+    "test": "ng e2e"
   },
   "repository": {
     "type": "git",
