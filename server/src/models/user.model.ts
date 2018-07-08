@@ -3,7 +3,7 @@ import { prop, Typegoose, staticMethod } from 'typegoose';
 export class User extends Typegoose {
   @prop({index: true})
   id: number;
-  @prop()
+  @prop({required: true})
   first_name: string;
   @prop({required: true})
   second_name: string;
@@ -11,7 +11,7 @@ export class User extends Typegoose {
   email: string;
   @prop({default: Date.now()})
   registered_at: Date;
-  @prop()
+  @prop({default: Date.now()})
   last_login: Date;
   @staticMethod
   getModel() {

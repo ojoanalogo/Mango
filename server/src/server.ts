@@ -21,18 +21,19 @@ class Server {
   private reconnect_try = 1;
 
   constructor() {
+    this.app = express();
+    // setup middleware
+     this.config();
+     // setup database
+    this.setupDatabase();
     // bootstrap express server with routing-controller
-    this.app = expressApp.createExpressServer({
+     this.app = expressApp.useExpressServer(this.app, {
         routePrefix: '/api',
         controllers: [__dirname + '/controllers/*{.js,.ts}'],
         cors: true, // enable cors
         classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
         defaultErrorHandler: false // disables error handler
     });
-    // setup middleware
-    this.config();
-    // setup database
-    this.setupDatabase();
   }
 
   private config(): void {
