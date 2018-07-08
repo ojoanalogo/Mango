@@ -25,13 +25,13 @@ class Server {
     this.app = expressApp.createExpressServer({
         routePrefix: '/api',
         controllers: [__dirname + '/controllers/*{.js,.ts}'],
-        classTransformer: false // this option defaults to true, but caused some problems with typegoose model transformation
-    });
-    this.app.listen(this._port, () => {
-        console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
+        cors: true, // enable cors
+        classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
+        defaultErrorHandler: false // disables error handler
     });
     // setup middleware
     this.config();
+    // setup database
     this.setupDatabase();
   }
 
@@ -40,7 +40,7 @@ class Server {
     this.app.use(bodyParser.json());
     // support application/x-www-form-urlencoded post data
     this.app.use(bodyParser.urlencoded({
-      extended: false
+      extended: true
     }));
     // point static path to dist
     this.app.use(express.static(path.join(__dirname, '../../dist/client/')));
@@ -48,10 +48,13 @@ class Server {
     this.app.get('^(?!\/api).*$', (req, res) => {
       res.sendFile(path.join(__dirname, '../../dist/client/index.html'));
     });
+    this.app.listen(this._port, () => {
+      console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
+    });
   }
 
   /**
-   * Setups database
+   * Setup database
    */
   private setupDatabase() {
    moongose.connect(this._databaseURI, {

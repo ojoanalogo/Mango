@@ -20,4 +20,5 @@ export class ResponseHandler {
 export enum ResponseCode {
     SUCCESS_DATA = 1,
     ERROR = 0,
+    NOT_FOUND = 2
 }

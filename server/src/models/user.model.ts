@@ -7,9 +7,9 @@ export class User extends Typegoose {
   first_name: string;
   @prop({required: true})
   second_name: string;
-  @prop({required: true})
+  @prop({required: true, unique: true})
   email: string;
-  @prop()
+  @prop({default: Date.now()})
   registered_at: Date;
   @prop()
   last_login: Date;
