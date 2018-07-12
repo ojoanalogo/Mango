@@ -1,12 +1,10 @@
 import { Param, Get, Post, Res, UseBefore, JsonController, Body } from 'routing-controllers';
-import { Response} from 'express';
+import { Response } from 'express';
 import { User } from '../models/user.model';
 import { UserService } from '../services/user.service';
 import { ResponseHandler, ResponseCode } from '../util/response.handler';
-import * as morgan from 'morgan';
 
 @JsonController('/user/')
-@UseBefore(morgan('dev'))
 export class UserController extends ResponseHandler {
 
     @Post()
@@ -23,6 +21,9 @@ export class UserController extends ResponseHandler {
     public async getUserByEmail(@Res() response: Response, @Param('email') email: string) {
         try {
             const userData = await UserService.getUserByEmail(email);
+            if (userData == null) {
+                return this.createResponse(response, 'User data not found', 404, ResponseCode.NOT_FOUND);
+            }
             return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
         } catch (ex) {
             return this.createResponse(response, 'Unable to get user', 404, ResponseCode.NOT_FOUND);
