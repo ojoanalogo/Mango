@@ -1,10 +1,12 @@
-import { Param, Get, Post, Res, UseBefore, JsonController, Body } from 'routing-controllers';
+import { Param, Get, Post, Res, UseBefore, JsonController, Body, Middleware } from 'routing-controllers';
 import { Response } from 'express';
 import { User } from '../models/user.model';
 import { UserService } from '../services/user.service';
 import { ResponseHandler, ResponseCode } from '../util/response.handler';
+import { LoggingMiddleware } from '../middleware/logging.middleware';
 
 @JsonController('/user/')
+@UseBefore(LoggingMiddleware)
 export class UserController extends ResponseHandler {
 
     @Post()

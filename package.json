@@ -6,8 +6,8 @@
   "scripts": {
     "ng": "ng",
     "build": "rimraf dist && ng build --prod --aot --base-href ./ && tsc --project ./server/tsconfig.json",
-    "start": "npx ts-node --project ./server/tsconfig.json ./server/src/server.ts",
-    "start:prod": "pm2 start ./dist/server/server.js --no-daemon",
+    "start": "cross-env NODE_ENV=production pm2 start ./dist/server/server.js --no-daemon",
+    "build-start": "npm run build && npm run start",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\" ",
     "dev:client": "ng serve --progress false",
     "dev:backend": "nodemon"
@@ -75,6 +75,7 @@
     "@types/node": "~8.9.4",
     "codelyzer": "~4.2.1",
     "concurrently": "^3.6.0",
+    "cross-env": "^5.2.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~1.7.1",

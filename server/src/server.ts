@@ -5,14 +5,11 @@ import * as moongose from 'mongoose';
 import colors = require('colors');
 import path = require('path');
 import dotenv = require('dotenv');
-import { LoggingMiddleware } from './middleware/logging.middleware';
 import 'reflect-metadata';
 
-(process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test')
-  ? dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
+process.env.NODE_ENV === 'production' ?  dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
 
 class Server {
-
   public app: express.Application;
   private _port: number = parseInt(process.env.SERVER_PORT) || 1337;
   private _databaseURI: string = process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/mangoapp';
@@ -30,7 +27,6 @@ class Server {
     this.app = expressApp.useExpressServer(this.app, {
       routePrefix: '/api',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
-      middlewares: [LoggingMiddleware],
       cors: true, // enable cors
       classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
       defaultErrorHandler: false // disables error handler
@@ -38,6 +34,7 @@ class Server {
   }
 
   private config(): void {
+    console.log('Running environment: ' + process.env.NODE_ENV);
     // support application/json type post data
     this.app.use(bodyParser.json());
     // support application/x-www-form-urlencoded post data

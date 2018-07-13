@@ -17,7 +17,7 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
                 fs.mkdirSync(this.dir);
             }
             this.accessLogStream = rfs('requests.log', {
-                interval: '1m', // 1 day for every log
+                interval: '1d', // 1 day for every log
                 path: this.dir
             });
             this.fileLog = morgan('common', {

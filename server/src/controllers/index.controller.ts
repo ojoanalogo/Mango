@@ -1,10 +1,10 @@
 import { Get, UseBefore, JsonController, Res } from 'routing-controllers';
 import { Response } from 'express';
 import { ResponseHandler, ResponseCode } from '../util/response.handler';
-import morgan = require('morgan');
+import { LoggingMiddleware } from '../middleware/logging.middleware';
 
 @JsonController()
-@UseBefore(morgan('dev'))
+@UseBefore(LoggingMiddleware)
 export class IndexController extends ResponseHandler {
 
     @Get('')
