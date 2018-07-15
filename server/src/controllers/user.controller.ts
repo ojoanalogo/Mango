@@ -15,7 +15,7 @@ export class UserController extends ResponseHandler {
             const result = await UserService.createUser(user);
             return this.createResponse(response, result, 200, ResponseCode.SUCCESS_DATA);
         } catch (ex) {
-            return this.createResponse(response, 'Unable to register user (user already registered)', 500, ResponseCode.ERROR);
+            return this.createResponse(response, 'Unable to register user (user already registered)', 409, ResponseCode.ERROR);
         }
     }
 
@@ -28,7 +28,7 @@ export class UserController extends ResponseHandler {
             }
             return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
         } catch (ex) {
-            return this.createResponse(response, 'Unable to get user', 404, ResponseCode.NOT_FOUND);
+            return this.createResponse(response, 'Unable to get user', 500, ResponseCode.NOT_FOUND);
         }
     }
 

@@ -1,8 +1,6 @@
 import { prop, Typegoose, staticMethod } from 'typegoose';
 
 export class User extends Typegoose {
-  @prop({index: true})
-  id: number;
   @prop({required: true})
   first_name: string;
   @prop({required: true})

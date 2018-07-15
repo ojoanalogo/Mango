@@ -25,7 +25,7 @@ class Server {
     this.setupDatabase();
     // bootstrap express server with routing-controller
     this.app = expressApp.useExpressServer(this.app, {
-      routePrefix: '/api',
+      routePrefix: '/api/v1',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
       cors: true, // enable cors
       classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
@@ -46,6 +46,11 @@ class Server {
     // catch all other routes and return the index file
     this.app.get('^(?!\/api).*$', (req, res) => {
       res.sendFile(path.join(__dirname, '../../dist/client/index.html'));
+    });
+    // spoof the stack used, just for fun
+    this.app.use((req, res, next) => {
+      res.setHeader('X-Powered-By', 'Aura');
+      next();
     });
     this.app.listen(this._port, () => {
       console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
