@@ -6,21 +6,37 @@ import * as jwt from 'jsonwebtoken';
 export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareInterface {
 
     use(request: Request, response: Response, next?: (err?: any) => any): any {
-        console.log(process.env.JWT_SECRET);
-        const tok = jwt.sign({'hola': 'mundo'}, process.env.JWT_SECRET, {expiresIn: 60 * 60});
-        console.log(tok);
-        const token = request.get('authorization');
-        if (token == null) {
+        // const tokenGenerated = jwt.sign({ foo: 'bar' }, process.env.JWT_SECRET);
+        // console.log(tokenGenerated);
+        const authorizationHeader = request.get('authorization');
+        if (authorizationHeader == null) {
             return this.createResponse(response, 'Authorization required', 401, 0);
-            next(false);
         }
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            if (decoded) {
-                next();
+        console.log('>' + authorizationHeader);
+        const tokenParts = authorizationHeader.split(' ');
+        if (tokenParts.length < 1) {
+            this.invalidCode(response);
+        }
+        const schema = tokenParts[0]; // should be "Bearer"
+        const token = tokenParts[1];
+        // test for valid JWT schema
+        if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token)) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                if (decoded) {
+                    // allow request
+                    next();
+                }
+            } catch (error) {
+                this.invalidCode(response);
             }
-        } catch (error) {
-            this.createResponse(response, 'Authorization code invalid', 403, 0);
+        } else {
+            this.invalidCode(response);
         }
+    }
+
+    private invalidCode(response: Response): Response {
+        return this.createResponse(response, 'Authorization code invalid', 403, 0);
+
     }
 }
