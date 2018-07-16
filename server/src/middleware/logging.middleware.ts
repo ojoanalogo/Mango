@@ -1,5 +1,5 @@
 import { ExpressMiddlewareInterface } from 'routing-controllers';
-import * as express from 'express';
+import { Response, Request } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as morgan from 'morgan';
@@ -26,7 +26,7 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
         }
     }
 
-    use(request: express.Request, response: express.Response, next?: (err?: any) => any): any {
+    use(request: Request, response: Response, next?: (err?: any) => any): any {
         if (process.env.NODE_ENV === 'production') {
             this.fileLog(request, response, () => {
                 this.consoleLog(request, response, next);

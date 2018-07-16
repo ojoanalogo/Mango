@@ -1,11 +1,12 @@
 import { User } from '../models/user.model';
+import { DocumentQuery } from 'mongoose';
 
 export class UserService {
     private static readonly userModel = new User().getModel();
 
     static getUsers(maxUsers: number) {
         return this.userModel.find({}).select(
-            'first_name second_name email registered_at'
+            'first_name second_name email user_role registered_at'
         ).limit(maxUsers);
     }
 
@@ -25,4 +26,15 @@ export class UserService {
         }, {});
     }
 
+    static updateUser(id: number, data: any) {
+
+    }
+
+    static async doesExist(email: string): Promise<boolean> {
+        console.log('evaulate: ' + email);
+        const usr = this.userModel.findOne({
+            'email': email
+        }, {});
+        return usr !== null;
+    }
 }

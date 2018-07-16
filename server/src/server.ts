@@ -1,8 +1,8 @@
-import { Database } from './database/database';
+import { Database } from './database/database.config';
+import { Mongoose } from 'mongoose';
 import * as bodyParser from 'body-parser';
 import * as expressApp from 'routing-controllers';
 import * as express from 'express';
-import * as moongose from 'mongoose';
 import colors = require('colors');
 import path = require('path');
 import dotenv = require('dotenv');
@@ -17,7 +17,7 @@ class Server {
   private _databaseURI: string = process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/mangoapp';
   private _reconnect_seconds = parseInt(process.env.DATABASE_RECONNECT_SECONDS);
   private _reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
-  private _db: moongose.Mongoose;
+  private _db: Mongoose;
 
   constructor() {
     this.app = express();

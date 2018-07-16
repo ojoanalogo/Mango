@@ -12,7 +12,7 @@ export class ResponseHandler {
     createResponse(response: Response, payload: any, httpCode: number, responseCode: ResponseCode) {
         return response.status(httpCode).json({
             status: responseCode,
-            data: payload,
+            data: payload
         });
     }
 }

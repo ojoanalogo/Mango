@@ -5,7 +5,9 @@ export class Database {
 
     private dbOject: Mongoose;
     private reconnectTry: 1;
-    constructor(private databaseURI: string, private reconnectSeconds: number, private reconnectMaxTry: number) { }
+    constructor(private databaseURI: string, private reconnectSeconds: number, private reconnectMaxTry: number) { 
+        this.setupDatabase();
+    }
 
     /**
    * Setup database
