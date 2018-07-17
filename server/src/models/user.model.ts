@@ -14,9 +14,10 @@ export class User extends Typegoose {
   registered_at: Date;
   @prop({default: Date.now()})
   last_login: Date;
+  @prop()
+  token: string;
   @staticMethod
   getModel() {
     return new User().getModelForClass(User);
   }
 }
-

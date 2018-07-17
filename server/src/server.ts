@@ -13,18 +13,18 @@ process.env.NODE_ENV === 'production' ?  dotenv.config({ path: '.env' }) : doten
 class Server {
   public app: express.Application;
 
-  private _port: number = parseInt(process.env.SERVER_PORT) || 1337;
-  private _databaseURI: string = process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/mangoapp';
-  private _reconnect_seconds = parseInt(process.env.DATABASE_RECONNECT_SECONDS);
-  private _reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
-  private _db: Mongoose;
+  private port: number = parseInt(process.env.SERVER_PORT) || 1337;
+  private databaseURI: string = process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/mangoapp';
+  private reconnect_seconds = parseInt(process.env.DATABASE_RECONNECT_SECONDS);
+  private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
+  private db: Mongoose;
 
   constructor() {
     this.app = express();
     // setup middleware
     this.config();
     // setup database
-    this._db = new Database(this._databaseURI, this._reconnect_seconds, this._reconnect_max_try).getDatabase();
+    this.db = new Database(this.databaseURI, this.reconnect_seconds, this.reconnect_max_try).getDatabase();
     // bootstrap express server with routing-controller
     this.app = expressApp.useExpressServer(this.app, {
       routePrefix: '/api/v1',
@@ -54,8 +54,8 @@ class Server {
       res.setHeader('X-Powered-By', 'Aura');
       next();
     });
-    this.app.listen(this._port, () => {
-      console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this._port}`));
+    this.app.listen(this.port, () => {
+      console.log(colors.green(`Server is running in port: `) + colors.cyan(`${this.port}`));
     });
   }
 }

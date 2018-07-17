@@ -1,5 +1,5 @@
 import { User } from '../models/user.model';
-import { DocumentQuery } from 'mongoose';
+import { AuthService } from './auth.service';
 
 export class UserService {
     private static readonly userModel = new User().getModel();
@@ -10,8 +10,12 @@ export class UserService {
         ).limit(maxUsers);
     }
 
-    static createUser(user: User) {
-        return this.userModel.create(user);
+    static async createUser(user: User) {
+        const userModel = await this.userModel.create(user);
+        const userData = userModel.toObject();
+        const tokenData = await AuthService.createJWT(user);
+        tokenData ? userData.token = tokenData : userData.token = null;
+        return userData;
     }
 
     static getUserByEmail(email: string) {
@@ -30,11 +34,10 @@ export class UserService {
 
     }
 
-    static async doesExist(email: string): Promise<boolean> {
-        console.log('evaulate: ' + email);
-        const usr = this.userModel.findOne({
+    static async doesExists(email: string) {
+        const usr = await this.userModel.findOne({
             'email': email
-        }, {});
-        return usr !== null;
+        });
+        return usr;
     }
 }
