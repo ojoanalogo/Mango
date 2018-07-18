@@ -30,6 +30,15 @@ export class UserService {
     }
 
     /**
+     * Update user by ID
+     * @param id ID string
+     * @param user User User
+     */
+    static async updateUserById(id: string, user: User) {
+        return this.userModel.updateOne({'_id': id}, user);
+    }
+
+    /**
      * Get user by email
      * @param email email string
      */

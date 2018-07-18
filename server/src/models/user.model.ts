@@ -5,6 +5,7 @@ import { UserRole } from '../types/user.type';
  * User Model
  */
 export class User extends Typegoose {
+  _id: string;
   @prop({required: true})
   first_name: string;
   @prop({required: true})

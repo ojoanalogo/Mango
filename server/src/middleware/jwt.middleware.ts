@@ -17,9 +17,6 @@ export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareI
         if (authorizationHeader == null) {
             return this.createResponse(response, 'Authorization required', 401, 0);
         }
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('>' + authorizationHeader);
-        }
         // an AUTH header looks like 'SCHEMA XXXXXXXXXXXX, so we should split it'
         const tokenParts = authorizationHeader.split(' ');
         // validate length of the array with token
