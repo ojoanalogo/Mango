@@ -52,12 +52,17 @@ export class UserController extends ResponseHandler {
     @Put()
     @UseBefore(JWTMiddleware)
     public async updateUserByJWT(@Res() response: Response, @Body() user: User) {
-        try {
-            console.log(user);
-            const userData = await UserService.updateUserById(user._id, user);
-            return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
-        } catch (ex) {
-            return this.createResponse(response, 'Unable to get user', 500, ResponseCode.NOT_FOUND);
+        const userExists = await UserService.doesExists(user.email);
+        if (!userExists) {
+            return this.createResponse(response, 'User not exists', 404, ResponseCode.NOT_FOUND);
+        } else {
+            try {
+                console.log(user);
+                const userData = await UserService.updateUserById(user._id, user);
+                return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
+            } catch (ex) {
+                return this.createResponse(response, 'Unable to get user', 500, ResponseCode.NOT_FOUND);
+            }
         }
     }
 
