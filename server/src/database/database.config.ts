@@ -1,22 +1,30 @@
-import { Mongoose, connect as dbConnect } from 'mongoose';
+import * as mongoose from 'mongoose';
 import colors = require('colors');
 
 export class Database {
 
-    private dbOject: Mongoose;
-    private reconnectTry: 1;
+    private dbOject: mongoose.Mongoose;
+    private reconnectTry = 1;
+    /**
+     * Database constructor
+     * @param databaseURI MongoDB database URI
+     * @param reconnectSeconds Interval between reconnect try
+     * @param reconnectMaxTry Maximum tries to reconnect to database
+     */
     constructor(private databaseURI: string, private reconnectSeconds: number, private reconnectMaxTry: number) {
         this.setupDatabase();
     }
 
-    /**
+   /**
    * Setup database
+   * @returns {Promise<void>} Promise with the operation result
    */
     private async setupDatabase(): Promise<void> {
         try {
-            const db = await dbConnect(this.databaseURI, {
+            mongoose.set('bufferCommands', false); // dissable buffer if connection goes down, this unblocks API query results
+            const db = await mongoose.connect(this.databaseURI, {
                 autoReconnect: true, // use this option to allow database to reconnect
-                useNewUrlParser: true // use this to avoid deprecation warning
+                useNewUrlParser: true // use this to avoid deprecation warning,
             });
             if (db) {
                 console.log(colors.green(`Connected to database (${this.databaseURI}) successfully`));
@@ -49,8 +57,9 @@ export class Database {
 
     /**
      * Returns database object
+     * @returns {mongoose.Mongoose} mongoose Object
      */
-    public getDatabase(): Mongoose {
+    public getDatabase(): mongoose.Mongoose {
         return this.dbOject;
     }
 }

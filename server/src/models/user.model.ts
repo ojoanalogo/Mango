@@ -1,6 +1,9 @@
 import { prop, Typegoose, staticMethod } from 'typegoose';
 import { UserRole } from '../types/user.type';
 
+/**
+ * User Model
+ */
 export class User extends Typegoose {
   @prop({required: true})
   first_name: string;
@@ -16,6 +19,10 @@ export class User extends Typegoose {
   last_login: Date;
   @prop()
   token: string;
+  /**
+   * Get user model
+   * @returns {User} user model
+   */
   @staticMethod
   getModel() {
     return new User().getModelForClass(User);

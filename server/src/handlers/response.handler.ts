@@ -8,8 +8,9 @@ export class ResponseHandler {
      * @param payload - Data payload object
      * @param httpCode - HttpCode (must be http standard)
      * @param responseCode - ResponseCode (for use in app)
+     * @returns {Response} response object with the defined payload
      */
-    createResponse(response: Response, payload: any, httpCode: number, responseCode: ResponseCode) {
+    createResponse(response: Response, payload: any, httpCode: number, responseCode: ResponseCode): Response {
         return response.status(httpCode).json({
             status: responseCode,
             data: payload
@@ -17,6 +18,9 @@ export class ResponseHandler {
     }
 }
 
+/**
+ * Response codes
+ */
 export enum ResponseCode {
     SUCCESS_DATA = 1,
     ERROR = -1,

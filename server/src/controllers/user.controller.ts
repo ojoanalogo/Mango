@@ -10,6 +10,11 @@ import { JWTMiddleware } from '../middleware/jwt.middleware';
 @UseBefore(LoggingMiddleware)
 export class UserController extends ResponseHandler {
 
+    /**
+     * POST request to create a new user in database
+     * @param response response object
+     * @param user user Object from body
+     */
     @Post()
     public async createUser(@Res() response: Response, @Body() user: User) {
         const userExists = await UserService.doesExists(user.email);
@@ -25,6 +30,11 @@ export class UserController extends ResponseHandler {
         }
     }
 
+    /**
+     * GET request to get user by mail, needs a valid JWT
+     * @param response response object
+     * @param email email parameter
+     */
     @Get(':email')
     @UseBefore(JWTMiddleware)
     public async getUserByEmail(@Res() response: Response, @Param('email') email: string) {
