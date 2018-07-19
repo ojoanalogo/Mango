@@ -5,6 +5,7 @@ import { UserService } from '../services/user.service';
 import { ResponseHandler, ResponseCode } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
 import { JWTMiddleware } from '../middleware/jwt.middleware';
+import { IsAppMiddleware } from '../middleware/isApp.middleware';
 
 @JsonController('/user/')
 @UseBefore(LoggingMiddleware)

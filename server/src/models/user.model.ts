@@ -6,12 +6,14 @@ import { UserRole } from '../types/user.type';
  */
 export class User extends Typegoose {
   _id: string;
-  @prop({required: true})
+  @prop({required: true, minlength: 3, maxlength: 64})
   first_name: string;
-  @prop({required: true})
+  @prop({required: true, minlength: 3, maxlength: 120})
   second_name: string;
-  @prop({required: true, unique: true})
+  @prop({required: true, unique: true, minlength: 5, maxlength: 254})
   email: string;
+  @prop({required: true, unique: false, maxlength: 60})
+  password: string;
   @prop({ default: UserRole.DEFAULT})
   user_role: UserRole;
   @prop({default: Date.now()})

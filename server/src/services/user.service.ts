@@ -1,6 +1,6 @@
 import { User } from '../models/user.model';
 import { AuthService } from './auth.service';
-import { DocumentQuery } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 export class UserService {
 
@@ -18,14 +18,22 @@ export class UserService {
     }
 
     /**
-     * Create a new user from database
+     * Creates a new user
      * @param user user object
      */
     static async createUser(user: User) {
-        const userModel = await this.userModel.create(user);
-        const userData = userModel.toObject();
+        // create JWT tokens
         const tokenData = await AuthService.createJWT(user);
-        tokenData ? userData.token = tokenData : userData.token = null;
+        tokenData ? user.token = tokenData.jwt : user.token = '';
+        // encrypt password
+        const passData = await bcrypt.hash(user.password, 12);
+        user.password = passData;
+        // finaly create user
+        const userModel = await this.userModel.create(user);
+        // pass full JWT tokens
+        const userData = userModel.toObject();
+        userData.token = tokenData;
+        // return user model object
         return userData;
     }
 
