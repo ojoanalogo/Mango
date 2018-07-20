@@ -12,8 +12,8 @@ export class UserService {
      * @param maxUsers how many users will be returned
      */
     static getUsers(maxUsers: number) {
-        return this.userModel.find({}).select(
-            'first_name second_name email user_role registered_at'
+        return this.userModel.find({ 'is_enabled': true }).select(
+            'first_name second_name email user_role registered_at last_login'
         ).limit(maxUsers);
     }
 
@@ -37,13 +37,23 @@ export class UserService {
         return userData;
     }
 
+    static async loginUser(user: User) {
+        const userModel = await this.userModel.findOne({'email': user.email, 'is_enabled': true});
+        const dbPassword = userModel.toObject().password;
+        const rs = await bcrypt.compare(user.password, dbPassword);
+        const timeNow = Date.now();
+        const updateLastLogin = await this.userModel.updateOne({'_id': userModel._id}, {'last_login': timeNow});
+        return rs;
+    }
+
     /**
      * Update user by ID
      * @param id ID string
-     * @param user User User
+     * @param user user object
      */
     static async updateUserById(id: string, user: User) {
-        return this.userModel.updateOne({'_id': id}, user);
+        const userData = await this.userModel.updateOne({'_id': id}, user);
+        return userData;
     }
 
     /**
@@ -53,7 +63,7 @@ export class UserService {
     static getUserByEmail(email: string) {
         return this.userModel.findOne({
             'email': email
-        }, {});
+        }).select('_id user_role registered_at first_name second_name email');
     }
 
     /**
@@ -63,16 +73,27 @@ export class UserService {
     static getUserByID(id: string) {
         return this.userModel.findOne({
             '_id': id
-        }, {});
+        }).select('_id user_role registered_at first_name second_name email');
     }
 
     /**
-     * Cheks whether user exists or not
+     * Cheks whether user exists or not using email
      * @param email email from user
      */
-    static async doesExists(email: string) {
+    static async doesExistsEmail(email: string) {
         const usr = await this.userModel.findOne({
             'email': email
+        });
+        return usr;
+    }
+
+    /**
+     * Cheks whether user exists or not using ID
+     * @param id email from user
+     */
+    static async doesExistsId(id: string) {
+        const usr = await this.userModel.findOne({
+            '_id': id
         });
         return usr;
     }
