@@ -37,13 +37,30 @@ export class UserService {
         return userData;
     }
 
+    /**
+     * Checks user credentials and validates him
+     * @param user user Object
+     */
     static async loginUser(user: User) {
-        const userModel = await this.userModel.findOne({'email': user.email, 'is_enabled': true});
-        const dbPassword = userModel.toObject().password;
-        const rs = await bcrypt.compare(user.password, dbPassword);
-        const timeNow = Date.now();
-        const updateLastLogin = await this.userModel.updateOne({'_id': userModel._id}, {'last_login': timeNow});
-        return rs;
+        const userModel = await this.userModel.findOne({ 'email': user.email, 'is_enabled': true });
+        // compares user password from login request with the one found associated to the email in the database (user Model)
+        const rs = await bcrypt.compare(user.password, userModel.password);
+        if (rs) {
+            const tokenData = await AuthService.createJWT(user);
+            await this.userModel.updateOne({ '_id': userModel._id }, { 'last_login': Date.now(), 'token': tokenData.jwt });
+            // return user data with tokens
+            const userData = userModel.toObject();
+            userData.token = tokenData;
+            // this removes unwanted keys from JSON
+            const removeData = ['last_login', 'is_enabled', 'password', '__v'];
+            removeData.forEach(unusedKey => {
+                    delete userData[unusedKey];
+            });
+            return userData;
+        } else {
+            // wrong password mate
+            return false;
+        }
     }
 
     /**
@@ -52,7 +69,7 @@ export class UserService {
      * @param user user object
      */
     static async updateUserById(id: string, user: User) {
-        const userData = await this.userModel.updateOne({'_id': id}, user);
+        const userData = await this.userModel.updateOne({ '_id': id }, user);
         return userData;
     }
 
@@ -74,6 +91,16 @@ export class UserService {
         return this.userModel.findOne({
             '_id': id
         }).select('_id user_role registered_at first_name second_name email');
+    }
+
+    /**
+     * Get user token from database
+     * @param id ID string
+     */
+    static getUserToken(id: string) {
+        return this.userModel.findOne({
+            '_id': id
+        }).select('token');
     }
 
     /**

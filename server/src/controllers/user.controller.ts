@@ -59,7 +59,6 @@ export class UserController extends ResponseHandler {
             return this.createResponse(response, 'User not exists', 404, ResponseCode.NOT_FOUND);
         } else {
             try {
-                console.log(user);
                 const userData = await UserService.updateUserById(user._id, user);
                 return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
             } catch (ex) {

@@ -15,12 +15,14 @@ export class AuthController extends ResponseHandler {
         if (!userExists) {
             return this.createResponse(response, 'User not exists', 404, ResponseCode.NOT_FOUND);
         } else {
-            const loginResponse = await UserService.loginUser(user);
-            if (loginResponse) {
-                const userData = await UserService.getUserByEmail(user.email);
-                return this.createResponse(response, userData, 200, ResponseCode.SUCCESS_DATA);
+            try {
+                const loginResponse = await UserService.loginUser(user);
+                return loginResponse ?
+                this.createResponse(response, loginResponse, 200, ResponseCode.SUCCESS_DATA) :
+                this.createResponse(response, 'Wrong password', 401, ResponseCode.NOT_FOUND);
+            } catch (error) {
+                return this.createResponse(response, 'Could not get user data', 500, ResponseCode.NOT_FOUND);
             }
-            return this.createResponse(response, 'Wrong password', 404, ResponseCode.NOT_FOUND);
         }
     }
 }
