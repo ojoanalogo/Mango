@@ -1,6 +1,6 @@
-import { Post, UseBefore, JsonController, Res, Body } from 'routing-controllers';
+import { Post, UseBefore, JsonController, Res, Body, Get } from 'routing-controllers';
 import { Response } from 'express';
-import { ResponseHandler, ResponseCode } from '../handlers/response.handler';
+import { ResponseHandler, ResponseCode, HTTP_STATUS_CODE } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
 import { User } from '../models/user.model';
 import { UserService } from '../services/user.service';
@@ -13,16 +13,22 @@ export class AuthController extends ResponseHandler {
     public async login(@Res() response: Response, @Body() user: User) {
         const userExists = await UserService.doesExistsEmail(user.email);
         if (!userExists) {
-            return this.createResponse(response, 'User not exists', 404, ResponseCode.NOT_FOUND);
+            return this.createResponse(response, 'User not exists', HTTP_STATUS_CODE.NOT_FOUND, ResponseCode.NOT_FOUND);
         } else {
             try {
                 const loginResponse = await UserService.loginUser(user);
                 return loginResponse ?
-                this.createResponse(response, loginResponse, 200, ResponseCode.SUCCESS_DATA) :
-                this.createResponse(response, 'Wrong password', 401, ResponseCode.NOT_FOUND);
+                this.createResponse(response, loginResponse, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA) :
+                this.createResponse(response, 'Wrong password', HTTP_STATUS_CODE.UNAUTHORIZED, ResponseCode.NOT_FOUND);
             } catch (error) {
-                return this.createResponse(response, 'Could not get user data', 500, ResponseCode.NOT_FOUND);
+                return this.createResponse(response, 'Could not get user data',
+                HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.NOT_FOUND);
             }
         }
+    }
+
+    @Get('validate_email')
+    public async validateEmail(@Res() response: Response, @Body() data: any) {
+        return 'hola';
     }
 }

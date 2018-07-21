@@ -8,32 +8,38 @@ export class User extends Typegoose {
   // main ID for user object
   _id: string;
   // user first name
-  @prop({required: true, minlength: 3, maxlength: 64})
+  @prop({ required: false, minlength: 3, maxlength: 64 })
   first_name: string;
   // user second name
-  @prop({required: true, minlength: 3, maxlength: 120})
+  @prop({ required: false, minlength: 3, maxlength: 120 })
   second_name: string;
   // user email
-  @prop({required: true, unique: true, minlength: 5, maxlength: 254})
+  @prop({ required: true, unique: true, minlength: 5, maxlength: 254 })
   email: string;
   // user password (hashed)
-  @prop({required: true, unique: false, maxlength: 60})
+  @prop({ required: true, unique: false, maxlength: 60 })
   password: string;
   // user role (see UserRole)
-  @prop({ default: UserRole.DEFAULT})
+  @prop({ required: false, default: UserRole.DEFAULT })
   user_role: UserRole;
   // user register date
-  @prop({default: Date.now()})
+  @prop({ required: false, default: Date.now() })
   registered_at: Date;
   // user last login
-  @prop({default: Date.now()})
+  @prop({ required: false, default: Date.now() })
   last_login: Date;
   // user JWT token
-  @prop()
+  @prop({ required: false })
   token: string;
+  // email validation token (just email as base64)
+  // @prop({ required: false, default: btoa(this.email) })
+  // email_validation_token: string;
   // is User enabled?
-  @prop({default: true})
+  @prop({ required: false, default: true })
   is_enabled: boolean;
+  // is email validated?
+  @prop({ required: false, default: false })
+  email_validated: boolean;
   /**
    * Get user model
    * @returns {User} user model

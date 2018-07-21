@@ -1,6 +1,6 @@
 import { Get, UseBefore, JsonController, Res } from 'routing-controllers';
 import { Response } from 'express';
-import { ResponseHandler, ResponseCode } from '../handlers/response.handler';
+import { ResponseHandler, ResponseCode, HTTP_STATUS_CODE } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
 
 @JsonController()
@@ -13,6 +13,6 @@ export class IndexController extends ResponseHandler {
      */
     @Get('')
     public index(@Res() response: Response) {
-        return this.createResponse(response, 'Welcome to our API endpoint!', 200, ResponseCode.SUCCESS_DATA);
+        return this.createResponse(response, 'Welcome to our API endpoint!', HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
     }
 }

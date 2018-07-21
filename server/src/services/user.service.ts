@@ -1,11 +1,14 @@
 import { User } from '../models/user.model';
 import { AuthService } from './auth.service';
+import { JSONUtils } from '../utils/json.utils';
 import * as bcrypt from 'bcrypt';
 
 export class UserService {
 
     // user model from database
     private static readonly userModel = new User().getModel();
+    private static commonProperties =
+    ['user_role', 'registered_at', 'email_validated', '_id', 'email', 'first_name', 'second_name', 'token'];
 
     /**
      * Returns users from database
@@ -34,7 +37,8 @@ export class UserService {
         const userData = userModel.toObject();
         userData.token = tokenData;
         // return user model object
-        return userData;
+        // this removes unwanted keys from JSON
+        return JSONUtils.filterDataFromObject(userData, this.commonProperties);
     }
 
     /**
@@ -51,12 +55,9 @@ export class UserService {
             // return user data with tokens
             const userData = userModel.toObject();
             userData.token = tokenData;
+            // return user model object
             // this removes unwanted keys from JSON
-            const removeData = ['last_login', 'is_enabled', 'password', '__v'];
-            removeData.forEach(unusedKey => {
-                    delete userData[unusedKey];
-            });
-            return userData;
+            return JSONUtils.filterDataFromObject(userData, this.commonProperties);
         } else {
             // wrong password mate
             return false;

@@ -11,7 +11,7 @@ export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareI
      * @param response response Object
      * @param next proceeed to next operation
      */
-    use(request: Request, response: Response, next?: (err?: any) => any): any {
+    async use(request: Request, response: Response, next?: (err?: any) => any): Promise<any> {
         // get auth header from request
         const authorizationHeader = request.get('authorization');
         if (authorizationHeader == null) {

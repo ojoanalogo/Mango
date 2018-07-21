@@ -1,5 +1,6 @@
 import { Database } from './database/database.config';
 import { Mongoose } from 'mongoose';
+import { ErrorHandler } from './handlers/error.handler';
 import * as bodyParser from 'body-parser';
 import * as expressApp from 'routing-controllers';
 import * as express from 'express';
@@ -8,7 +9,7 @@ import path = require('path');
 import dotenv = require('dotenv');
 import 'reflect-metadata';
 
-process.env.NODE_ENV === 'production' ?  dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
+process.env.NODE_ENV === 'production' ? dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
 
 class Server {
   public app: express.Application;
@@ -29,9 +30,16 @@ class Server {
     this.app = expressApp.useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
+      middlewares: [ErrorHandler],
       cors: true, // enable cors
       classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
-      defaultErrorHandler: false // disables error handler
+      defaultErrorHandler: false, // disables error handler so we can use ours
+      defaults: {
+        paramOptions: {
+          // with this option, argument will be required by default
+          required: true
+        }
+      }
     });
   }
 

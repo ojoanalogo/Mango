@@ -2,10 +2,10 @@ import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { ResponseHandler } from '../handlers/response.handler';
 
-export class IsAppMiddleware extends ResponseHandler implements ExpressMiddlewareInterface {
+export class ClientMiddleware extends ResponseHandler implements ExpressMiddlewareInterface {
 
     /**
-     * JWT Middleware
+     * Client Middleware
      * @param request request Object
      * @param response response Object
      * @param next proceeed to next operation
