@@ -21,10 +21,12 @@ export class ResponseHandler {
  * Response codes
  */
 export enum ResponseCode {
-    SUCCESS_DATA = 1,
-    ERROR = -1,
-    NOT_FOUND = 2,
-    EXISTS = 3
+    SUCCESS_DATA = 'success',
+    ERROR = 'error',
+    NOT_AUTHORIZED = 'not authorized',
+    NOT_FOUND = 'not found',
+    EXISTS = 'exists',
+    EXPIRED = 'expired'
 }
 
 /**

@@ -1,39 +1,37 @@
-import { Database } from './database/database.config';
-import { Mongoose } from 'mongoose';
-import { ErrorHandler } from './handlers/error.handler';
+import { Database } from './database/database';
+import { Container } from 'typedi';
+import { useExpressServer, useContainer as useContainerRouting } from 'routing-controllers';
+import { useContainer as useContainerTypeORM } from 'typeorm';
 import * as bodyParser from 'body-parser';
-import * as expressApp from 'routing-controllers';
 import * as express from 'express';
-import colors = require('colors');
-import path = require('path');
-import dotenv = require('dotenv');
-import 'reflect-metadata';
+import * as colors from 'colors';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+import 'reflect-metadata'; // global, required by typegoose and typedi
 
 process.env.NODE_ENV === 'production' ? dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
-
 class Server {
   public app: express.Application;
 
   private port: number = parseInt(process.env.SERVER_PORT) || 1337;
-  private databaseURI: string = process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/mangoapp';
-  private reconnect_seconds = parseInt(process.env.DATABASE_RECONNECT_SECONDS);
-  private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
-  private db: Mongoose;
 
   constructor() {
     this.app = express();
+    // use container from typeDI
+    useContainerRouting(Container);
+    useContainerTypeORM(Container);
     // setup middleware
     this.config();
     // setup database
-    this.db = new Database(this.databaseURI, this.reconnect_seconds, this.reconnect_max_try).getDatabase();
+    const database: Database = Container.get(Database);
+    database.setupDatabase();
     // bootstrap express server with routing-controller
-    this.app = expressApp.useExpressServer(this.app, {
+    this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
-      middlewares: [ErrorHandler],
       cors: true, // enable cors
       classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
-      defaultErrorHandler: false, // disables error handler so we can use ours
+      defaultErrorHandler: true, // disables error handler so we can use ours
       defaults: {
         paramOptions: {
           // with this option, argument will be required by default

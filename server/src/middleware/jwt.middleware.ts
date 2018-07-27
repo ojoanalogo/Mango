@@ -1,10 +1,11 @@
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { Response, Request } from 'express';
-import { ResponseHandler } from '../handlers/response.handler';
+import { ResponseHandler, HTTP_STATUS_CODE, ResponseCode } from '../handlers/response.handler';
 import * as jwt from 'jsonwebtoken';
 
 export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareInterface {
 
+    private response: Response;
     /**
      * JWT Middleware
      * @param request request Object
@@ -12,16 +13,17 @@ export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareI
      * @param next proceeed to next operation
      */
     async use(request: Request, response: Response, next?: (err?: any) => any): Promise<any> {
+        this.response = response;
         // get auth header from request
         const authorizationHeader = request.get('authorization');
         if (authorizationHeader == null) {
-            return this.createResponse(response, 'Authorization required', 401, 0);
+            return this.createResponse(response, 'Authorization required', HTTP_STATUS_CODE.UNAUTHORIZED, ResponseCode.NOT_AUTHORIZED);
         }
         // an AUTH header looks like 'SCHEMA XXXXXXXXXXXX, so we should split it'
         const tokenParts = authorizationHeader.split(' ');
         // validate length of the array with token
         if (tokenParts.length < 1) {
-            this.invalidCode(response);
+            this.invalidCode('Invalid token structure');
         }
         const schema = tokenParts[0]; // should be "Bearer"
         const token = tokenParts[1];
@@ -32,24 +34,25 @@ export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareI
                 if (decoded) {
                     // allow request
                     next();
+                } else {
+                    this.createResponse(response, 'token is dead', HTTP_STATUS_CODE.FORBIDDEN, ResponseCode.EXPIRED);
                 }
             } catch (error) {
                 // bad code
-                this.invalidCode(response);
+                this.invalidCode('Invalid signature');
             }
         } else {
             // bad code format
-            this.invalidCode(response);
+            this.invalidCode('Invalid token');
         }
     }
 
     /**
      * Returns a response object with a common message
-     * @param response response Object
      * @returns {response} response Object with authorization code invalid payload
      */
-    private invalidCode(response: Response): Response {
-        return this.createResponse(response, 'Authorization code invalid', 403, 0);
+    private invalidCode(msg: string): Response {
+        return this.createResponse(this.response, msg, HTTP_STATUS_CODE.UNAUTHORIZED, ResponseCode.NOT_AUTHORIZED);
 
     }
 }

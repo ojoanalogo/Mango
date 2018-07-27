@@ -7,12 +7,16 @@ import { LoggingMiddleware } from '../middleware/logging.middleware';
 @UseBefore(LoggingMiddleware)
 export class IndexController extends ResponseHandler {
 
+    constructor() {
+        super();
+    }
+
     /**
      * GET request for Hello API
      * @param response response Object
      */
-    @Get('')
-    public index(@Res() response: Response) {
+    @Get()
+    public index(@Res() response: Response): Response {
         return this.createResponse(response, 'Welcome to our API endpoint!', HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
     }
 }

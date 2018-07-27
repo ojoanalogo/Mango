@@ -1,47 +1,30 @@
-import { Param, Put, Get, Post, Res, UseBefore, JsonController, Body } from 'routing-controllers';
+import { Body, Get, Post, Put, Res, UseBefore, JsonController, Param } from 'routing-controllers';
 import { Response } from 'express';
-import { User } from '../models/user.model';
 import { UserService } from '../services/user.service';
 import { ResponseHandler, ResponseCode, HTTP_STATUS_CODE } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
 import { JWTMiddleware } from '../middleware/jwt.middleware';
+import { User } from '../entities/user/user.model';
 
 @JsonController('/user/')
 @UseBefore(LoggingMiddleware)
 export class UserController extends ResponseHandler {
 
+    constructor(private userService: UserService) {
+        super();
+    }
     /**
      * GET request to get all users, needs a valid JWT
      * @param response response object
      */
     @Get()
     @UseBefore(JWTMiddleware)
-    public async getUsers(@Res() response: Response) {
+    public async getUsers(@Res() response: Response): Promise<Response> {
         try {
-            const userData = await UserService.getUsers(100);
+            const userData = await this.userService.findAll();
             return this.createResponse(response, userData, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
         } catch (ex) {
             return this.createResponse(response, 'Unable to get users', HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.ERROR);
-        }
-    }
-
-    /**
-     * POST request to create a new user in database
-     * @param response response object
-     * @param user user Object from body
-     */
-    @Post()
-    public async createUser(@Res() response: Response, @Body() user: User) {
-        const userExists = await UserService.doesExistsEmail(user.email);
-        if (userExists) {
-            return this.createResponse(response, 'User already registered', HTTP_STATUS_CODE.CONFLICT, ResponseCode.EXISTS);
-        } else {
-            try {
-                const result = await UserService.createUser(user);
-                return this.createResponse(response, result, HTTP_STATUS_CODE.CREATED, ResponseCode.SUCCESS_DATA);
-            } catch (ex) {
-                return this.createResponse(response, 'Unable to register user', HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.ERROR);
-            }
         }
     }
 
@@ -52,16 +35,37 @@ export class UserController extends ResponseHandler {
      */
     @Get(':email')
     @UseBefore(JWTMiddleware)
-    public async getUserByEmail(@Res() response: Response, @Param('email') email: string) {
-        const userExists = await UserService.doesExistsEmail(email);
+    public async getUserByEmail(@Res() response: Response, @Param('email') email: string): Promise<Response> {
+        const userExists = await this.userService.doesExistsEmail(email);
         if (!userExists) {
             return this.createResponse(response, 'User not exists', HTTP_STATUS_CODE.NOT_FOUND, ResponseCode.NOT_FOUND);
         } else {
             try {
-                const userData = await UserService.getUserByEmail(email);
+                const userData = await this.userService.getUserByEmail(email, true);
                 return this.createResponse(response, userData, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
             } catch (ex) {
                 return this.createResponse(response, 'Unable to get user', HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.ERROR);
+            }
+        }
+    }
+
+    /**
+     * POST request to create a new user in database
+     * @param response response object
+     * @param user user Object from body
+     */
+    @Post()
+    public async createUser(@Res() response: Response, @Body() user: User): Promise<Response> {
+        const userExists = await this.userService.doesExistsEmail(user.email);
+        if (userExists) {
+            return this.createResponse(response, 'User already registered', HTTP_STATUS_CODE.CONFLICT, ResponseCode.EXISTS);
+        } else {
+            try {
+                const result = await this.userService.createUser(user);
+                return this.createResponse(response, result, HTTP_STATUS_CODE.CREATED, ResponseCode.SUCCESS_DATA);
+            } catch (ex) {
+                return this.createResponse(response,
+                    `Unable to register user (${ex})`, HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.ERROR);
             }
         }
     }
@@ -74,13 +78,13 @@ export class UserController extends ResponseHandler {
     @Put()
     @UseBefore(JWTMiddleware)
     public async updateUserByID(@Res() response: Response, @Body() user: User) {
-        const userExists = await UserService.doesExistsId(user._id);
+        const userExists = await this.userService.getUserByID(user.id);
         if (!userExists) {
             return this.createResponse(response, 'User not exists', HTTP_STATUS_CODE.NOT_FOUND, ResponseCode.NOT_FOUND);
         } else {
             try {
-                const userData = await UserService.updateUserById(user._id, user);
-                return this.createResponse(response, userData, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
+                const userData = await this.userService.updateUser(user);
+                return this.createResponse(response, 'User data saved', HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
             } catch (ex) {
                 return this.createResponse(response, 'Unable to get user', HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.ERROR);
             }

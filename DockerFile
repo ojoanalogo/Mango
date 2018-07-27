@@ -1,0 +1,11 @@
+FROM node:8.11.3
+RUN rm -rf node_modules
+
+COPY package*.json ./
+# RUN rm -f src/config/database.ts
+# RUN cp src/config/database.ts.conf src/config/database.ts
+
+RUN npm install
+RUN npm install -g pm2
+
+RUN npm run build
