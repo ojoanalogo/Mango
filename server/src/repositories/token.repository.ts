@@ -1,9 +1,9 @@
 import { Service } from 'typedi';
-import { User, table_name } from '../entities/user/user.model';
+import { Token, table_name } from '../entities/token/token.model';
 import { BaseRepository } from '../repositories/base.repository';
 
 @Service()
-export class UserRepository extends BaseRepository<User> {
+export class TokenRepository extends BaseRepository<Token> {
     constructor() {
         super(table_name);
     }

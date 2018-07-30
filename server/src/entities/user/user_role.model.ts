@@ -1,6 +1,7 @@
 import {Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('user_role')
+export const table_name = 'user_roles';
+@Entity('user_roles')
 export class UserRole {
     @PrimaryGeneratedColumn()
     id: number;

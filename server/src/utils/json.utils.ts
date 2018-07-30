@@ -16,7 +16,7 @@ export abstract class JSONUtils<T> {
     }
     /**
      * This function filters keys supplied in parameter for JSON objects
-     * @param data data to clean
+     * @param dataSet dataset to clean
      * @param toAdd keys to be added
      */
     public filterDataFromObjects(dataSet: any[], toAdd: string[]): T[] {

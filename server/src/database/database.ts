@@ -12,6 +12,7 @@ export class Database {
     private db_user = process.env.DATABASE_USER || 'root';
     private db_password = process.env.DATABASE_PASSWORD || '';
     private db_name = process.env.DATABASE_NAME || 'mango';
+    private db_prefix = process.env.DATABASE_PREFIX || 'mango_';
     private reconnect_seconds = parseInt(process.env.DATABASE_RECONNECT_SECONDS);
     private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
     private connection: Connection;
@@ -31,6 +32,7 @@ export class Database {
                 username: this.db_user,
                 password: this.db_password,
                 database: this.db_name,
+                entityPrefix: this.db_prefix,
                 entities: [__dirname.replace('database', 'entities') + '/**/*{.js,.ts}'],
                 synchronize: true,
                 logging: false
@@ -58,7 +60,7 @@ export class Database {
             this.reconnectTry++;
             // if we can't reconnect to database after X times, we will stop trying to do so
             if (this.reconnectTry > this.reconnect_max_try) {
-                console.error(colors.red('Timed out trying to reconnect to mongodb database'));
+                console.error(colors.red(`Timed out trying to connect to the ${this.db_type} database`));
                 return false;
             }
             this.setupDatabase();

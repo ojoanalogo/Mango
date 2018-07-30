@@ -2,6 +2,7 @@ import { Database } from './database/database';
 import { Container } from 'typedi';
 import { useExpressServer, useContainer as useContainerRouting } from 'routing-controllers';
 import { useContainer as useContainerTypeORM } from 'typeorm';
+import { ErrorHandler } from './handlers/error.handler';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as colors from 'colors';
@@ -12,7 +13,6 @@ import 'reflect-metadata'; // global, required by typegoose and typedi
 process.env.NODE_ENV === 'production' ? dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
 class Server {
   public app: express.Application;
-
   private port: number = parseInt(process.env.SERVER_PORT) || 1337;
 
   constructor() {
@@ -29,9 +29,10 @@ class Server {
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
+      middlewares: [ErrorHandler],
       cors: true, // enable cors
       classTransformer: false, // this option defaults to true, but caused some problems with typegoose model transformation
-      defaultErrorHandler: true, // disables error handler so we can use ours
+      defaultErrorHandler: false, // disables error handler so we can use ours
       defaults: {
         paramOptions: {
           // with this option, argument will be required by default

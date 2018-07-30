@@ -1,7 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
+import { Token } from '../token/token.model';
 import * as bcrypt from 'bcrypt';
+import { ProfilePicture } from './user_profile_picture';
 
-@Entity('user')
+export const table_name = 'users';
+@Entity(table_name)
 export class User {
 
     @PrimaryGeneratedColumn()
@@ -31,14 +34,20 @@ export class User {
     @UpdateDateColumn()
     last_login: string;
 
+    @OneToMany(type => Token, token => token.owner)
+    tokens: Token[];
+
+    @OneToOne(type => ProfilePicture, profile_picture => profile_picture.user)
+    profile_picture: ProfilePicture;
+
     @BeforeInsert()
     async doSomethingBeforeInsertion() {
         // store password as a hash
-        const hash = bcrypt.hashSync(this.password, 12);
+        const hash = await bcrypt.hash(this.password, 12);
         this.password = hash;
     }
     /**
-     * Compares database password
+     * Compare a password with the one encrypted in the database
      * @param passwordToCompare Password to check against
      */
     async comparePassword(passwordToCompare): Promise<boolean> {
