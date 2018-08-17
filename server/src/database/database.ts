@@ -1,7 +1,7 @@
-import * as colors from 'colors';
 import { Service } from 'typedi';
 import { Connection, createConnection } from 'typeorm';
-
+import { Logger } from '../services/logger.service';
+const log = Logger.getInstance().getLogger();
 @Service()
 export class Database {
 
@@ -17,8 +17,6 @@ export class Database {
     private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
     private connection: Connection;
 
-    constructor() { }
-
     /**
     * Setup database
     * @returns {Promise<void>} Promise with the operation result
@@ -33,15 +31,17 @@ export class Database {
                 password: this.db_password,
                 database: this.db_name,
                 entityPrefix: this.db_prefix,
-                entities: [__dirname.replace('database', 'entities') + '/**/*{.js,.ts}'],
+                entities: [__dirname + '../../entities/**/*{.js,.ts}'],
+                migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
                 synchronize: true,
                 logging: false
             });
             if (this.connection) {
-                console.log(colors.green(`Connected to database (${this.db_host}|${this.db_name}) successfully`));
+                log.info(`Connected to database (${this.db_host}|${this.db_name}) successfully`);
                 return this.connection;
             }
         } catch (error) {
+            log.error(error);
             this.retry(error);
         }
     }
@@ -52,15 +52,14 @@ export class Database {
      */
     private retry(errorMsg: string): void {
         // we should try to reconnect a few times
-        console.error(colors.red(`Can't connect to the ${this.db_type} (${this.db_name}) database!\nReason => `
-            + colors.white(`${errorMsg}`)));
-        console.log(colors.white(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
-            `| ${this.reconnectTry}/${this.reconnect_max_try}`));
+        log.warn(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
+        log.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
+            `| ${this.reconnectTry}/${this.reconnect_max_try}`);
         setTimeout(() => {
             this.reconnectTry++;
             // if we can't reconnect to database after X times, we will stop trying to do so
             if (this.reconnectTry > this.reconnect_max_try) {
-                console.error(colors.red(`Timed out trying to connect to the ${this.db_type} database`));
+                log.error(`Timed out trying to connect to the ${this.db_type} database`);
                 return false;
             }
             this.setupDatabase();

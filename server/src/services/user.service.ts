@@ -3,12 +3,12 @@ import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user/user.model';
 import { JSONUtils } from '../utils/json.utils';
 import { AuthService } from './auth.service';
-import { UpdateResult } from '../../../node_modules/typeorm';
+import { UpdateResult } from 'typeorm';
 
 @Service()
 export class UserService {
 
-    constructor(private userRepository: UserRepository, private authService: AuthService, private jsonUtils: JSONUtils<User>) { }
+    constructor(private userRepository: UserRepository, private authService: AuthService, private jsonUtils: JSONUtils) { }
 
     /**
      * Returns users from database
@@ -16,7 +16,7 @@ export class UserService {
     public async findAll(): Promise<User[]> {
         try {
             const users = await
-                this.userRepository.getQueryBuilder().where('is_active= :is_active', { is_active: 1 }).getMany();
+                this.userRepository.createQueryBuilder().where('is_active= :is_active', { is_active: 1 }).getMany();
             // const users = await this.userRepository.performRawQuery('SELECT * FROM mango_users WHERE is_active=?', [1]);
             return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
         } catch (error) {
@@ -34,7 +34,7 @@ export class UserService {
             const user = new User();
             user.email = userReq.email;
             user.password = userReq.password;
-            const userInstance = await this.userRepository.save(user);
+            const userInstance = await this.userRepository.save(userReq);
             // create JWT tokens
             const tokenData = await this.authService.createJWT(userReq);
             // pass full JWT tokens
@@ -91,9 +91,8 @@ export class UserService {
      * @param id id to lookup
      */
     public async getUserByID(id: number): Promise<User> {
-        const options = { id: id };
         try {
-            return await this.userRepository.findOne(options);
+            return await this.userRepository.findOne({ id: id });
         } catch (error) {
             throw new Error(error);
         }
@@ -103,13 +102,12 @@ export class UserService {
      * Get user by email
      * @param email email string
      */
-    public async getUserByEmail(email: string, dataFiltered?: boolean): Promise<User> {
-        const options = { email: email };
+    public async getUserByEmail(userEmail: string, dataFiltered?: boolean): Promise<any> {
         try {
-            const userData = await this.userRepository.findOne(options);
+            const userData = await this.userRepository.findOne({ email: userEmail });
             return dataFiltered ? this.jsonUtils.filterDataFromObject(userData, this.jsonUtils.commonUserProperties) : userData;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -118,9 +116,8 @@ export class UserService {
      * @param userEmail email from user
      */
     public async doesExistsEmail(userEmail: string): Promise<boolean> {
-        const options = { email: userEmail };
         try {
-            const userData = await this.userRepository.findOne(options);
+            const userData = await this.userRepository.findOne({ email: userEmail });
             return userData ? true : false;
         } catch (error) {
             throw new Error(error);

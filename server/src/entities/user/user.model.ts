@@ -1,14 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
+import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { Token } from '../token/token.model';
-import * as bcrypt from 'bcrypt';
 import { ProfilePicture } from './user_profile_picture';
+import { CUD } from '../CUD';
+import * as bcrypt from 'bcrypt';
 
 export const table_name = 'users';
 @Entity(table_name)
-export class User {
-
-    @PrimaryGeneratedColumn()
-    id: number;
+export class User extends CUD {
 
     @Column()
     first_name: string;
@@ -16,25 +14,19 @@ export class User {
     @Column()
     second_name: string;
 
-    @Column({unique: true})
+    @Column({ unique: true })
     email: string;
 
     @Column()
     password: string;
 
-    @Column()
-    user_role: number;
-
     @Column({ default: true })
     is_active: boolean;
-
-    @CreateDateColumn()
-    registered_at: string;
 
     @UpdateDateColumn()
     last_login: string;
 
-    @OneToMany(type => Token, token => token.owner)
+    @OneToMany(type => Token, token => token.user)
     tokens: Token[];
 
     @OneToOne(type => ProfilePicture, profile_picture => profile_picture.user)
@@ -43,8 +35,12 @@ export class User {
     @BeforeInsert()
     async doSomethingBeforeInsertion() {
         // store password as a hash
-        const hash = await bcrypt.hash(this.password, 12);
-        this.password = hash;
+        try {
+            const hash = await bcrypt.hash(this.password, 12);
+            this.password = hash;
+        } catch (error) {
+            throw error;
+        }
     }
     /**
      * Compare a password with the one encrypted in the database

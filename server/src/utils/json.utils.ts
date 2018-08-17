@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 
 @Service()
-export abstract class JSONUtils<T> {
+export abstract class JSONUtils {
 
     public commonUserProperties =
     ['user_role', 'registered_at', 'email_validated', 'id', 'email', 'first_name', 'second_name', 'tokenData'];
@@ -11,7 +11,7 @@ export abstract class JSONUtils<T> {
      * @param data data to clean
      * @param toAdd keys to be added
      */
-    public filterDataFromObject(data: any, toAdd: string[]): T {
+    public filterDataFromObject(data: any, toAdd: string[]): any {
         return Object.assign({}, ...toAdd.map(k => k in data ? {[k]: data[k]} : {}));
     }
     /**
@@ -19,7 +19,7 @@ export abstract class JSONUtils<T> {
      * @param dataSet dataset to clean
      * @param toAdd keys to be added
      */
-    public filterDataFromObjects(dataSet: any[], toAdd: string[]): T[] {
+    public filterDataFromObjects(dataSet: any[], toAdd: string[]): any[] {
         const filteredData = [];
         dataSet.forEach((data) => {
             filteredData.push(this.filterDataFromObject(data, toAdd));

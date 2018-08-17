@@ -2,6 +2,7 @@ import { EntityManager, getManager, Repository, DeleteResult, UpdateResult, Inse
 
 export abstract class BaseRepository<T> {
     private entityName: string;
+    private prefix = process.env.DATABASE_PREFIX || 'mango_';
     constructor(entityName: string) {
         this.entityName = entityName;
     }
@@ -10,8 +11,7 @@ export abstract class BaseRepository<T> {
      */
     protected getRepository(): Repository<{}> {
         const man: EntityManager = getManager();
-        const prefix = process.env.DATABASE_PREFIX || 'mango_';
-        return man.getRepository(prefix + this.entityName);
+        return man.getRepository(this.prefix + this.entityName);
     }
     /**
      * Execute a repository function in asynchronous way
@@ -27,15 +27,15 @@ export abstract class BaseRepository<T> {
     /**
     * Returns a Query builder
     */
-    public getQueryBuilder(entity?: string): SelectQueryBuilder<{}> {
-        return this.getRepository().createQueryBuilder(entity);
+    public createQueryBuilder(entity?: string): SelectQueryBuilder<{}> {
+        return this.getRepository().createQueryBuilder(this.prefix + entity);
     }
     /**
      * Performs a raw SQL Query
      * @param query query string
      * @param parameters parameters
      */
-    public async performRawQuery(query: string, parameters?: any[]): Promise<any> {
+    public async query(query: string, parameters?: any[]): Promise<any> {
         return await this.executeRepositoryFunction(this.getRepository().query(query, parameters));
     }
     /**
@@ -71,7 +71,7 @@ export abstract class BaseRepository<T> {
      * Checks if given entity's primary column is defined
      * @param object Entity
      */
-    public async hasID(object: T): Promise<boolean> {
+    public async hasId(object: T): Promise<boolean> {
         return await this.getRepository().hasId(object);
     }
     /**
@@ -112,9 +112,10 @@ export abstract class BaseRepository<T> {
     }
     /**
      * Returns all records for entity
+     * @param conditions conditions to look for
      */
-    public getAll(): Promise<T[]> {
-        return this.executeRepositoryFunction(this.getRepository().find());
+    public find(conditions?: any): Promise<T[]> {
+        return this.executeRepositoryFunction(this.getRepository().find(conditions));
     }
     /**
      * Count how many records exists for the given conditions
@@ -129,13 +130,6 @@ export abstract class BaseRepository<T> {
      */
     public findOne(conditions: any): Promise<T> {
         return this.executeRepositoryFunction(this.getRepository().findOne(conditions));
-    }
-    /**
-     * Returns a list of records that matches an array of conditions
-     * @param conditions find conditions for object
-     */
-    public findByFilter(conditions: any): Promise<T[]> {
-        return this.executeRepositoryFunction(this.getRepository().find(conditions));
     }
     /**
      * This truncates everything from the table (WARNING)
