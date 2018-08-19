@@ -11,12 +11,14 @@ import * as dotenv from 'dotenv';
 import * as helmet from 'helmet';
 import 'reflect-metadata'; // global, required by typeorm and typedi
 
-process.env.NODE_ENV === 'production' ? dotenv.config({ path: '.env' }) : dotenv.config({ path: '.example.env' });
+process.env.NODE_ENV === 'production' ?
+  dotenv.config({ path: path.join(__dirname, '../../.env') }) :
+  dotenv.config({ path: path.join(__dirname, '../../.example.env') });
 
 export class Server {
 
   public app: express.Application;
-  public port: number = parseInt(process.env.SERVER_PORT) || 1337;
+  public port: number = parseInt(process.env.PORT) || 1337;
 
   constructor() {
     // create express app

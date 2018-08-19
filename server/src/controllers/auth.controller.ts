@@ -20,15 +20,15 @@ export class AuthController {
         } else {
             try {
                 const loginResponse = await this.userService.loginUser(user);
-                if(loginResponse) {
+                if (loginResponse) {
                     return apiResponse
                         .withData(loginResponse)
                         .withStatusCode(HTTP_STATUS_CODE.OK)
-                        .build()
+                        .build();
                 }
                 throw new UnauthorizedError('Wrong password');
             } catch (error) {
-                throw new InternalServerError('Could not get user data')
+                throw new InternalServerError('Could not get user data');
             }
         }
     }

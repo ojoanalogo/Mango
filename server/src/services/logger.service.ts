@@ -3,6 +3,7 @@ import { Format } from 'logform';
 import { Options } from '../../../node_modules/@types/morgan';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
+import * as path from 'path';
 
 @Service()
 export class Logger {
@@ -58,7 +59,7 @@ export class Logger {
             transports: [
                 new DailyRotateFile({
                     level: 'error',
-                    filename: `./logs/${this.logFolder}/error-%DATE%.log`,
+                    filename: path.join(__dirname, `../../../logs/${this.logFolder}/error-%DATE%.log`),
                     format: this.logFormat,
 
                     datePattern: 'YYYY-MM-DD-HH',
@@ -67,7 +68,7 @@ export class Logger {
                     maxFiles: '31d'
                 }),
                 new DailyRotateFile({
-                    filename: `./logs/${this.logFolder}/combined-%DATE%.log`,
+                    filename: path.join(__dirname, `../../../logs/${this.logFolder}/combined-%DATE%.log`),
                     format: this.logFormat,
                     datePattern: 'YYYY-MM-DD-HH',
                     zippedArchive: true,
@@ -89,7 +90,7 @@ export class Logger {
                             return info.message;
                         })
                     ),
-                    filename: `./logs/${this.logFolder}/http-%DATE%.log`,
+                    filename: path.join(__dirname, `../../../logs/${this.logFolder}/http-%DATE%.log`),
                     datePattern: 'YYYY-MM-DD-HH',
                     zippedArchive: true,
                     maxSize: '20m',
