@@ -94,20 +94,6 @@ export class Logger {
                     zippedArchive: true,
                     maxSize: '20m',
                     maxFiles: '31d'
-                }),
-                new DailyRotateFile({
-                    level: 'error',
-                    format: winston.format.combine(
-                        winston.format.uncolorize(),
-                        winston.format.printf((info) => {
-                            return info.message;
-                        })
-                    ),
-                    filename: `./logs/${this.logFolder}/http-error-%DATE%.log`,
-                    datePattern: 'YYYY-MM-DD-HH',
-                    zippedArchive: true,
-                    maxSize: '20m',
-                    maxFiles: '31d'
                 })
             ]
         });
@@ -148,13 +134,6 @@ export const morganOption: Options = {
     stream: {
         write: function (message: string) {
             Logger.getInstance().getHTTPLogger().log('http', message.replace('\n', ''));
-        }
-    }
-};
-export const morganErrorOptions: Options = {
-    stream: {
-        write: function (message: string) {
-            Logger.getInstance().getHTTPLogger().log('error', message.replace('\n', ''));
         }
     }
 };

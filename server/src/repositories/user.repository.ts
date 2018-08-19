@@ -7,4 +7,16 @@ export class UserRepository extends BaseRepository<User> {
     constructor() {
         super(table_name);
     }
+
+    getProfile(userEmail: string) {
+        return this.findOne({
+            email: userEmail,
+            join: {
+                alias: 'user',
+                leftJoinAndSelect: {
+                    profile: 'user.profile_picture'
+                }
+            }
+        });
+    }
 }

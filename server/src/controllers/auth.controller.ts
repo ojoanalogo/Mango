@@ -1,32 +1,34 @@
-import { Post, UseBefore, JsonController, Res, Body } from 'routing-controllers';
+import { Post, UseBefore, JsonController, Res, Body, NotFoundError, UnauthorizedError, InternalServerError } from 'routing-controllers';
 import { Response } from 'express';
-import { ResponseHandler, ResponseCode, HTTP_STATUS_CODE } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
 import { UserService } from '../services/user.service';
 import { User } from '../entities/user/user.model';
+import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/apiResponse.handler';
 
 @JsonController('/auth/')
 @UseBefore(LoggingMiddleware)
-export class AuthController extends ResponseHandler {
+export class AuthController {
 
-    constructor(private userService: UserService) {
-        super();
-    }
+    constructor(private userService: UserService) { }
 
     @Post()
     public async login(@Res() response: Response, @Body() user: User): Promise<Response> {
         const userExists = await this.userService.doesExistsEmail(user.email);
+        const apiResponse = new ApiResponse(response);
         if (!userExists) {
-            return this.createResponse(response, 'User not exists', HTTP_STATUS_CODE.NOT_FOUND, ResponseCode.NOT_FOUND);
+            throw new NotFoundError('User not exists');
         } else {
             try {
                 const loginResponse = await this.userService.loginUser(user);
-                return loginResponse ?
-                    this.createResponse(response, loginResponse, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA) :
-                    this.createResponse(response, 'Wrong password', HTTP_STATUS_CODE.UNAUTHORIZED, ResponseCode.NOT_AUTHORIZED);
+                if(loginResponse) {
+                    return apiResponse
+                        .withData(loginResponse)
+                        .withStatusCode(HTTP_STATUS_CODE.OK)
+                        .build()
+                }
+                throw new UnauthorizedError('Wrong password');
             } catch (error) {
-                return this.createResponse(response, 'Could not get user data',
-                    HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, ResponseCode.ERROR);
+                throw new InternalServerError('Could not get user data')
             }
         }
     }

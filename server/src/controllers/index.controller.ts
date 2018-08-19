@@ -1,15 +1,11 @@
 import { Get, UseBefore, JsonController, Res } from 'routing-controllers';
 import { Response } from 'express';
-import { ResponseHandler, ResponseCode, HTTP_STATUS_CODE } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
+import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/apiResponse.handler';
 
 @JsonController()
 @UseBefore(LoggingMiddleware)
-export class IndexController extends ResponseHandler {
-
-    constructor() {
-        super();
-    }
+export class IndexController {
 
     /**
      * GET request for Hello API
@@ -17,6 +13,7 @@ export class IndexController extends ResponseHandler {
      */
     @Get()
     public index(@Res() response: Response): Response {
-        return this.createResponse(response, 'Welcome to our API endpoint!', HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
+        return new ApiResponse(response)
+            .withData('Welcome to our API endpoint!').withStatusCode(HTTP_STATUS_CODE.OK).build();
     }
 }

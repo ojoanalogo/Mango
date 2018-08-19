@@ -20,7 +20,7 @@ export class UserService {
             // const users = await this.userRepository.performRawQuery('SELECT * FROM mango_users WHERE is_active=?', [1]);
             return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 
@@ -42,7 +42,7 @@ export class UserService {
             // return user model object
             return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 
@@ -69,7 +69,7 @@ export class UserService {
                 return false;
             }
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 
@@ -104,10 +104,12 @@ export class UserService {
      */
     public async getUserByEmail(userEmail: string, dataFiltered?: boolean): Promise<any> {
         try {
-            const userData = await this.userRepository.findOne({ email: userEmail });
-            return dataFiltered ? this.jsonUtils.filterDataFromObject(userData, this.jsonUtils.commonUserProperties) : userData;
+            // const userData = await this.userRepository.findOne({ email: userEmail });
+            const userData = await this.userRepository.getProfile(userEmail);
+            return userData;
+            // return dataFiltered ? this.jsonUtils.filterDataFromObject(userData, this.jsonUtils.commonUserProperties) : userData;
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 

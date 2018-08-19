@@ -1,9 +1,8 @@
-import { ExpressMiddlewareInterface } from 'routing-controllers';
+import { ExpressMiddlewareInterface, UnauthorizedError, ForbiddenError, NotAcceptableError } from 'routing-controllers';
 import { Response, Request } from 'express';
-import { ResponseHandler, HTTP_STATUS_CODE, ResponseCode } from '../handlers/response.handler';
 import * as jwt from 'jsonwebtoken';
 
-export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareInterface {
+export class JWTMiddleware implements ExpressMiddlewareInterface {
 
     private response: Response;
     /**
@@ -17,13 +16,13 @@ export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareI
         // get auth header from request
         const authorizationHeader = request.get('authorization');
         if (authorizationHeader == null) {
-            return this.createResponse(response, 'Authorization required', HTTP_STATUS_CODE.UNAUTHORIZED, ResponseCode.NOT_AUTHORIZED);
+            throw new UnauthorizedError('Authorization required');
         }
         // an AUTH header looks like 'SCHEMA XXXXXXXXXXXX, so we should split it'
         const tokenParts = authorizationHeader.split(' ');
         // validate length of the array with token
         if (tokenParts.length < 1) {
-            this.invalidCode('Invalid token structure');
+            throw new NotAcceptableError('Invalid Token structure');
         }
         const schema = tokenParts[0]; // should be "Bearer"
         const token = tokenParts[1];
@@ -35,24 +34,15 @@ export class JWTMiddleware extends ResponseHandler implements ExpressMiddlewareI
                     // allow request
                     next();
                 } else {
-                    this.createResponse(response, 'token is dead', HTTP_STATUS_CODE.FORBIDDEN, ResponseCode.EXPIRED);
+                   throw new ForbiddenError('Token Expired');
                 }
             } catch (error) {
                 // bad code
-                this.invalidCode('Invalid signature');
+                throw new UnauthorizedError('Invalid signature');
             }
         } else {
             // bad code format
-            this.invalidCode('Invalid token');
+            throw new NotAcceptableError('Invalid Token');
         }
-    }
-
-    /**
-     * Returns a response object with a common message
-     * @returns {response} response Object with authorization code invalid payload
-     */
-    private invalidCode(msg: string): Response {
-        return this.createResponse(this.response, msg, HTTP_STATUS_CODE.UNAUTHORIZED, ResponseCode.NOT_AUTHORIZED);
-
     }
 }

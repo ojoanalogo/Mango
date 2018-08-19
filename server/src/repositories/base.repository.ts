@@ -9,9 +9,9 @@ export abstract class BaseRepository<T> {
     /**
      * Returns repository for the entity given
      */
-    protected getRepository(): Repository<{}> {
+    protected getRepository(entity: string = this.entityName): Repository<{}> {
         const man: EntityManager = getManager();
-        return man.getRepository(this.prefix + this.entityName);
+        return man.getRepository(this.prefix + entity);
     }
     /**
      * Execute a repository function in asynchronous way

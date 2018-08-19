@@ -1,32 +1,49 @@
 import { Response } from 'express';
+import { serialize } from 'class-transformer';
 
-export class ResponseHandler {
+export class ApiResponse {
+
+    private statusCode: HTTP_STATUS_CODE = 200;
+    private data: any;
+    private stackTrace: any;
+
+    constructor(private _response: Response) { }
+    /**
+     * Adds data to the Response object
+     * @param data data object
+     */
+    public withData(data: any): ApiResponse {
+        this.data = data;
+        return this;
+    }
+    /**
+     * If needed, add stacktrace to the
+     * @param stackTrace stackTrace
+     */
+    public withStackTrace(stackTrace: any) {
+        this.stackTrace = stackTrace;
+        return this;
+    }
+    /**
+     * What status code should we return
+     * @param statusCode statusCode
+     */
+    public withStatusCode(statusCode: HTTP_STATUS_CODE): ApiResponse {
+        this.statusCode = statusCode;
+        return this;
+    }
+
     /**
      * Creates a response object from a set of parameters
-     * @param response - Response object
-     * @param payload - Data payload object
-     * @param httpCode - HttpCode (must be http standard)
-     * @param responseCode - ResponseCode (for use in app)
      * @returns {Response} response object with the defined payload
      */
-    createResponse(response: Response, payload: any, httpCode: HTTP_STATUS_CODE, responseCode: ResponseCode): Response {
-        return response.status(httpCode).json({
-            status: responseCode,
-            data: payload
-        });
+    public build(): Response {
+        return this._response
+            .status(this.statusCode)
+            .type('json')
+            .send(serialize(<ApiResponse>this,
+                { enableCircularCheck: true, excludePrefixes: ['_'] }));
     }
-}
-
-/**
- * Response codes
- */
-export enum ResponseCode {
-    SUCCESS_DATA = 'success',
-    ERROR = 'error',
-    NOT_AUTHORIZED = 'not authorized',
-    NOT_FOUND = 'not found',
-    EXISTS = 'exists',
-    EXPIRED = 'expired'
 }
 
 /**
@@ -75,4 +92,4 @@ export enum HTTP_STATUS_CODE {
     SERVICE_UNAVAILABLE = 503,
     GATEWAY_TIMEOUT = 504,
     HTTP_VERSION_NOT_SUPPORTED = 505
-  }
+}

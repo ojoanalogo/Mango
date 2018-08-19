@@ -1,18 +1,16 @@
-import { Body, Get, Post, Put, Res, UseBefore, JsonController, Param } from 'routing-controllers';
+import { Body, Get, Post, Put, Res, UseBefore, JsonController, Param, NotFoundError } from 'routing-controllers';
 import { Response } from 'express';
 import { UserService } from '../services/user.service';
-import { ResponseHandler, ResponseCode, HTTP_STATUS_CODE } from '../handlers/response.handler';
 import { LoggingMiddleware } from '../middleware/logging.middleware';
 import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
+import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/apiResponse.handler';
 
 @JsonController('/user/')
 @UseBefore(LoggingMiddleware)
-export class UserController extends ResponseHandler {
+export class UserController {
 
-    constructor(private userService: UserService) {
-        super();
-    }
+    constructor(private userService: UserService) { }
     /**
      * GET request to get all users, needs a valid JWT
      * @param response response object
@@ -21,7 +19,9 @@ export class UserController extends ResponseHandler {
     @UseBefore(JWTMiddleware)
     public async getUsers(@Res() response: Response): Promise<Response> {
         const userData = await this.userService.findAll();
-        return this.createResponse(response, userData, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
+        return new ApiResponse(response)
+            .withData(userData)
+            .withStatusCode(HTTP_STATUS_CODE.OK).build();
     }
 
     /**
@@ -34,10 +34,12 @@ export class UserController extends ResponseHandler {
     public async getUserByEmail(@Res() response: Response, @Param('email') email: string): Promise<Response> {
         const userExists = await this.userService.doesExistsEmail(email);
         if (!userExists) {
-            return this.createResponse(response, 'User not exists', HTTP_STATUS_CODE.NOT_FOUND, ResponseCode.NOT_FOUND);
+            throw new NotFoundError('User not found');
         } else {
             const userData = await this.userService.getUserByEmail(email, true);
-            return this.createResponse(response, userData, HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
+            return new ApiResponse(response)
+                .withData(userData)
+                .withStatusCode(HTTP_STATUS_CODE.OK).build();
         }
     }
 
@@ -50,10 +52,16 @@ export class UserController extends ResponseHandler {
     public async createUser(@Res() response: Response, @Body() user: User): Promise<Response> {
         const userExists = await this.userService.doesExistsEmail(user.email);
         if (userExists) {
-            return this.createResponse(response, 'User already registered', HTTP_STATUS_CODE.CONFLICT, ResponseCode.EXISTS);
+            return new ApiResponse(response)
+                .withData('User already registered')
+                .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
+                .build();
         } else {
             const result = await this.userService.createUser(user);
-            return this.createResponse(response, result, HTTP_STATUS_CODE.CREATED, ResponseCode.SUCCESS_DATA);
+            return new ApiResponse(response)
+                .withData(result)
+                .withStatusCode(HTTP_STATUS_CODE.CREATED)
+                .build();
         }
     }
 
@@ -67,10 +75,13 @@ export class UserController extends ResponseHandler {
     public async updateUserByID(@Res() response: Response, @Body() user: User) {
         const userExists = await this.userService.getUserByID(user.id);
         if (!userExists) {
-            return this.createResponse(response, 'User not exists', HTTP_STATUS_CODE.NOT_FOUND, ResponseCode.NOT_FOUND);
+            throw new NotFoundError('User not found');
         } else {
             const userData = await this.userService.updateUser(user);
-            return this.createResponse(response, 'User data saved', HTTP_STATUS_CODE.OK, ResponseCode.SUCCESS_DATA);
+            return new ApiResponse(response)
+                .withData('User data saved')
+                .withStatusCode(HTTP_STATUS_CODE.OK)
+                .build();
         }
     }
 
