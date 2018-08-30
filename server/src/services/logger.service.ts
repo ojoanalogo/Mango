@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { Format } from 'logform';
-import { Options } from '../../../node_modules/@types/morgan';
+import { Options } from 'morgan';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
@@ -18,8 +18,6 @@ export class Logger {
         winston.format.timestamp(),
         winston.format.json(),
     );
-    // Which folder should we use for storing logs?
-    private logFolder = process.env.NODE_ENV || 'development';
 
     private constructor() {
         this.setupLogger();
@@ -54,50 +52,52 @@ export class Logger {
      * Setup main logger
      */
     private setupLogger() {
-        this.logger = winston.createLogger({
-            level: 'info',
-            transports: [
-                new DailyRotateFile({
-                    level: 'error',
-                    filename: path.join(__dirname, `../../../logs/${this.logFolder}/error-%DATE%.log`),
-                    format: this.logFormat,
+        process.env.NODE_ENV === 'production' ?
+            this.logger = winston.createLogger({
+                level: 'info',
+                transports: [
+                    new DailyRotateFile({
+                        level: 'error',
+                        filename: path.join(__dirname, `../../../logs/error-%DATE%.log`),
+                        format: this.logFormat,
 
-                    datePattern: 'YYYY-MM-DD-HH',
-                    zippedArchive: true,
-                    maxSize: '20m',
-                    maxFiles: '31d'
-                }),
-                new DailyRotateFile({
-                    filename: path.join(__dirname, `../../../logs/${this.logFolder}/combined-%DATE%.log`),
-                    format: this.logFormat,
-                    datePattern: 'YYYY-MM-DD-HH',
-                    zippedArchive: true,
-                    maxSize: '20m',
-                    maxFiles: '31d'
-                })
-            ]
-        });
-        this.loggerHTTP = winston.createLogger({
-            level: 'http',
-            levels: {
-                http: 1
-            },
-            transports: [
-                new DailyRotateFile({
-                    format: winston.format.combine(
-                        winston.format.uncolorize(),
-                        winston.format.printf((info) => {
-                            return info.message;
-                        })
-                    ),
-                    filename: path.join(__dirname, `../../../logs/${this.logFolder}/http-%DATE%.log`),
-                    datePattern: 'YYYY-MM-DD-HH',
-                    zippedArchive: true,
-                    maxSize: '20m',
-                    maxFiles: '31d'
-                })
-            ]
-        });
+                        datePattern: 'YYYY-MM-DD-HH',
+                        zippedArchive: true,
+                        maxSize: '20m',
+                        maxFiles: '31d'
+                    }),
+                    new DailyRotateFile({
+                        filename: path.join(__dirname, `../../../logs/combined-%DATE%.log`),
+                        format: this.logFormat,
+                        datePattern: 'YYYY-MM-DD-HH',
+                        zippedArchive: true,
+                        maxSize: '20m',
+                        maxFiles: '31d'
+                    })
+                ]
+            }) : this.logger = winston.createLogger({ level: 'info' });
+        process.env.NODE_ENV === 'production' ?
+            this.loggerHTTP = winston.createLogger({
+                level: 'http',
+                levels: {
+                    http: 1
+                },
+                transports: [
+                    new DailyRotateFile({
+                        format: winston.format.combine(
+                            winston.format.uncolorize(),
+                            winston.format.printf((info) => {
+                                return info.message;
+                            })
+                        ),
+                        filename: path.join(__dirname, `../../../logs/http-%DATE%.log`),
+                        datePattern: 'YYYY-MM-DD-HH',
+                        zippedArchive: true,
+                        maxSize: '20m',
+                        maxFiles: '31d'
+                    })
+                ]
+            }) : this.loggerHTTP = winston.createLogger({ level: 'http' });
     }
 
     /**

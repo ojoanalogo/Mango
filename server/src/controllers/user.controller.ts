@@ -6,7 +6,7 @@ import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
 import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/apiResponse.handler';
 
-@JsonController('/user/')
+@JsonController('/users/')
 @UseBefore(LoggingMiddleware)
 export class UserController {
 

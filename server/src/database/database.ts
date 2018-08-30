@@ -41,7 +41,6 @@ export class Database {
                 return this.connection;
             }
         } catch (error) {
-            log.error(error);
             this.retry(error);
         }
     }
@@ -52,7 +51,7 @@ export class Database {
      */
     private retry(errorMsg: string): void {
         // we should try to reconnect a few times
-        log.warn(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
+        log.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
         log.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
             `| ${this.reconnectTry}/${this.reconnect_max_try}`);
         setTimeout(() => {

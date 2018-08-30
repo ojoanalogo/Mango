@@ -11,10 +11,8 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
      * @param next proceeed to next operation
      */
     use(request: Request, response: Response, next?: (err?: any) => any): any {
-        if (process.env.NODE_ENV !== 'production') {
-            morgan('dev', morganOption)(request, response, next);
-        } else {
-            morgan('common', morganOption)(request, response, next);
-        }
+        const morganLevel = process.env.NODE_ENV !== 'production' ? 'dev' : 'common';
+        morgan(morganLevel, morganOption)(request, response, next);
     }
 }
+
