@@ -1,4 +1,4 @@
-import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, BeforeUpdate, OneToMany } from 'typeorm';
+import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, BeforeUpdate } from 'typeorm';
 import { Token } from '../token/token.model';
 import { ProfilePicture } from './user_profile_picture.model';
 import { Role } from './user_role.model';

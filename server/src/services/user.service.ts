@@ -84,7 +84,8 @@ export class UserService {
      */
     public async loginUser(user: User): Promise<any> {
         try {
-            const userDB = await this.getUserByEmail(user.email);
+            console.log(user);
+            const userDB = await this.userRepository.findOne({ email: user.email });
             // compares user password from login request with the one found associated to the email in the database (user Model)
             const rs = await userDB.comparePassword(user.password);
             if (rs) {
@@ -113,7 +114,14 @@ export class UserService {
     public async updateUser(user: User): Promise<UpdateResult> {
         try {
             const userDB = await this.userRepository.findOne({ id: user.id });
-            return await this.userRepository.update(userDB.id, user);
+            const currentPassword = userDB.password;
+            if (currentPassword !== user.password) {
+                await user.updatePassword();
+                log.info(`User (ID: ${userDB.id}) has updated his password`);
+            }
+            const userUpdated = await this.userRepository.update(userDB.id, user);
+            log.info(`User (ID: ${userDB.id}) was updated`);
+            return userUpdated;
         } catch (error) {
             throw new Error(error);
         }
