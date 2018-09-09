@@ -5,10 +5,22 @@ import { CUD } from '../CUD';
 export enum RoleType {
     CEO = 'ceo',
     CTO = 'cto',
-    STAFF = 'staff',
     DEVELOPER = 'developer',
+    STAFF = 'staff',
     SALES = 'sales',
     USER = 'user'
+}
+
+export function getWeight(role: RoleType) {
+    const weight = {
+        'ceo' : 1000,
+        'cto' : 999,
+        'developer': 666,
+        'staff': 100,
+        'sales': 100,
+        'user': 1
+    };
+    return weight[role];
 }
 
 export const table_name = 'roles';

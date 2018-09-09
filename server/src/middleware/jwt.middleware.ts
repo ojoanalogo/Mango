@@ -43,6 +43,8 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                     // forbid request
                     throw new UnauthorizedError('Token doesn\'t belongs to user');
                 } else {
+                    // bind token to request object
+                    request['token'] = token;
                     // allow request
                     next();
                 }
@@ -59,11 +61,4 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         }
     }
 }
-
-// export function AuthorizedFor(rank: string[]) {
-//     return (req: any, res: any, next?: (err?: any) => any): any => {
-//         res['someKey'] = rank;
-//         next();
-//     };
-// }
 

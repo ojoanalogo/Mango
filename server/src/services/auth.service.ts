@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { User } from '../entities/user/user.model';
 import { TokenRepository } from '../repositories/token.repository';
-import { NotFoundError, UnauthorizedError } from 'routing-controllers';
+import { NotFoundError } from 'routing-controllers';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
 
@@ -45,14 +45,10 @@ export class AuthService {
      */
     public async getToken(id: number): Promise<string> {
         try {
-            const token = await this.tokenRepository.createQueryBuilder('token')
-                .innerJoin('token.user', 'user')
-                .where('user.id = :id', { id: id })
-                .select('token.token')
-                .getOne();
-                if (!token) {
-                    throw new UnauthorizedError('Token not found');
-                }
+            const token = await this.tokenRepository.getToken(id);
+            if (!token) {
+                throw new NotFoundError('Provided token invalid (user removed?)');
+            }
             return token['token'];
         } catch (error) {
             throw error;

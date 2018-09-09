@@ -9,7 +9,6 @@ import { UserService } from '../services/user.service';
 import { LoggingMiddleware } from '../middleware/http_logging.middleware';
 import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
-import { RoleEnum } from '../entities/roles/role.model';
 
 @JsonController('/users/')
 @UseBefore(LoggingMiddleware)

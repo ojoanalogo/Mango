@@ -6,5 +6,5 @@
   "ignore": [
     "*.spec.ts"
   ],
-  "exec": "cross-env NODE_ENV=development npx ts-node --project ./tsconfig.json ./src/main"
+  "exec": "cross-env NODE_ENV=development npx ts-node --inspect --project ./tsconfig.json ./src/main"
 }

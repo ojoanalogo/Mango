@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as helmet from 'helmet';
 import 'reflect-metadata'; // global, required by typeorm and typedi
+import { authorizationChecker } from './services/authorization_checker.service';
 
 process.env.NODE_ENV === 'production' ?
   dotenv.config({ path: path.join(__dirname, '../.env') }) :
@@ -71,7 +72,7 @@ export class Server {
       middlewares: [ErrorHandler, NotFoundMiddleware],
       cors: true,                     // enable cors
       defaultErrorHandler: false,     // disables error handler so we can use ours
-      // authorizationChecker            // role checker
+      authorizationChecker         // role checker
     });
   }
 

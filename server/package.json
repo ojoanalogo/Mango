@@ -7,7 +7,7 @@
         "build": "rimraf dist && tsc --project ./tsconfig.json",
         "start": "pm2 start ./ecosystem.config.js --env production",
         "build-start": "npm run build && npm run start",
-        "dev": "nodemon",
+        "dev": "nodemon --inspect",
         "lint": "tslint -t stylish --fix --project \"./tsconfig.json\"",
         "pretest": "npm run lint",
         "test": "jest",

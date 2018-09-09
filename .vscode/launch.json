@@ -2,16 +2,22 @@
   // Use IntelliSense to learn about possible attributes.
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  //  "processId": "${command:PickProcess}",
   "version": "0.2.0",
   "configurations": [
     {
-        "type": "node",
-            "request": "attach",
-            "name": "Node: Nodemon",
-            "processId": "${command:PickProcess}",
-            "timeout": 10000,
-            "restart": false,
-            "protocol": "inspector"
-    }
+      "name": "Launch",
+      "type": "node",
+      "request": "launch",
+      // "runtimeExecutable": "nodemon",
+      // "runtimeArgs": [
+      //     "--inspect"
+      // ],
+      "useWSL": true,
+      "protocol": "auto",
+      "port": 9229,
+      // "runtimeExecutable": "npx ts-node --inspect --project ./tsconfig.json ./src/main",
+      // "useWSL": true,
+      },
   ]
 }
