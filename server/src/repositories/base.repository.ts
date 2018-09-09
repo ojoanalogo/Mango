@@ -1,34 +1,44 @@
-import { EntityManager, getManager, Repository, DeleteResult, UpdateResult, InsertResult, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, getManager, DeleteResult, UpdateResult, InsertResult, SelectQueryBuilder, Repository, DeepPartial } from 'typeorm';
 
 export abstract class BaseRepository<T> {
     private entityName: string;
     private prefix = process.env.DATABASE_PREFIX || 'mango_';
-    constructor(entityName: string) {
+    constructor(entityName?: string) {
         this.entityName = entityName;
     }
     /**
-     * Returns repository for the entity given
+     * Returns repository for the given entity
+     * @param entity entity name
      */
-    protected getRepository(entity: string = this.entityName): Repository<{}> {
+    public getRepository(entity?: string | Function | (new () => {})): Repository<T> {
         const man: EntityManager = getManager();
-        return man.getRepository(this.prefix + entity);
+        return this.entityName == null ?
+            man.getRepository(this.prefix + entity) : man.getRepository(this.prefix + this.entityName);
+    }
+    /**
+     * Returns repository for the given class
+     * @param entityClass entity class
+     */
+    public getRepoFromClass(entityClass?: Function | (new () => {})): Repository<{}> {
+        const man: EntityManager = getManager();
+        return man.getRepository(entityClass);
     }
     /**
      * Execute a repository function in asynchronous way
      * @param repositoryFunction a function
      */
-    public async executeRepositoryFunction(repositoryFunction: Promise<any>): Promise<any> {
+    private async executeRepositoryFunction(repositoryFunction: Promise<any>): Promise<any> {
         try {
             return await repositoryFunction;
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
     /**
     * Returns a Query builder
     */
-    public createQueryBuilder(entity?: string): SelectQueryBuilder<{}> {
-        return this.getRepository().createQueryBuilder(this.prefix + entity);
+    public createQueryBuilder(entity?: string): SelectQueryBuilder<T> {
+        return this.getRepository().createQueryBuilder(entity);
     }
     /**
      * Performs a raw SQL Query
@@ -42,21 +52,21 @@ export abstract class BaseRepository<T> {
      * Preloads an entity from a plain JS object
      * @param object simple JSON object
      */
-    public async preload(object: T): Promise<T> {
+    public async preload(object): Promise<T> {
         return await this.executeRepositoryFunction(this.getRepository().preload(object));
     }
     /**
      * Creates an instance of <T>
      * @param object Entity
      */
-    public async create(object: T): Promise<{}> {
+    public async create(object): Promise<{}> {
         return await this.getRepository().create(object);
     }
     /**
      * Inserts a new entity
      * @param object Entity
      */
-    public async insert(object: T): Promise<InsertResult> {
+    public async insert(object): Promise<InsertResult> {
         return await this.getRepository().insert(object);
     }
     /**
@@ -64,15 +74,15 @@ export abstract class BaseRepository<T> {
      * @param object Entity
      * @param data Data to be merged
      */
-    public async merge(object, ...data: any[]): Promise<{}> {
+    public async merge(object: T, data: DeepPartial<T>) {
         return await this.getRepository().merge(object, data);
     }
     /**
      * Checks if given entity's primary column is defined
      * @param object Entity
      */
-    public async hasId(object: T): Promise<boolean> {
-        return await this.getRepository().hasId(object);
+    public hasId(object: T): boolean {
+        return this.getRepository().hasId(object);
     }
     /**
      * Returns primary column property values of the given entity
@@ -85,7 +95,7 @@ export abstract class BaseRepository<T> {
      * Saves an object in the database
      * @param object Entity
      */
-    public save(object: T): Promise<T> {
+    public save(object): Promise<T> {
         return this.executeRepositoryFunction(this.getRepository().save(object));
     }
     /**

@@ -1,9 +1,10 @@
-import { Database } from './database/database';
-import { Container } from 'typedi';
-import { ErrorHandler } from './handlers/error.handler';
 import { useExpressServer } from 'routing-controllers';
+import { Container } from 'typedi';
 import { useContainer as useContainerRouting } from 'routing-controllers';
 import { useContainer as useContainerTypeORM } from 'typeorm';
+import { Database } from './database/database';
+import { ErrorHandler } from './handlers/error.handler';
+import { NotFoundMiddleware } from './middleware/not_found.middleware';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as path from 'path';
@@ -12,8 +13,8 @@ import * as helmet from 'helmet';
 import 'reflect-metadata'; // global, required by typeorm and typedi
 
 process.env.NODE_ENV === 'production' ?
-  dotenv.config({ path: path.join(__dirname, '../../.env') }) :
-  dotenv.config({ path: path.join(__dirname, '../../.example.env') });
+  dotenv.config({ path: path.join(__dirname, '../.env') }) :
+  dotenv.config({ path: path.join(__dirname, '../.example.env') });
 
 export class Server {
 
@@ -45,17 +46,17 @@ export class Server {
       extended: true
     }));
     // point static path to dist
-    this.app.use(express.static(path.join(__dirname, '../../dist/client/')));
-    // catch all other routes and return the index file
-    this.app.get('^(?!\/api).*$', (req, res) => {
-      res.sendFile(path.join(__dirname, '../../dist/client/index.html'));
-    });
+    this.app.use(express.static(path.join(__dirname, '../dist/client/')));
     // helmet middleware
     this.app.use(helmet());
     // spoof the stack used, just for fun
     this.app.use((req, res, next) => {
-      res.setHeader('X-Powered-By', 'Aura');
+      res.setHeader('X-Powered-By', 'Mango');
       next();
+    });
+    // catch all other routes and return the index file
+    this.app.get('^(?!\/api).*$', (req, res) => {
+      res.sendFile(path.join(__dirname, '../dist/client/index.html'));
     });
   }
 
@@ -67,9 +68,10 @@ export class Server {
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
-      middlewares: [ErrorHandler],
-      cors: true, // enable cors
-      defaultErrorHandler: false // disables error handler so we can use ours
+      middlewares: [ErrorHandler, NotFoundMiddleware],
+      cors: true,                     // enable cors
+      defaultErrorHandler: false,     // disables error handler so we can use ours
+      // authorizationChecker            // role checker
     });
   }
 

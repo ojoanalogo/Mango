@@ -1,10 +1,14 @@
-import { ExpressMiddlewareInterface, UnauthorizedError, ForbiddenError, NotAcceptableError } from 'routing-controllers';
+import { ExpressMiddlewareInterface, UnauthorizedError, NotAcceptableError, ForbiddenError } from 'routing-controllers';
 import { Response, Request } from 'express';
+import { AuthService } from '../services/auth.service';
+import { Service } from 'typedi';
 import * as jwt from 'jsonwebtoken';
 
+@Service()
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
-    private response: Response;
+    constructor(private authService: AuthService) { }
+
     /**
      * JWT Middleware
      * @param request request Object
@@ -12,7 +16,6 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
      * @param next proceeed to next operation
      */
     async use(request: Request, response: Response, next?: (err?: any) => any): Promise<any> {
-        this.response = response;
         // get auth header from request
         const authorizationHeader = request.get('authorization');
         if (authorizationHeader == null) {
@@ -29,20 +32,38 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         // test Regex for valid JWT token
         if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token)) {
             try {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                if (decoded) {
+                const jwtTokenDecoded = await this.authService.verifyToken(token);
+                // now we check if the decoded token belongs to the user
+                const user = jwtTokenDecoded['user'];
+                if (!user) {
+                    throw new NotAcceptableError('Invalid Token data');
+                }
+                const tokenDB = await this.authService.getToken(user.id);
+                if (tokenDB !== token) {
+                    // forbid request
+                    throw new UnauthorizedError('Token doesn\'t belongs to user');
+                } else {
                     // allow request
                     next();
-                } else {
-                   throw new ForbiddenError('Token Expired');
                 }
             } catch (error) {
-                // bad code
-                throw new UnauthorizedError('Invalid signature');
+                if (error instanceof jwt.TokenExpiredError) {
+                    throw new ForbiddenError('Token expired');
+                } else {
+                    throw error;
+                }
             }
         } else {
-            // bad code format
+            // bad code format, should not happen
             throw new NotAcceptableError('Invalid Token');
         }
     }
 }
+
+// export function AuthorizedFor(rank: string[]) {
+//     return (req: any, res: any, next?: (err?: any) => any): any => {
+//         res['someKey'] = rank;
+//         next();
+//     };
+// }
+

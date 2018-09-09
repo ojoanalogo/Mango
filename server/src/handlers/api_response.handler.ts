@@ -5,7 +5,6 @@ export class ApiResponse {
 
     private statusCode: HTTP_STATUS_CODE = 200;
     private data: any;
-    private stackTrace: any;
 
     constructor(private _response: Response) { }
     /**
@@ -14,14 +13,6 @@ export class ApiResponse {
      */
     public withData(data: any): ApiResponse {
         this.data = data;
-        return this;
-    }
-    /**
-     * If needed, add stacktrace to the
-     * @param stackTrace stackTrace
-     */
-    public withStackTrace(stackTrace: any) {
-        this.stackTrace = stackTrace;
         return this;
     }
     /**

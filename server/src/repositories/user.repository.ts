@@ -8,15 +8,18 @@ export class UserRepository extends BaseRepository<User> {
         super(table_name);
     }
 
-    getProfile(userEmail: string) {
-        return this.findOne({
-            email: userEmail,
-            join: {
-                alias: 'user',
-                leftJoinAndSelect: {
-                    profile: 'user.profile_picture'
-                }
-            }
-        });
+    /**
+     * Get user profile from database
+     * @param conditions conditions like email = :email
+     * @param conditionsValues value for conditions
+     */
+    async getProfile(conditions: string, conditionsValues: any): Promise<User> {
+        return await this.createQueryBuilder('user')
+            .select(['user.id', 'user.email', 'user.first_name',
+                'user.second_name', 'user.last_login', 'profile_picture.url', 'role.role'])
+            .leftJoin('user.role', 'role')
+            .leftJoin('user.profile_picture', 'profile_picture')
+            .where(conditions, conditionsValues)
+            .getOne();
     }
 }

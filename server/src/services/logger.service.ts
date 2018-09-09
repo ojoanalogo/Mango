@@ -1,11 +1,9 @@
-import { Service } from 'typedi';
 import { Format } from 'logform';
 import { Options } from 'morgan';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 
-@Service()
 export class Logger {
     private static _instance: Logger;
     private logger: winston.Logger;
@@ -23,7 +21,6 @@ export class Logger {
         this.setupLogger();
         this.setupConsoleStream();
     }
-
     /**
      * Returns Logger Instance if exists, create a logger instance if don't exists
      * @returns Logger instance
@@ -58,7 +55,7 @@ export class Logger {
                 transports: [
                     new DailyRotateFile({
                         level: 'error',
-                        filename: path.join(__dirname, `../../../logs/error-%DATE%.log`),
+                        filename: path.join(__dirname, `../../logs/error-%DATE%.log`),
                         format: this.logFormat,
 
                         datePattern: 'YYYY-MM-DD-HH',
@@ -67,7 +64,7 @@ export class Logger {
                         maxFiles: '31d'
                     }),
                     new DailyRotateFile({
-                        filename: path.join(__dirname, `../../../logs/combined-%DATE%.log`),
+                        filename: path.join(__dirname, `../../logs/combined-%DATE%.log`),
                         format: this.logFormat,
                         datePattern: 'YYYY-MM-DD-HH',
                         zippedArchive: true,
@@ -90,7 +87,7 @@ export class Logger {
                                 return info.message;
                             })
                         ),
-                        filename: path.join(__dirname, `../../../logs/http-%DATE%.log`),
+                        filename: path.join(__dirname, `../../logs/http-%DATE%.log`),
                         datePattern: 'YYYY-MM-DD-HH',
                         zippedArchive: true,
                         maxSize: '20m',

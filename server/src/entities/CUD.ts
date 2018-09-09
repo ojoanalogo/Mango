@@ -1,6 +1,7 @@
-import { PrimaryGeneratedColumn, CreateDateColumn, Column, UpdateDateColumn } from 'typeorm';
+import { CreateDateColumn, Column, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 export abstract class CUD {
+
     @PrimaryGeneratedColumn()
     id: number;
 

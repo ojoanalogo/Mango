@@ -16,6 +16,7 @@ export class Database {
     private reconnect_seconds = parseInt(process.env.DATABASE_RECONNECT_SECONDS);
     private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
     private connection: Connection;
+    private syncOption = process.env.NODE_ENV === 'production' ? false : true;
 
     /**
     * Setup database
@@ -33,8 +34,11 @@ export class Database {
                 entityPrefix: this.db_prefix,
                 entities: [__dirname + '../../entities/**/*{.js,.ts}'],
                 migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
-                synchronize: true,
-                logging: false
+                synchronize: this.syncOption,
+                logging: false,
+                cache: {
+                    duration: 1500
+                }
             });
             if (this.connection) {
                 log.info(`Connected to database (${this.db_host}|${this.db_name}) successfully`);
