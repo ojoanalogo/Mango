@@ -1,14 +1,31 @@
 import {
-    Body, Get, Delete, Post, Put, Res, UseBefore,
-    JsonController, Param, NotFoundError, BadRequestError, InternalServerError
+    Body, Get, Delete, Post, Res, UseBefore,
+    JsonController, Param, NotFoundError, BadRequestError, InternalServerError, Authorized, Patch, QueryParam, Req
 } from 'routing-controllers';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { Validator } from 'class-validator';
 import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { UserService } from '../services/user.service';
 import { LoggingMiddleware } from '../middleware/http_logging.middleware';
 import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
+import { RoleType } from '../entities/user/user_role.model';
+import { TokenRepository } from '../repositories/token.repository';
+
+@JsonController('/me')
+@UseBefore(LoggingMiddleware)
+export class MeController {
+    constructor(private userService: UserService, private tokenRepository: TokenRepository) { }
+    @Get()
+    @UseBefore(JWTMiddleware)
+    public async getProfile(@Req() request: Request, @Res() response: Response): Promise<Response> {
+        const userData = await this.tokenRepository.findUserByToken(request['token']);
+        const userProfile = await this.userService.getUserByEmail(userData.email);
+        return new ApiResponse(response)
+            .withData(userProfile)
+            .withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+}
 
 @JsonController('/users/')
 @UseBefore(LoggingMiddleware)
@@ -21,8 +38,9 @@ export class UserController {
      */
     @Get()
     @UseBefore(JWTMiddleware)
-    public async getUsers(@Res() response: Response): Promise<Response> {
-        const userData = await this.userService.findAll();
+    @Authorized([RoleType.DEVELOPER])
+    public async getUsers(@Res() response: Response, @QueryParam('page') page = 0): Promise<Response> {
+        const userData = await this.userService.findAll(page);
         return new ApiResponse(response)
             .withData(userData)
             .withStatusCode(HTTP_STATUS_CODE.OK).build();
@@ -81,6 +99,7 @@ export class UserController {
      */
     @Delete(':id')
     @UseBefore(JWTMiddleware)
+    @Authorized([RoleType.DEVELOPER])
     public async deleteUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
         const userDB = await this.userService.getUserByID(id);
         if (!userDB) {
@@ -102,13 +121,19 @@ export class UserController {
      * @param response response Object
      * @param user user Object
      */
-    @Put()
+    @Patch()
     @UseBefore(JWTMiddleware)
     public async updateUserByID(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
         const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {
             throw new NotFoundError('User not found');
         } else {
+            if (userDB.email === user.email) {
+                return new ApiResponse(response)
+                    .withData('User already registered')
+                    .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
+                    .build();
+            }
             await this.userService.updateUser(user);
             return new ApiResponse(response)
                 .withData('User data saved')

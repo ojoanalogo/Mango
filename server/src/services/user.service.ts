@@ -28,10 +28,17 @@ export class UserService {
     /**
      * Returns users from database
      */
-    public async findAll(): Promise<User[]> {
+    public async findAll(page: number = 0): Promise<User[]> {
         try {
+            let toSkip: number = page * 100;
+            if (page === 1) {
+                toSkip = 0;
+            }
             const users = await
-                this.userRepository.createQueryBuilder().where('is_active= :is_active', { is_active: 1 }).getMany();
+                this.userRepository.createQueryBuilder().where('is_active= :is_active', { is_active: 1 })
+                    .skip(toSkip)
+                    .take(100)
+                    .getMany();
             return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
         } catch (error) {
             throw new Error(error);
@@ -84,14 +91,13 @@ export class UserService {
      */
     public async loginUser(user: User): Promise<any> {
         try {
-            console.log(user);
             const userDB = await this.userRepository.findOne({ email: user.email });
             // compares user password from login request with the one found associated to the email in the database (user Model)
             const rs = await userDB.comparePassword(user.password);
             if (rs) {
-                const tokenData = await this.authService.createJWT(userDB);
                 await this.userRepository.update(userDB.id, { last_login: new Date() });
                 // update token in repo
+                const tokenData = await this.authService.createJWT(userDB);
                 const tokenDB = await this.tokenRepository.findOne({ userId: userDB.id });
                 await this.tokenRepository.update(tokenDB.id, { token: tokenData.jwt });
                 // return user data with tokens (JWT & Refresh)
@@ -115,7 +121,7 @@ export class UserService {
         try {
             const userDB = await this.userRepository.findOne({ id: user.id });
             const currentPassword = userDB.password;
-            if (currentPassword !== user.password) {
+            if (user.password && currentPassword !== user.password) {
                 await user.updatePassword();
                 log.info(`User (ID: ${userDB.id}) has updated his password`);
             }
@@ -125,20 +131,6 @@ export class UserService {
         } catch (error) {
             throw new Error(error);
         }
-    }
-
-    /**
-     * Returns current token associated with user
-     * @param user user object
-     */
-    public async getToken(user: User) {
-        const tokenData = await this.userRepository
-            .createQueryBuilder('user')
-            .select(['user.id', 'token.token'])
-            .innerJoin('user.token', 'token')
-            .where('user.email = :email', { email: user.email })
-            .getOne();
-        return tokenData;
     }
 
     /**

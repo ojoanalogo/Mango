@@ -23,7 +23,12 @@ export class AuthService {
                 },
             }, process.env.JWT_SECRET, { expiresIn: '3d' });
             const refreshToken = await jwt.sign(
-                { iat: moment().add(15, 'minutes').unix() }
+                {
+                    user: {
+                        id: user.id
+                    },
+                    iat: moment().add(15, 'minutes').unix()
+                }
                 , process.env.JWT_SECRET, { expiresIn: '7d' });
             return { 'jwt': token, 'refresh': refreshToken };
         } catch (error) {
