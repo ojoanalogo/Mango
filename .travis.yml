@@ -4,3 +4,4 @@ branches:
       - master
 node_js:
  - "node"
+before_install: cd server
