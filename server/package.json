@@ -39,6 +39,7 @@
         "cors": "^2.8.4",
         "dotenv": "^6.0.0",
         "express": "^4.16.3",
+        "express-http-context": "^1.1.0",
         "helmet": "^3.13.0",
         "jsonwebtoken": "^8.3.0",
         "moment": "^2.22.2",
@@ -49,6 +50,7 @@
         "routing-controllers": "^0.7.7",
         "typedi": "^0.8.0",
         "typeorm": "0.2.7",
+        "uuid": "^3.3.2",
         "winston": "^3.1.0",
         "winston-daily-rotate-file": "3.1.3"
     },

@@ -10,6 +10,9 @@ import * as express from 'express';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as helmet from 'helmet';
+import * as httpContext from 'express-http-context';
+import * as uuid from 'uuid';
+
 import 'reflect-metadata'; // global, required by typeorm and typedi
 import { authorizationChecker } from './services/authorization_checker.service';
 
@@ -46,6 +49,12 @@ export class Server {
     this.app.use(bodyParser.urlencoded({
       extended: true
     }));
+    // support for UUID and route context
+    this.app.use(httpContext.middleware);
+    this.app.use((req, res, next) => {
+      httpContext.set('reqId', uuid.v1());
+      next();
+    });
     // point static path to dist
     this.app.use(express.static(path.join(__dirname, '../dist/client/')));
     // helmet middleware

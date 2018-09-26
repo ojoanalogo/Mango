@@ -3,6 +3,7 @@ import { Options } from 'morgan';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
+import * as httpContext from 'express-http-context';
 
 export class Logger {
     private static _instance: Logger;
@@ -84,7 +85,9 @@ export class Logger {
                         format: winston.format.combine(
                             winston.format.uncolorize(),
                             winston.format.printf((info) => {
-                                return info.message;
+                                const reqId = httpContext.get('reqId');
+                                const message = reqId ? '(' + reqId + ')' + info.message : info.message;
+                                return message;
                             })
                         ),
                         filename: path.join(__dirname, `../../logs/http-%DATE%.log`),
@@ -114,8 +117,10 @@ export class Logger {
                         const {
                             timestamp, level, message, ...args
                         } = info;
+                        const reqId = httpContext.get('reqId');
+                        const msgNew = reqId ? '(' + reqId + ')' + info.message : info.message;
                         const ts = timestamp.slice(0, 19).replace('T', ' ');
-                        return `${ts} ${level}: ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+                        return `${ts} ${level}: ${msgNew} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
                     })
                 )
             };
