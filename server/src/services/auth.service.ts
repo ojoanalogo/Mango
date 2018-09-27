@@ -21,7 +21,7 @@ export class AuthService {
                 user: {
                     id: user.id
                 },
-            }, process.env.JWT_SECRET, { expiresIn: '3d' });
+            }, process.env.JWT_SECRET, { expiresIn: '15m' });
             const refreshToken = await jwt.sign(
                 {
                     user: {
@@ -29,8 +29,8 @@ export class AuthService {
                     },
                     iat: moment().add(15, 'minutes').unix()
                 }
-                , process.env.JWT_SECRET, { expiresIn: '7d' });
-            return { 'jwt': token, 'refresh': refreshToken };
+                , process.env.JWT_SECRET, { expiresIn: '15d' });
+            return { 'token': token, 'refresh_token': refreshToken };
         } catch (error) {
             throw error;
         }

@@ -1,4 +1,7 @@
-import { ExpressMiddlewareInterface, UnauthorizedError, NotAcceptableError, ForbiddenError } from 'routing-controllers';
+import {
+    ExpressMiddlewareInterface, UnauthorizedError,
+    NotAcceptableError, ForbiddenError, InternalServerError
+} from 'routing-controllers';
 import { Response, Request } from 'express';
 import { AuthService } from '../services/auth.service';
 import { Service } from 'typedi';
@@ -38,22 +41,27 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                 if (!user) {
                     throw new NotAcceptableError('Invalid Token data');
                 }
-                const tokenDB = await this.authService.getToken(user.id);
-                if (tokenDB !== token) {
-                    // forbid request
-                    throw new UnauthorizedError('Token doesn\'t belongs to user');
-                } else {
-                    // bind token to request object
-                    request['token'] = token;
-                    // allow request
-                    next();
-                }
+                // bind token to request object
+                request['token'] = token;
+                // allow request
+                next();
+                // const tokenDB = await this.authService.getToken(user.id);
+                // if (tokenDB !== token) {
+                //     // forbid request
+                //     throw new UnauthorizedError('Token doesn\'t belongs to user');
+                // } else {
+                //     // bind token to request object
+                //     request['token'] = token;
+                //     // allow request
+                //     next();
+                // }
             } catch (error) {
                 if (error instanceof jwt.TokenExpiredError) {
                     throw new ForbiddenError('Token expired');
-                } else {
-                    throw error;
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    throw new InternalServerError('JWT error');
                 }
+                throw error;
             }
         } else {
             // bad code format, should not happen

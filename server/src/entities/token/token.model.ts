@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, JoinColumn, UpdateDateColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 import { User } from '../user/user.model';
 import { CUD } from '../CUD';
 
@@ -7,9 +7,15 @@ export const table_name = 'tokens';
 export class Token extends CUD {
 
     @Column()
-    token: string;
+    refresh_token: string;
 
-    @OneToOne(type => User, user => user.token, {
+    @CreateDateColumn()
+    last_time_used: Date;
+
+    @Column()
+    user_agent: string;
+
+    @ManyToOne(type => User, user => user.refresh_token, {
         onDelete: 'CASCADE',
         nullable: false
     })

@@ -1,4 +1,4 @@
-import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, BeforeUpdate } from 'typeorm';
+import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, BeforeUpdate, OneToMany } from 'typeorm';
 import { Token } from '../token/token.model';
 import { ProfilePicture } from './user_profile_picture.model';
 import { Role } from './user_role.model';
@@ -27,8 +27,8 @@ export class User extends CUD {
     @UpdateDateColumn()
     last_login: Date;
 
-    @OneToOne(type => Token, token => token.user)
-    token: Token;
+    @OneToMany(type => Token, token => token.user)
+    refresh_token: Token;
 
     @OneToOne(type => Role, role => role.user)
     role: Role;

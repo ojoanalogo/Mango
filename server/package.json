@@ -64,6 +64,7 @@
         "@types/morgan": "^1.7.35",
         "@types/multer": "^1.3.7",
         "@types/node": "^8.10.25",
+        "@types/uuid": "^3.4.4",
         "concurrently": "^3.6.1",
         "cross-env": "^5.2.0",
         "jest": "^23.5.0",

@@ -53,6 +53,8 @@ export class Server {
     this.app.use(httpContext.middleware);
     this.app.use((req, res, next) => {
       httpContext.set('reqId', uuid.v1());
+      httpContext.set('agent', req.headers['user-agent']);
+      httpContext.set('ip', req.ip);
       next();
     });
     // point static path to dist
