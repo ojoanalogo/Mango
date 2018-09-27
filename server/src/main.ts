@@ -1,5 +1,5 @@
 import { Server } from './server';
-import { Logger } from './services/logger.service';
+import { Logger } from './utils/logger.util';
 const log = Logger.getInstance().getLogger();
 
 class Main extends Server {

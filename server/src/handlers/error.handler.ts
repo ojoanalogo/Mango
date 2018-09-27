@@ -5,7 +5,7 @@ import {
 } from 'routing-controllers';
 import { HTTP_STATUS_CODE } from './api_response.handler';
 import { ApiError } from './api_error.handler';
-import { Logger } from '../services/logger.service';
+import { Logger } from '../utils/logger.util';
 const log = Logger.getInstance().getLogger();
 
 @Middleware({ type: 'after' })

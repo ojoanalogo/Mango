@@ -3,7 +3,6 @@ import { User } from '../entities/user/user.model';
 import { TokenRepository } from '../repositories/token.repository';
 import { NotFoundError } from 'routing-controllers';
 import * as jwt from 'jsonwebtoken';
-import * as moment from 'moment';
 
 @Service()
 export class AuthService {
@@ -22,15 +21,7 @@ export class AuthService {
                     id: user.id
                 },
             }, process.env.JWT_SECRET, { expiresIn: '15m' });
-            const refreshToken = await jwt.sign(
-                {
-                    user: {
-                        id: user.id
-                    },
-                    iat: moment().add(15, 'minutes').unix()
-                }
-                , process.env.JWT_SECRET, { expiresIn: '15d' });
-            return { 'token': token, 'refresh_token': refreshToken };
+            return token;
         } catch (error) {
             throw error;
         }

@@ -28,7 +28,7 @@ export class User extends CUD {
     last_login: Date;
 
     @OneToMany(type => Token, token => token.user)
-    refresh_token: Token;
+    token: Token;
 
     @OneToOne(type => Role, role => role.user)
     role: Role;

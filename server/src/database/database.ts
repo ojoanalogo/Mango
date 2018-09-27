@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { Connection, createConnection } from 'typeorm';
-import { Logger } from '../services/logger.service';
+import { Logger } from '../utils/logger.util';
 const log = Logger.getInstance().getLogger();
 @Service()
 export class Database {

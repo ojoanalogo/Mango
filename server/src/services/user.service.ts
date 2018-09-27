@@ -9,7 +9,7 @@ import { Role, RoleType } from '../entities/user/user_role.model';
 import { Token } from '../entities/token/token.model';
 import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
-import { Logger } from './logger.service';
+import { Logger } from '../utils/logger.util';
 import { AuthService } from './auth.service';
 import * as httpContext from 'express-http-context';
 
@@ -59,13 +59,13 @@ export class UserService {
             const userInstance = await this.userRepository.save(userReq);
 
             // create JWT tokens
-            const tokenData = await this.authService.createJWT(userReq);
+            const jwtToken = await this.authService.createJWT(userReq);
 
             // create JWT entity instance
             const userAgent = httpContext.get('useragent');
             const token = new Token();
-            token.refresh_token = tokenData.refresh_token;
-            token.user_agent = userAgent;
+            token.token = jwtToken;
+            token.agent = userAgent;
             token.last_time_used = new Date();
             token.user = userInstance; // asign relationship
             // now we save the token in our tokenrepository
@@ -86,7 +86,7 @@ export class UserService {
 
             log.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
             // pass full JWT tokens
-            userInstance['tokenData'] = tokenData;
+            userInstance.token = jwtToken;
             // return user model object
             return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
         } catch (error) {

@@ -1,6 +1,6 @@
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { Response, Request } from 'express';
-import { morganOption } from '../services/logger.service';
+import { morganOption } from '../utils/logger.util';
 import * as morgan from 'morgan';
 
 export class LoggingMiddleware implements ExpressMiddlewareInterface {
