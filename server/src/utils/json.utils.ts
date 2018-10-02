@@ -4,7 +4,7 @@ import { Service } from 'typedi';
 export abstract class JSONUtils {
 
     public commonUserProperties =
-    ['user_role', 'registered_at', 'email_validated', 'id', 'email', 'first_name', 'second_name', 'tokenData'];
+    ['user_role', 'registered_at', 'email_validated', 'id', 'email', 'first_name', 'second_name', 'token'];
 
     /**
      * This function filters keys supplied in parameter from JSON object

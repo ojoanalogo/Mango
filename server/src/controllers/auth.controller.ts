@@ -41,17 +41,4 @@ export class AuthController {
             throw new UnauthorizedError('Wrong password');
         }
     }
-
-    /**
-     * Request a new JWT token data
-     * @param response response Object
-     * @param tokenData token data object
-     */
-    @Post('refresh')
-    public async refreshToken(@Res() response: Response, @Body({ required: true }) tokenData: any) {
-        const validator = new Validator();
-        if (!validator.isEmpty(tokenData.token) || (!validator.isEmpty(tokenData.refreshToken))) {
-            throw new BadRequestError('Token data empty');
-        }
-    }
 }

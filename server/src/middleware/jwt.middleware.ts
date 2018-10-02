@@ -1,15 +1,17 @@
 import {
     ExpressMiddlewareInterface, UnauthorizedError,
-    NotAcceptableError, ForbiddenError, InternalServerError
+    NotAcceptableError, InternalServerError, ForbiddenError
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { AuthService } from '../services/auth.service';
 import { Service } from 'typedi';
+import * as moment from 'moment';
 import * as jwt from 'jsonwebtoken';
 
 @Service()
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
+    token: string;
     constructor(private authService: AuthService) { }
 
     /**
@@ -34,6 +36,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         const token = tokenParts[1];
         // test Regex for valid JWT token
         if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token)) {
+            this.token = token;
             try {
                 const jwtTokenDecoded = await this.authService.verifyToken(token);
                 // now we check if the decoded token belongs to the user
@@ -45,19 +48,23 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                 request['token'] = token;
                 // allow request
                 next();
-                // const tokenDB = await this.authService.getToken(user.id);
-                // if (tokenDB !== token) {
-                //     // forbid request
-                //     throw new UnauthorizedError('Token doesn\'t belongs to user');
-                // } else {
-                //     // bind token to request object
-                //     request['token'] = token;
-                //     // allow request
-                //     next();
-                // }
             } catch (error) {
                 if (error instanceof jwt.TokenExpiredError) {
-                    throw new ForbiddenError('Token expired');
+                    const decoded = await this.authService.decodeToken(this.token);
+                    const exp = moment(decoded.exp * 1000);
+                    const dif = exp.diff(new Date(), 'days');
+                    console.log(dif);
+                    if (dif >= -7) {
+                        console.log('is valid to refresh');
+                        // this.authService.createJWT()
+                        response.setHeader('X-Auth-Token', 'your new shiny token');
+                        // bind token to request object
+                        request['token'] = token;
+                        next();
+                        return;
+                    } else {
+                        throw new ForbiddenError('Token expired');
+                    }
                 } else if (error instanceof jwt.JsonWebTokenError) {
                     throw new InternalServerError('JWT error');
                 }

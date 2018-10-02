@@ -1,22 +1,24 @@
-import { Entity, Column, JoinColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../user/user.model';
-import { CUD } from '../CUD';
 
 export const table_name = 'tokens';
 @Entity(table_name)
-export class Token extends CUD {
+export class Token {
+
+    @PrimaryGeneratedColumn()
+    id: number;
 
     @Column()
     token: string;
 
+    @Column()
+    last_time_used: Date;
+
     @CreateDateColumn()
     issued_at: Date;
 
-    @Column()
-    expiration: Date;
-
-    @CreateDateColumn()
-    last_time_used: Date;
+    @UpdateDateColumn()
+    last_time_refreshed: Date;
 
     @Column()
     agent: string;

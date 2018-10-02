@@ -57,36 +57,23 @@ export class UserService {
             user.email = userReq.email;
             user.password = userReq.password;
             const userInstance = await this.userRepository.save(userReq);
-
             // create JWT tokens
-            const jwtToken = await this.authService.createJWT(userReq);
-
-            // create JWT entity instance
-            const userAgent = httpContext.get('useragent');
-            const token = new Token();
-            token.token = jwtToken;
-            token.agent = userAgent;
-            token.last_time_used = new Date();
-            token.user = userInstance; // asign relationship
-            // now we save the token in our tokenrepository
-            await this.tokenRepository.save(token);
-
+            const jwtToken = await this.authService.createJWT(userInstance);
             // create profile picture entity
             const profilePicture = new ProfilePicture();
             profilePicture.user = userInstance;
             // save profile picture in profile picture repository
             await this.profilePictureRepository.save(profilePicture);
-
             // now assign default Role
             const role = new Role();
             role.role = RoleType.USER;
             role.user = userInstance;
             // save role in role repository
             await this.rolesRepository.save(role);
+            // pass full JWT tokens
+            userInstance['token'] = jwtToken;
 
             log.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
-            // pass full JWT tokens
-            userInstance.token = jwtToken;
             // return user model object
             return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
         } catch (error) {
@@ -106,11 +93,9 @@ export class UserService {
             if (rs) {
                 await this.userRepository.update(userDB.id, { last_login: new Date() });
                 // update token in repo
-                const tokenData = await this.authService.createJWT(userDB);
-                const tokenDB = await this.tokenRepository.findOne({ userId: userDB.id });
-                await this.tokenRepository.update(tokenDB.id, { token: tokenData.jwt });
-                // return user data with tokens (JWT & Refresh)
-                userDB['tokenData'] = tokenData;
+                const jwtToken = await this.authService.createJWT(userDB);
+                // return user data with token
+                userDB['token'] = jwtToken;
                 // return user model object
                 return this.jsonUtils.filterDataFromObject(userDB, this.jsonUtils.commonUserProperties);
             } else {
