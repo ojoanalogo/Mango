@@ -1,17 +1,14 @@
 import { Service, Inject } from 'typedi';
 import { UpdateResult, DeleteResult } from 'typeorm';
 import { UserRepository } from '../repositories/user.repository';
-import { TokenRepository } from '../repositories/token.repository';
 import { RolesRepository } from '../repositories/roles.repository';
 import { ProfilePictureRepository } from '../repositories/profile_picture.repository';
 import { User } from '../entities/user/user.model';
 import { Role, RoleType } from '../entities/user/user_role.model';
-import { Token } from '../entities/token/token.model';
 import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger } from '../utils/logger.util';
 import { AuthService } from './auth.service';
-import * as httpContext from 'express-http-context';
 
 const log = Logger.getInstance().getLogger();
 @Service()
@@ -23,7 +20,6 @@ export class UserService {
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
         private rolesRepository: RolesRepository,
-        private tokenRepository: TokenRepository,
         private jsonUtils: JSONUtils) { }
 
     /**
@@ -71,8 +67,7 @@ export class UserService {
             // save role in role repository
             await this.rolesRepository.save(role);
             // pass full JWT tokens
-            userInstance['token'] = jwtToken;
-
+            userInstance.token = jwtToken;
             log.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
             // return user model object
             return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
@@ -95,7 +90,7 @@ export class UserService {
                 // update token in repo
                 const jwtToken = await this.authService.createJWT(userDB);
                 // return user data with token
-                userDB['token'] = jwtToken;
+                userDB.token = jwtToken;
                 // return user model object
                 return this.jsonUtils.filterDataFromObject(userDB, this.jsonUtils.commonUserProperties);
             } else {

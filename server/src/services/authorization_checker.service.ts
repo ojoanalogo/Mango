@@ -1,8 +1,8 @@
-import { Action, UnauthorizedError, ForbiddenError } from 'routing-controllers';
+import { Action, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { Request } from 'express';
-import { TokenRepository } from '../repositories/token.repository';
 import { RolesRepository } from '../repositories/roles.repository';
 import { RoleType, getWeight } from '../entities/user/user_role.model';
+import { UserRepository } from '../repositories/user.repository';
 
 /**
  * Checks if user is authorized to access route
@@ -11,18 +11,17 @@ import { RoleType, getWeight } from '../entities/user/user_role.model';
  */
 export async function authorizationChecker(action: Action, roles: RoleType[]) {
     const request: Request = action.request;
-    const token = request['token'];
-    if (!token) {
-        throw new UnauthorizedError('Authorization required');
-    }
+    const user = request['user'];
     try {
-        const userDB = await new TokenRepository().findUserByToken(token);
+        const userDB = await new UserRepository().findOne({ id: user.id });
+        if (!userDB) {
+            throw new NotFoundError('User not found');
+        }
         const userRoleDB = await new RolesRepository().createQueryBuilder('rol')
             .leftJoin('rol.user', 'user')
             .where('rol.user = :user', { user: userDB.id }).getOne();
         const userRole = userRoleDB.role;
-
-        if (!roles.length && userDB) {
+        if (!roles.length && userRoleDB) {
             return true;
         }
         const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));

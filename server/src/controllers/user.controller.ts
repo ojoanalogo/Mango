@@ -41,7 +41,7 @@ export class UserController {
      */
     @Get()
     @UseBefore(JWTMiddleware)
-    @Authorized([RoleType.DEVELOPER])
+    @Authorized([RoleType.USER])
     public async getUsers(@Res() response: Response, @QueryParam('page') page = 0): Promise<Response> {
         const userData = await this.userService.findAll(page);
         return new ApiResponse(response)

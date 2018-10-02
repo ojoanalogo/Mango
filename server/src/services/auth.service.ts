@@ -1,15 +1,16 @@
 import { Service } from 'typedi';
-import { ForbiddenError } from 'routing-controllers';
+import { NotFoundError } from 'routing-controllers';
 import { User } from '../entities/user/user.model';
 import { Token } from '../entities/token/token.model';
 import { TokenRepository } from '../repositories/token.repository';
+import { UserRepository } from '../repositories/user.repository';
 import * as jwt from 'jsonwebtoken';
 import * as httpContext from 'express-http-context';
 
 @Service()
 export class AuthService {
 
-    constructor(private tokenRepository: TokenRepository) { }
+    constructor(private tokenRepository: TokenRepository, private userRepository: UserRepository) { }
 
     /**
      * Create a JWT token for specified user
@@ -17,13 +18,13 @@ export class AuthService {
      * @param refresh should be refresh the token?
      * @returns {Promise<any>} promise with the result of the operation
      */
-    public async createJWT(user: User, refresh?: boolean): Promise<string> {
+    public async createJWT(user: User, refresh?: boolean): Promise<any> {
         try {
             const token = await jwt.sign({
                 user: {
                     id: user.id
                 },
-            }, process.env.JWT_SECRET, { expiresIn: '15m' });
+            }, process.env.JWT_SECRET, { expiresIn: '1m' });
             if (!refresh) {
                 // create JWT entity instance to store in database
                 const userAgent = httpContext.get('useragent');
@@ -41,14 +42,17 @@ export class AuthService {
         }
     }
 
-    public async refreshToken(token: string): Promise<string> {
+    public async refreshToken(token: string, userID: number): Promise<any> {
         try {
-            const userDB = await this.tokenRepository.findUserByToken(token);
+            const userDB = await this.userRepository.findOne({ id: userID });
+            if (!userDB) {
+                throw new NotFoundError('User not found, can\'t refresh token');
+            }
             const newToken = await this.createJWT(userDB, true);
             await this.tokenRepository.update({ token: token }, { token: newToken });
             return newToken;
         } catch (error) {
-            throw new ForbiddenError('Not valid Token');
+            throw error;
         }
     }
 

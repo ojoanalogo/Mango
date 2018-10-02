@@ -1,6 +1,6 @@
 import {
     ExpressMiddlewareInterface, UnauthorizedError,
-    NotAcceptableError, InternalServerError, ForbiddenError
+    NotAcceptableError, ForbiddenError
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { AuthService } from '../services/auth.service';
@@ -36,7 +36,6 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         const token = tokenParts[1];
         // test Regex for valid JWT token
         if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token) && /[Bb]earer/.test(schema)) {
-            this.token = token;
             try {
                 const jwtTokenDecoded = await this.authService.verifyToken(token);
                 // now we check if the decoded token belongs to the user
@@ -45,28 +44,32 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                     throw new NotAcceptableError('Invalid Token data');
                 }
                 // bind token to request object
-                request['token'] = token;
+                request['user'] = user;
                 // allow request
                 next();
             } catch (error) {
                 if (error instanceof jwt.TokenExpiredError) {
-                    const decoded = await this.authService.decodeToken(this.token);
+                    const decoded = await this.authService.decodeToken(token);
                     const exp = moment(decoded.exp * 1000);
                     const dif = exp.diff(new Date(), 'days');
                     if (dif >= -7) {
                         console.log('Refreshing token');
-                        const newToken = await this.authService.refreshToken(token);
+                        const user = decoded['user'];
+                        if (!user) {
+                            throw new NotAcceptableError('Invalid Token data');
+                        }
+                        const newToken = await this.authService.refreshToken(token, user.id);
                         // send the new shiny token
                         response.setHeader('X-Auth-Token', newToken);
                         // bind token to request object
-                        request['token'] = newToken;
+                        request['user'] = user;
                         next();
                         return;
                     } else {
                         throw new ForbiddenError('Token expired');
                     }
                 } else if (error instanceof jwt.JsonWebTokenError) {
-                    throw new InternalServerError('JWT error');
+                    throw new NotAcceptableError('Invalid Token');
                 }
                 throw error;
             }
