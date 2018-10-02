@@ -8,18 +8,6 @@ export class TokenRepository extends BaseRepository<Token> {
     constructor() {
         super(table_name);
     }
-
-    /**
-     * Returns token associated to user based on ID
-     * @param userID user ID
-     */
-    async getToken(userID: number) {
-        return await this.createQueryBuilder('token')
-            .innerJoin('token.user', 'user')
-            .where('user.id = :id', { id: userID })
-            .select('token.token')
-            .getOne();
-    }
     /**
      * Returns user associated to token
      * @param token Token to look for

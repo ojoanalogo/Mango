@@ -20,6 +20,9 @@ export class MeController {
     @UseBefore(JWTMiddleware)
     public async getProfile(@Req() request: Request, @Res() response: Response): Promise<Response> {
         const userData = await this.tokenRepository.findUserByToken(request['token']);
+        if (!userData) {
+            throw new NotFoundError('Cannot find user associated to token');
+        }
         const userProfile = await this.userService.getUserByEmail(userData.email);
         return new ApiResponse(response)
             .withData(userProfile)

@@ -35,7 +35,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         const schema = tokenParts[0]; // should be "Bearer"
         const token = tokenParts[1];
         // test Regex for valid JWT token
-        if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token)) {
+        if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token) && /[Bb]earer/.test(schema)) {
             this.token = token;
             try {
                 const jwtTokenDecoded = await this.authService.verifyToken(token);
@@ -53,13 +53,13 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                     const decoded = await this.authService.decodeToken(this.token);
                     const exp = moment(decoded.exp * 1000);
                     const dif = exp.diff(new Date(), 'days');
-                    console.log(dif);
                     if (dif >= -7) {
-                        console.log('is valid to refresh');
-                        // this.authService.createJWT()
-                        response.setHeader('X-Auth-Token', 'your new shiny token');
+                        console.log('Refreshing token');
+                        const newToken = await this.authService.refreshToken(token);
+                        // send the new shiny token
+                        response.setHeader('X-Auth-Token', newToken);
                         // bind token to request object
-                        request['token'] = token;
+                        request['token'] = newToken;
                         next();
                         return;
                     } else {

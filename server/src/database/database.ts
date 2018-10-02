@@ -37,7 +37,7 @@ export class Database {
                 synchronize: this.syncOption,
                 logging: false,
                 cache: {
-                    duration: 1500
+                    duration: 2000
                 }
             });
             if (this.connection) {
