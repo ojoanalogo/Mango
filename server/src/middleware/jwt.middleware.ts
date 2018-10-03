@@ -1,17 +1,19 @@
+import { Service } from 'typedi';
 import {
     ExpressMiddlewareInterface, UnauthorizedError,
     NotAcceptableError, ForbiddenError
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { AuthService } from '../services/auth.service';
-import { Service } from 'typedi';
+import { Logger } from '../utils/logger.util';
 import * as moment from 'moment';
 import * as jwt from 'jsonwebtoken';
+
+const log = Logger.getInstance().getLogger();
 
 @Service()
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
-    token: string;
     constructor(private authService: AuthService) { }
 
     /**
@@ -34,6 +36,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         }
         const schema = tokenParts[0]; // should be "Bearer"
         const token = tokenParts[1];
+        request['token'] = token;
         // test Regex for valid JWT token
         if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token) && /[Bb]earer/.test(schema)) {
             try {
@@ -53,14 +56,15 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                     const exp = moment(decoded.exp * 1000);
                     const dif = exp.diff(new Date(), 'days');
                     if (dif >= -7) {
-                        console.log('Refreshing token');
                         const user = decoded['user'];
                         if (!user) {
                             throw new NotAcceptableError('Invalid Token data');
                         }
-                        const newToken = await this.authService.refreshToken(token, user.id);
+                        log.info('Refreshing token for user ID (' + user.id + ')');
+                        const newToken = await this.authService.refreshToken(token);
                         // send the new shiny token
                         response.setHeader('X-Auth-Token', newToken);
+                        request['token'] = newToken;
                         // bind token to request object
                         request['user'] = user;
                         next();

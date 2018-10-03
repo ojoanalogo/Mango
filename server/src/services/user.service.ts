@@ -98,7 +98,7 @@ export class UserService {
                 return false;
             }
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 

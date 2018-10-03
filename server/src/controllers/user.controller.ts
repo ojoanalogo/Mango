@@ -19,11 +19,11 @@ export class MeController {
     @Get()
     @UseBefore(JWTMiddleware)
     public async getProfile(@Req() request: Request, @Res() response: Response): Promise<Response> {
-        const userData = await this.tokenRepository.findUserByToken(request['token']);
-        if (!userData) {
+        const tokenData = await this.tokenRepository.getTokenWithUser(request['token']);
+        if (!tokenData) {
             throw new NotFoundError('Cannot find user associated to token');
         }
-        const userProfile = await this.userService.getUserByEmail(userData.email);
+        const userProfile = await this.userService.getUserByEmail(tokenData.user.email);
         return new ApiResponse(response)
             .withData(userProfile)
             .withStatusCode(HTTP_STATUS_CODE.OK).build();
@@ -41,7 +41,7 @@ export class UserController {
      */
     @Get()
     @UseBefore(JWTMiddleware)
-    @Authorized([RoleType.USER])
+    @Authorized([RoleType.DEVELOPER])
     public async getUsers(@Res() response: Response, @QueryParam('page') page = 0): Promise<Response> {
         const userData = await this.userService.findAll(page);
         return new ApiResponse(response)

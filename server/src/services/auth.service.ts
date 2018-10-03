@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { NotFoundError } from 'routing-controllers';
+import { UnauthorizedError } from 'routing-controllers';
 import { User } from '../entities/user/user.model';
 import { Token } from '../entities/token/token.model';
 import { TokenRepository } from '../repositories/token.repository';
@@ -31,25 +31,24 @@ export class AuthService {
                 const tokenInstance = new Token();
                 tokenInstance.token = token;
                 tokenInstance.agent = userAgent;
-                tokenInstance.last_time_used = new Date();
                 tokenInstance.user = user; // asign relationship
                 // now we save the token in our tokenrepository
                 await this.tokenRepository.save(tokenInstance);
             }
             return token;
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 
-    public async refreshToken(token: string, userID: number): Promise<any> {
+    public async refreshToken(token: string): Promise<any> {
         try {
-            const userDB = await this.userRepository.findOne({ id: userID });
-            if (!userDB) {
-                throw new NotFoundError('User not found, can\'t refresh token');
+            const tokenDB = await this.tokenRepository.getTokenWithUser(token);
+            if (!tokenDB) {
+                throw new UnauthorizedError('Token no longer valid (associated user not found)');
             }
-            const newToken = await this.createJWT(userDB, true);
-            await this.tokenRepository.update({ token: token }, { token: newToken });
+            const newToken = await this.createJWT(tokenDB.user, true);
+            await this.tokenRepository.update({ token: token }, { token: newToken, last_time_refreshed: new Date() });
             return newToken;
         } catch (error) {
             throw error;

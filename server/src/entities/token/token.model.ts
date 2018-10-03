@@ -11,9 +11,6 @@ export class Token {
     @Column()
     token: string;
 
-    @Column()
-    last_time_used: Date;
-
     @CreateDateColumn()
     issued_at: Date;
 
