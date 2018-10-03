@@ -24,7 +24,7 @@ export class AuthService {
                 user: {
                     id: user.id
                 },
-            }, process.env.JWT_SECRET, { expiresIn: '1m' });
+            }, process.env.JWT_SECRET, { expiresIn: '30m' });
             if (!refresh) {
                 // create JWT entity instance to store in database
                 const userAgent = httpContext.get('useragent');

@@ -1,6 +1,6 @@
 import {
     Body, Get, Delete, Post, Res, UseBefore,
-    JsonController, Param, NotFoundError, BadRequestError, InternalServerError, Authorized, Patch, QueryParam, Req
+    JsonController, Param, NotFoundError, BadRequestError, InternalServerError, Authorized, Patch, QueryParam, Req, UploadedFile, Put
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { Validator } from 'class-validator';
@@ -11,6 +11,7 @@ import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
 import { RoleType } from '../entities/user/user_role.model';
 import { TokenRepository } from '../repositories/token.repository';
+import { UploadUtils } from '../utils/upload.utils';
 
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)
@@ -27,6 +28,15 @@ export class MeController {
         return new ApiResponse(response)
             .withData(userProfile)
             .withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+    @Put('/profile_picture')
+    @UseBefore(JWTMiddleware)
+    public async updateProfilePicture(@UploadedFile('profile_picture', {options: UploadUtils.getMulterOptions()}) file: any) {
+        return {
+            filename: file.originalname,
+            size: file.size,
+            fieldname: file.fieldname
+        };
     }
 }
 
