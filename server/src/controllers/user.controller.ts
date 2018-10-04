@@ -1,6 +1,8 @@
 import {
     Body, Get, Delete, Post, Res, UseBefore,
-    JsonController, Param, NotFoundError, BadRequestError, InternalServerError, Authorized, Patch, QueryParam, Req, UploadedFile, Put
+    JsonController, Param, NotFoundError,
+    BadRequestError, InternalServerError,
+    Authorized, Patch, QueryParam, Req, UploadedFile, Put
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { Validator } from 'class-validator';
@@ -17,8 +19,14 @@ import { UploadUtils } from '../utils/upload.utils';
 @UseBefore(LoggingMiddleware)
 export class MeController {
     constructor(private userService: UserService, private tokenRepository: TokenRepository) { }
+    /**
+     * GET request to get user profile info, needs JWT token
+     * @param response response Object
+     * @param request request Object
+     */
     @Get()
     @UseBefore(JWTMiddleware)
+    @Authorized([RoleType.USER])
     public async getProfile(@Req() request: Request, @Res() response: Response): Promise<Response> {
         const tokenData = await this.tokenRepository.getTokenWithUser(request['token']);
         if (!tokenData) {
@@ -29,14 +37,25 @@ export class MeController {
             .withData(userProfile)
             .withStatusCode(HTTP_STATUS_CODE.OK).build();
     }
-    @Put('/profile_picture')
+    /**
+     * PUT request to update user profile picture
+     * @param response response Object
+     * @param request request Object
+     * @param user user Object from body
+     * @param profilePicture multipart file
+     */
+    @Put('/profilePicture')
     @UseBefore(JWTMiddleware)
-    public async updateProfilePicture(@UploadedFile('profile_picture', {options: UploadUtils.getMulterOptions()}) file: any) {
-        return {
-            filename: file.originalname,
-            size: file.size,
-            fieldname: file.fieldname
-        };
+    @Authorized([RoleType.USER])
+    public async updateProfilePicture(@Res() response: Response,
+        @Body({ required: true }) user: User,
+        @UploadedFile('profile_picture', { options: UploadUtils.getMulterOptions() }) profilePicture: any): Promise<Response> {
+        const userDB = await this.userService.getUserByEmail(user.email);
+        if (!userDB) {
+            throw new NotFoundError('User not found');
+        }
+        this.userService.updateUserProfilePicture(user, profilePicture);
+        return profilePicture;
     }
 }
 
@@ -96,13 +115,12 @@ export class UserController {
                 .withData('User already registered')
                 .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
                 .build();
-        } else {
-            const result = await this.userService.createUser(user);
-            return new ApiResponse(response)
-                .withData(result)
-                .withStatusCode(HTTP_STATUS_CODE.CREATED)
-                .build();
         }
+        const result = await this.userService.createUser(user);
+        return new ApiResponse(response)
+            .withData(result)
+            .withStatusCode(HTTP_STATUS_CODE.CREATED)
+            .build();
     }
 
     /**
@@ -117,16 +135,15 @@ export class UserController {
         const userDB = await this.userService.getUserByID(id);
         if (!userDB) {
             throw new NotFoundError('User not found');
-        } else {
-            const rs = await this.userService.deleteUserByID(id);
-            if (!rs) {
-                throw new InternalServerError('Cannot delete user from database');
-            }
-            return new ApiResponse(response)
-                .withData('User removed from database')
-                .withStatusCode(HTTP_STATUS_CODE.OK)
-                .build();
         }
+        const rs = await this.userService.deleteUserByID(id);
+        if (!rs) {
+            throw new InternalServerError('Cannot delete user from database');
+        }
+        return new ApiResponse(response)
+            .withData('User removed from database')
+            .withStatusCode(HTTP_STATUS_CODE.OK)
+            .build();
     }
 
     /**
@@ -140,18 +157,17 @@ export class UserController {
         const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {
             throw new NotFoundError('User not found');
-        } else {
-            if (userDB.email === user.email) {
-                return new ApiResponse(response)
-                    .withData('User already registered')
-                    .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
-                    .build();
-            }
-            await this.userService.updateUser(user);
+        }
+        if (userDB.email === user.email) {
             return new ApiResponse(response)
-                .withData('User data saved')
-                .withStatusCode(HTTP_STATUS_CODE.OK)
+                .withData('User already registered')
+                .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
                 .build();
         }
+        await this.userService.updateUser(user);
+        return new ApiResponse(response)
+            .withData('User data saved')
+            .withStatusCode(HTTP_STATUS_CODE.OK)
+            .build();
     }
 }

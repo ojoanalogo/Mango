@@ -9,6 +9,8 @@ import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger } from '../utils/logger.util';
 import { AuthService } from './auth.service';
+import * as fs from 'fs';
+import * as gm from 'gm';
 
 const log = Logger.getInstance().getLogger();
 @Service()
@@ -38,7 +40,7 @@ export class UserService {
                     .getMany();
             return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -72,7 +74,7 @@ export class UserService {
             // return user model object
             return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -98,7 +100,7 @@ export class UserService {
                 return false;
             }
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -118,7 +120,41 @@ export class UserService {
             log.info(`User (ID: ${userDB.id}) was updated`);
             return userUpdated;
         } catch (error) {
-            throw new Error(error);
+            throw error;
+        }
+    }
+
+    public async updateUserProfilePicture(user: User, profilePicture: any): Promise<any> {
+        try {
+            const userDB = await this.userRepository.findOne({ email: user.email });
+            const profilePictureInstance = await this.profilePictureRepository.findOne({ userId: userDB.id });
+            // remove old picture:
+            const fileNameWithDir = 'uploads/' + profilePictureInstance.url;
+            if (fs.existsSync(fileNameWithDir)) {
+                fs.unlinkSync(fileNameWithDir);
+            }
+            // resize user profile picture
+            /** TODO:
+             * - Remove metadata
+             * - Make it a square (1:1)
+             * - Compress it
+             */
+            gm(profilePicture.path)
+                .resize(256, 256)
+                .crop(256, 256)
+                .write(profilePicture.path, (error) => {
+                    if (!error) {
+                        log.info('Image resized');
+                    } else {
+                        throw new Error('Error trying to resize image');
+                    }
+                });
+            // assign new URL
+            profilePictureInstance.url = profilePicture.filename;
+            const result = await this.profilePictureRepository.update({ userId: userDB.id }, { url: profilePictureInstance.url });
+            return result;
+        } catch (error) {
+            throw error;
         }
     }
 
@@ -131,7 +167,7 @@ export class UserService {
             const deleteResult = await this.userRepository.delete(id);
             return deleteResult;
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -143,7 +179,7 @@ export class UserService {
         try {
             return await this.userRepository.getProfile('user.id = :id', { id: id });
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -155,7 +191,7 @@ export class UserService {
         try {
             return await this.userRepository.getProfile('user.email = :email', { email: userEmail });
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 }

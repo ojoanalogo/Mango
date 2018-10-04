@@ -45,7 +45,7 @@ export class AuthService {
         try {
             const tokenDB = await this.tokenRepository.getTokenWithUser(token);
             if (!tokenDB) {
-                throw new UnauthorizedError('Token no longer valid (associated user not found)');
+                throw new UnauthorizedError('Token no longer valid (already refreshed)');
             }
             const newToken = await this.createJWT(tokenDB.user, true);
             await this.tokenRepository.update({ token: token }, { token: newToken, last_time_refreshed: new Date() });
