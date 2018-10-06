@@ -2,7 +2,7 @@ import {
     Body, Get, Delete, Post, Res, UseBefore,
     JsonController, Param, NotFoundError,
     BadRequestError, InternalServerError,
-    Authorized, Patch, QueryParam, Req, UploadedFile, Put
+    Authorized, Patch, QueryParam, Req, UploadedFile, Put, NotAcceptableError
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { Validator } from 'class-validator';
@@ -50,6 +50,9 @@ export class MeController {
     public async updateProfilePicture(@Res() response: Response,
         @Body({ required: true }) user: User,
         @UploadedFile('profile_picture', { options: UploadUtils.getMulterOptions() }) profilePicture: any): Promise<Response> {
+        if (!profilePicture) {
+            throw new BadRequestError('Please upload an image');
+        }
         const userDB = await this.userService.getUserByEmail(user.email);
         if (!userDB) {
             throw new NotFoundError('User not found');

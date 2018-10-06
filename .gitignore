@@ -1,5 +1,6 @@
 node_modules/
 dist/
 logs/
+uploads/
 .env
 npm-debug.log

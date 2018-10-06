@@ -9,8 +9,9 @@ import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger } from '../utils/logger.util';
 import { AuthService } from './auth.service';
-import * as fs from 'fs';
 import * as gm from 'gm';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const log = Logger.getInstance().getLogger();
 @Service()
@@ -18,6 +19,7 @@ export class UserService {
 
     @Inject(type => AuthService)
     private authService: AuthService; // circular reference fix
+    private gmInstance;
     constructor(
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
@@ -129,9 +131,14 @@ export class UserService {
             const userDB = await this.userRepository.findOne({ email: user.email });
             const profilePictureInstance = await this.profilePictureRepository.findOne({ userId: userDB.id });
             // remove old picture:
-            const fileNameWithDir = 'uploads/' + profilePictureInstance.url;
+            const fileNameWithDir = path.join(__dirname, '../../uploads/' + profilePictureInstance.url);
+            const fileThumbWithDir = path.join(__dirname , '../../uploads/thumbnails/' + profilePictureInstance.url.split('.')[0])
+                + '-thumb.' + profilePictureInstance.url.split('.')[1];
             if (fs.existsSync(fileNameWithDir)) {
                 fs.unlinkSync(fileNameWithDir);
+            }
+            if (fs.existsSync(fileThumbWithDir)) {
+                fs.unlinkSync(fileThumbWithDir);
             }
             // resize user profile picture
             /** TODO:
@@ -139,9 +146,26 @@ export class UserService {
              * - Make it a square (1:1)
              * - Compress it
              */
+            // convert $FILENAME -auto-orient +profile "*" -write \
+            // "mpr:source" -resize "1080x1080^" -gravity center -crop "1080x1080+0+0" +repage -write "$NAME-1080.jpg" +delete \
+            // "mpr:source" -resize "720x720^" -gravity center -crop "720x720+0+0" +repage -write "$NAME-720.jpg" +delete \
+            // "mpr:source" -resize "540x540^" -gravity center -crop "540x540+0+0" +repage -write "$NAME-540.jpg" +delete \
+            // "mpr:source" -resize "360x360^" -gravity center -crop "360x360+0+0" +repage -write "$NAME-360.jpg" +delete \
+            // "mpr:source" -resize "240x240^" -gravity center -crop "240x240+0+0" +repage -write "$NAME-240.jpg" +delete \
+            // "mpr:source" -resize "120x120^" -gravity center -crop "120x120+0+0" +repage -write "$NAME-120.jpg" +delete \
+            // "mpr:source" "$NAME-original.jpg"
             gm(profilePicture.path)
-                .resize(256, 256)
-                .crop(256, 256)
+                .thumb(320, 320, path.join(__dirname , '../../uploads/thumbnails/' + profilePicture.filename.split('.')[0] + '-thumb.jpg'),
+                    (err) => { if (err) { console.log('error: ' + err); } })
+                .resize(1080, 1080, '^')
+                .gravity('Center')
+                .crop(1080, 1080, 0, 0)
+                .repage('+')
+                .noProfile()
+                .size((options, dim) => {
+                    console.log('dimensions:');
+                    console.dir(dim);
+                })
                 .write(profilePicture.path, (error) => {
                     if (!error) {
                         log.info('Image resized');

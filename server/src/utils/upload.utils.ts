@@ -7,10 +7,11 @@ export class UploadUtils {
         const options: multer.Options = {
             storage: multer.diskStorage({
                 destination(req, fileName, cb) {
-                    if (!fs.existsSync('uploads/')) {
-                        fs.mkdirSync('uploads/');
+                    if (!fs.existsSync(path.join(__dirname, '../../uploads/'))) {
+                        fs.mkdirSync(path.join(__dirname, '../../uploads/'));
+                        fs.mkdirSync(path.join(__dirname, '../../uploads/thumbnails'));
                     }
-                    cb(null, 'uploads/');
+                    cb(null, path.join(__dirname, '../../uploads/'));
                 },
                 filename(req, fileName, cb) {
                     const ext = path.extname(fileName.originalname);
