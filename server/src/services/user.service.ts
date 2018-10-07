@@ -9,6 +9,7 @@ import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger } from '../utils/logger.util';
 import { AuthService } from './auth.service';
+import { UploadUtils } from '../utils/upload.utils';
 import * as gm from 'gm';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -19,7 +20,6 @@ export class UserService {
 
     @Inject(type => AuthService)
     private authService: AuthService; // circular reference fix
-    private gmInstance;
     constructor(
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
@@ -126,55 +126,55 @@ export class UserService {
         }
     }
 
-    public async updateUserProfilePicture(user: User, profilePicture: any): Promise<any> {
+    public async updateUserProfilePicture(user: User, uploadedPicture: any): Promise<any> {
         try {
             const userDB = await this.userRepository.findOne({ email: user.email });
             const profilePictureInstance = await this.profilePictureRepository.findOne({ userId: userDB.id });
-            // remove old picture:
-            const fileNameWithDir = path.join(__dirname, '../../uploads/' + profilePictureInstance.url);
-            const fileThumbWithDir = path.join(__dirname , '../../uploads/thumbnails/' + profilePictureInstance.url.split('.')[0])
-                + '-thumb.' + profilePictureInstance.url.split('.')[1];
-            if (fs.existsSync(fileNameWithDir)) {
-                fs.unlinkSync(fileNameWithDir);
-            }
-            if (fs.existsSync(fileThumbWithDir)) {
-                fs.unlinkSync(fileThumbWithDir);
-            }
-            // resize user profile picture
-            /** TODO:
-             * - Remove metadata
-             * - Make it a square (1:1)
-             * - Compress it
-             */
+            const resolutions = ['1080', '540', '360', '240', '120']; // picture resolutions
+            // delete old files if they exist
+            resolutions.forEach(resolution => {
+                const name = profilePictureInstance.url.split('.')[0];
+                const format = profilePictureInstance.url.split('.')[1];
+                const fileResName = path.join(__dirname, '../../uploads/profile_pictures/' + name + '-' + resolution + '.' + format);
+                if (fs.existsSync(fileResName)) {
+                    fs.unlinkSync(fileResName);
+                }
+            });
+            // rename file with hash signature
+            const hash = await UploadUtils.fileHash(uploadedPicture.path, 'sha256');
+            const newPicName = hash + path.extname(uploadedPicture.path);
+            const newPicPath = path.join(__dirname, '../../uploads/profile_pictures/'
+                + newPicName);
+            fs.renameSync(uploadedPicture.path, newPicPath);
             // convert $FILENAME -auto-orient +profile "*" -write \
             // "mpr:source" -resize "1080x1080^" -gravity center -crop "1080x1080+0+0" +repage -write "$NAME-1080.jpg" +delete \
-            // "mpr:source" -resize "720x720^" -gravity center -crop "720x720+0+0" +repage -write "$NAME-720.jpg" +delete \
-            // "mpr:source" -resize "540x540^" -gravity center -crop "540x540+0+0" +repage -write "$NAME-540.jpg" +delete \
-            // "mpr:source" -resize "360x360^" -gravity center -crop "360x360+0+0" +repage -write "$NAME-360.jpg" +delete \
-            // "mpr:source" -resize "240x240^" -gravity center -crop "240x240+0+0" +repage -write "$NAME-240.jpg" +delete \
-            // "mpr:source" -resize "120x120^" -gravity center -crop "120x120+0+0" +repage -write "$NAME-120.jpg" +delete \
             // "mpr:source" "$NAME-original.jpg"
-            gm(profilePicture.path)
-                .thumb(320, 320, path.join(__dirname , '../../uploads/thumbnails/' + profilePicture.filename.split('.')[0] + '-thumb.jpg'),
-                    (err) => { if (err) { console.log('error: ' + err); } })
-                .resize(1080, 1080, '^')
-                .gravity('Center')
-                .crop(1080, 1080, 0, 0)
-                .repage('+')
-                .noProfile()
-                .size((options, dim) => {
-                    console.log('dimensions:');
-                    console.dir(dim);
-                })
-                .write(profilePicture.path, (error) => {
-                    if (!error) {
-                        log.info('Image resized');
-                    } else {
-                        throw new Error('Error trying to resize image');
-                    }
-                });
+            const fileName: string = newPicName.split('.')[0];
+            const fileExt: string = newPicName.split('.')[1];
+            resolutions.forEach(resElement => {
+                const resolution = parseInt(resElement);
+                const finalName: string = fileName + '-' + resolution + '.' + fileExt;
+                const finalFileNameWithDir = path.join(__dirname, '../../uploads/profile_pictures/' + finalName);
+                gm(newPicPath)
+                    .resize(resolution, resolution, '^')
+                    .gravity('Center')
+                    .crop(resolution, resolution, 0, 0)
+                    .repage('+')
+                    .noProfile()
+                    .write(finalFileNameWithDir, (error) => {
+                        if (!error) {
+                            log.info('Image resized');
+                        } else {
+                            throw new Error('Error trying to resize image');
+                        }
+                    });
+            });
+            setTimeout(() => {
+                // delete original picture
+                fs.unlinkSync(newPicPath);
+            }, 200);
             // assign new URL
-            profilePictureInstance.url = profilePicture.filename;
+            profilePictureInstance.url = newPicName;
             const result = await this.profilePictureRepository.update({ userId: userDB.id }, { url: profilePictureInstance.url });
             return result;
         } catch (error) {

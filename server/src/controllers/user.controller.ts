@@ -2,7 +2,7 @@ import {
     Body, Get, Delete, Post, Res, UseBefore,
     JsonController, Param, NotFoundError,
     BadRequestError, InternalServerError,
-    Authorized, Patch, QueryParam, Req, UploadedFile, Put, NotAcceptableError
+    Authorized, Patch, QueryParam, Req, UploadedFile, Put
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { Validator } from 'class-validator';

@@ -20,11 +20,12 @@ export class AuthService {
      */
     public async createJWT(user: User, refresh?: boolean): Promise<any> {
         try {
+            const duration = process.env.NODE_ENV === 'production' ? '30m' : '1d';
             const token = await jwt.sign({
                 user: {
                     id: user.id
                 },
-            }, process.env.JWT_SECRET, { expiresIn: '30m' });
+            }, process.env.JWT_SECRET, { expiresIn: duration });
             if (!refresh) {
                 // create JWT entity instance to store in database
                 const userAgent = httpContext.get('useragent');
