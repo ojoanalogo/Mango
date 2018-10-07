@@ -44,7 +44,7 @@ export class MeController {
      * @param user user Object from body
      * @param profilePicture multipart file
      */
-    @Put('/profilePicture')
+    @Put('/profile_picture')
     @UseBefore(JWTMiddleware)
     @Authorized([RoleType.USER])
     public async updateProfilePicture(@Res() response: Response,
