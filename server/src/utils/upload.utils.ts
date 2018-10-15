@@ -5,15 +5,19 @@ import * as multer from 'multer';
 import * as crypto from 'crypto';
 export class UploadUtils {
 
-    public static getMulterOptions() {
+    public static getProfileUploadMulterOptions() {
         const options: multer.Options = {
             storage: multer.diskStorage({
                 destination(req, fileName, cb) {
-                    const profilePicturesFolder = '../../uploads/profile_pictures';
-                    if (!fs.existsSync(path.join(__dirname, profilePicturesFolder))) {
-                        fs.mkdirSync(path.join(__dirname, profilePicturesFolder));
+                    const uploadsFolder = path.join(__dirname, '../../uploads');
+                    const profilePicturesFolder = path.join(__dirname, '../../uploads/profile_pictures');
+                    if (!fs.existsSync(uploadsFolder)) {
+                        fs.mkdirSync(uploadsFolder);
                     }
-                    cb(null, path.join(__dirname, profilePicturesFolder));
+                    if (!fs.existsSync(profilePicturesFolder)) {
+                        fs.mkdirSync(profilePicturesFolder);
+                    }
+                    cb(null, profilePicturesFolder);
                 },
                 filename(req, fileName, cb) {
                     cb(null, Date.now() + fileName.originalname);
@@ -33,7 +37,7 @@ export class UploadUtils {
         return options;
     }
 
-    public static fileHash(filename, algorithm = 'md5'): Promise<string> {
+    public static getFileHash(filename, algorithm = 'md5'): Promise<string> {
         return new Promise((resolve, reject) => {
             // Algorithm depends on availability of OpenSSL on platform
             // Another algorithms: 'sha1', 'md5', 'sha256', 'sha512' ...
@@ -49,7 +53,7 @@ export class UploadUtils {
                     return resolve(hash);
                 });
             } catch (error) {
-                return reject('calc fail');
+                return reject(`Can't get hash signature for file: ${filename}`);
             }
         });
     }

@@ -16,7 +16,7 @@ export class UserRepository extends BaseRepository<User> {
     async getProfile(conditions: string, conditionsValues: any): Promise<User> {
         return await this.createQueryBuilder('user')
             .select(['user.id', 'user.email', 'user.first_name',
-                'user.second_name', 'user.last_login', 'profile_picture.url', 'role.role'])
+                'user.second_name', 'user.last_login', 'profile_picture', 'role.role'])
             .leftJoin('user.role', 'role')
             .leftJoin('user.profile_picture', 'profile_picture')
             .where(conditions, conditionsValues)

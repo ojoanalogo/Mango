@@ -116,7 +116,7 @@ export class UserService {
             const currentPassword = userDB.password;
             if (user.password && currentPassword !== user.password) {
                 await user.updatePassword();
-                log.info(`User (ID: ${userDB.id}) has updated his password`);
+                log.info(`User (ID: ${userDB.id}) updated his password`);
             }
             const userUpdated = await this.userRepository.update(userDB.id, user);
             log.info(`User (ID: ${userDB.id}) was updated`);
@@ -131,17 +131,25 @@ export class UserService {
             const userDB = await this.userRepository.findOne({ email: user.email });
             const profilePictureInstance = await this.profilePictureRepository.findOne({ userId: userDB.id });
             const resolutions = ['1080', '540', '360', '240', '120']; // picture resolutions
+            // delete original file
+            const originalFilePath = path.join(__dirname, '../../uploads/profile_pictures/' +
+                profilePictureInstance.res_original);
+            if (fs.existsSync(originalFilePath)) {
+                fs.unlinkSync(originalFilePath);
+            }
             // delete old files if they exist
             resolutions.forEach(resolution => {
-                const name = profilePictureInstance.url.split('.')[0];
-                const format = profilePictureInstance.url.split('.')[1];
-                const fileResName = path.join(__dirname, '../../uploads/profile_pictures/' + name + '-' + resolution + '.' + format);
-                if (fs.existsSync(fileResName)) {
-                    fs.unlinkSync(fileResName);
+                if (profilePictureInstance['res_' + resolution]) {
+                    const fileResPath =
+                        path.join(__dirname, '../../uploads/profile_pictures/' + profilePictureInstance['res_' + resolution]);
+                    if (fs.existsSync(fileResPath)) {
+                        fs.unlinkSync(fileResPath);
+                    }
+                    profilePictureInstance['res_' + resolution] = null;
                 }
             });
-            // rename file with hash signature
-            const hash = await UploadUtils.fileHash(uploadedPicture.path, 'sha256');
+            // rename uploaded file with hash signature
+            const hash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
             const newPicName = hash + path.extname(uploadedPicture.path);
             const newPicPath = path.join(__dirname, '../../uploads/profile_pictures/'
                 + newPicName);
@@ -151,32 +159,41 @@ export class UserService {
             // "mpr:source" "$NAME-original.jpg"
             const fileName: string = newPicName.split('.')[0];
             const fileExt: string = newPicName.split('.')[1];
-            resolutions.forEach(resElement => {
-                const resolution = parseInt(resElement);
-                const finalName: string = fileName + '-' + resolution + '.' + fileExt;
-                const finalFileNameWithDir = path.join(__dirname, '../../uploads/profile_pictures/' + finalName);
-                gm(newPicPath)
-                    .resize(resolution, resolution, '^')
-                    .gravity('Center')
-                    .crop(resolution, resolution, 0, 0)
-                    .repage('+')
-                    .noProfile()
-                    .write(finalFileNameWithDir, (error) => {
-                        if (!error) {
-                            log.info('Image resized');
-                        } else {
-                            throw new Error('Error trying to resize image');
-                        }
-                    });
+            // we should only resize file to lower resolutions
+            gm(newPicPath).size(async (err, dimensions) => {
+                if (err) {
+                    throw err;
+                }
+                const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
+                newResolutions.forEach(resElement => {
+                    const resolution = parseInt(resElement);
+                    const finalName: string = fileName + '-' + resolution + '.' + fileExt;
+                    const finalFileNameWithDir = path.join(__dirname, '../../uploads/profile_pictures/' + finalName);
+                    gm(newPicPath)
+                        .resize(resolution, resolution, '^')
+                        .gravity('Center')
+                        .crop(resolution, resolution, 0, 0)
+                        .repage('+')
+                        .noProfile()
+                        .write(finalFileNameWithDir, (error) => {
+                            if (!error) {
+                                log.info('Image resized');
+                            } else {
+                                throw new Error('Error trying to resize image');
+                            }
+                        });
+                    // assign new URL with res name
+                    profilePictureInstance['res_' + resElement] = finalName;
+                });
+                profilePictureInstance.res_original = fileName + '-original.' + fileExt;
+                const updateResult = await this.profilePictureRepository.update({ userId: userDB.id }, profilePictureInstance);
+                setTimeout(() => {
+                    // rename original picture
+                    fs.renameSync(newPicPath, path.join(__dirname,
+                        '../../uploads/profile_pictures/' + fileName + '-original.' + fileExt));
+                }, 200);
+                return updateResult;
             });
-            setTimeout(() => {
-                // delete original picture
-                fs.unlinkSync(newPicPath);
-            }, 200);
-            // assign new URL
-            profilePictureInstance.url = newPicName;
-            const result = await this.profilePictureRepository.update({ userId: userDB.id }, { url: profilePictureInstance.url });
-            return result;
         } catch (error) {
             throw error;
         }
