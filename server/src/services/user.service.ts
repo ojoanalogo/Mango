@@ -126,13 +126,18 @@ export class UserService {
         }
     }
 
+    /**
+     * Update user profile picture in database
+     * @param user user object
+     * @param uploadedPicture picture object (file data)
+     */
     public async updateUserProfilePicture(user: User, uploadedPicture: any): Promise<any> {
         try {
             const userDB = await this.userRepository.findOne({ email: user.email });
             const profilePictureInstance = await this.profilePictureRepository.findOne({ userId: userDB.id });
-            const resolutions = ['1080', '540', '360', '240', '120']; // picture resolutions
+            const resolutions = ['480', '240', '96', '64', '32']; // picture resolutions
             // delete original file
-            const originalFilePath = path.join(__dirname, '../../uploads/profile_pictures/' +
+            const originalFilePath = path.join(__dirname, '../../' +
                 profilePictureInstance.res_original);
             if (fs.existsSync(originalFilePath)) {
                 fs.unlinkSync(originalFilePath);
@@ -141,7 +146,7 @@ export class UserService {
             resolutions.forEach(resolution => {
                 if (profilePictureInstance['res_' + resolution]) {
                     const fileResPath =
-                        path.join(__dirname, '../../uploads/profile_pictures/' + profilePictureInstance['res_' + resolution]);
+                        path.join(__dirname, '../../' + profilePictureInstance['res_' + resolution]);
                     if (fs.existsSync(fileResPath)) {
                         fs.unlinkSync(fileResPath);
                     }
@@ -157,8 +162,6 @@ export class UserService {
             // convert $FILENAME -auto-orient +profile "*" -write \
             // "mpr:source" -resize "1080x1080^" -gravity center -crop "1080x1080+0+0" +repage -write "$NAME-1080.jpg" +delete \
             // "mpr:source" "$NAME-original.jpg"
-            const fileName: string = newPicName.split('.')[0];
-            const fileExt: string = newPicName.split('.')[1];
             // we should only resize file to lower resolutions
             gm(newPicPath).size(async (err, dimensions) => {
                 if (err) {
@@ -167,8 +170,7 @@ export class UserService {
                 const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
                 newResolutions.forEach(resElement => {
                     const resolution = parseInt(resElement);
-                    const finalName: string = fileName + '-' + resolution + '.' + fileExt;
-                    const finalFileNameWithDir = path.join(__dirname, '../../uploads/profile_pictures/' + finalName);
+                    const finalFileNameWithDir = path.join(__dirname, '../../uploads/profile_pictures/' + resElement + '/' + newPicName);
                     gm(newPicPath)
                         .resize(resolution, resolution, '^')
                         .gravity('Center')
@@ -183,14 +185,14 @@ export class UserService {
                             }
                         });
                     // assign new URL with res name
-                    profilePictureInstance['res_' + resElement] = finalName;
+                    profilePictureInstance['res_' + resElement] = '/uploads/profile_pictures/' + resElement + '/' + newPicName;
                 });
-                profilePictureInstance.res_original = fileName + '-original.' + fileExt;
+                profilePictureInstance.res_original = '/uploads/profile_pictures/' + newPicName;
                 const updateResult = await this.profilePictureRepository.update({ userId: userDB.id }, profilePictureInstance);
                 setTimeout(() => {
                     // rename original picture
                     fs.renameSync(newPicPath, path.join(__dirname,
-                        '../../uploads/profile_pictures/' + fileName + '-original.' + fileExt));
+                        '../../uploads/profile_pictures/' + newPicName));
                 }, 200);
                 return updateResult;
             });

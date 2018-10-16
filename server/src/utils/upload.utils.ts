@@ -16,6 +16,11 @@ export class UploadUtils {
                     }
                     if (!fs.existsSync(profilePicturesFolder)) {
                         fs.mkdirSync(profilePicturesFolder);
+                        fs.mkdirSync(profilePicturesFolder + '/32');
+                        fs.mkdirSync(profilePicturesFolder + '/64');
+                        fs.mkdirSync(profilePicturesFolder + '/96');
+                        fs.mkdirSync(profilePicturesFolder + '/240');
+                        fs.mkdirSync(profilePicturesFolder + '/480');
                     }
                     cb(null, profilePicturesFolder);
                 },
