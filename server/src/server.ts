@@ -3,6 +3,7 @@ import { Container } from 'typedi';
 import { useContainer as useContainerRouting } from 'routing-controllers';
 import { useContainer as useContainerTypeORM } from 'typeorm';
 import { Database } from './database/database';
+import { Redis } from './database/redis';
 import { ErrorHandler } from './handlers/error.handler';
 import { NotFoundMiddleware } from './middleware/not_found.middleware';
 import * as bodyParser from 'body-parser';
@@ -34,6 +35,10 @@ export class Server {
     // setup database
     const database: Database = Container.get(Database);
     database.setupDatabase();
+    // setup redis
+    const redis: Redis = Container.get(Redis);
+    redis.setupRedis();
+    // setup express server
     this.config();
     this.routerConfig();
   }

@@ -33,7 +33,7 @@ export class AuthService {
                 tokenInstance.token = token;
                 tokenInstance.agent = userAgent;
                 tokenInstance.user = user; // asign relationship
-                // now we save the token in our tokenrepository
+                // now we save the token in our token repository
                 await this.tokenRepository.save(tokenInstance);
             }
             return token;

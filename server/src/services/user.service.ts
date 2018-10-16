@@ -8,6 +8,7 @@ import { Role, RoleType } from '../entities/user/user_role.model';
 import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger } from '../utils/logger.util';
+import { Redis } from '../database/redis';
 import { AuthService } from './auth.service';
 import { UploadUtils } from '../utils/upload.utils';
 import * as gm from 'gm';
@@ -24,12 +25,14 @@ export class UserService {
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
         private rolesRepository: RolesRepository,
-        private jsonUtils: JSONUtils) { }
+        private jsonUtils: JSONUtils,
+        private redisService: Redis) { }
 
     /**
      * Returns users from database
      */
     public async findAll(page: number = 0): Promise<User[]> {
+        const redis = await this.redisService.getRedisInstance();
         try {
             let toSkip: number = page * 100;
             if (page === 1) {
@@ -40,6 +43,8 @@ export class UserService {
                     .skip(toSkip)
                     .take(100)
                     .getMany();
+            redis.setex('api:getUsers/' + page, 5, JSON.stringify(users));
+            console.log(' i got called');
             return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
         } catch (error) {
             throw error;
