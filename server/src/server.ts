@@ -63,7 +63,7 @@ export class Server {
       next();
     });
     // point static path to dist
-    this.app.use(express.static(path.join(__dirname, '../dist/client/')));
+    this.app.use(express.static(path.join(__dirname, '../public/')));
     // helmet middleware
     this.app.use(helmet());
     // spoof the stack used, just for fun
@@ -73,7 +73,7 @@ export class Server {
     });
     // catch all other routes and return the index file
     this.app.get('^(?!\/api).*$', (req, res) => {
-      res.sendFile(path.join(__dirname, '../dist/client/index.html'));
+      res.sendFile(path.join(__dirname, '../public/index.html'));
     });
   }
 

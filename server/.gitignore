@@ -2,5 +2,7 @@ node_modules/
 dist/
 logs/
 uploads/
+coverage/
+public/
 .env
 npm-debug.log
