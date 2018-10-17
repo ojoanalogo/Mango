@@ -9,7 +9,6 @@
         "build-start": "npm run build && npm run start",
         "dev": "nodemon --inspect",
         "lint": "tslint -t stylish --fix --project \"./tsconfig.json\"",
-        "pretest": "npm run lint",
         "test": "jest",
         "test:watch": "jest --watch"
     },
