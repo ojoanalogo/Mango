@@ -12,19 +12,18 @@ export class Redis {
     private redis_auth: string = process.env.REDIS_AUTH || '';
 
     public async setupRedis() {
-        try {
-            this.client = createClient({
-                host: this.redis_host,
-                port: this.redis_port,
-                auth_pass: this.redis_auth
-            });
-            this.client.on('ready', () => {
-                log.info('Redis client set-up and running');
-            });
-        } catch (error) {
-            log.warning('Redis client can\'t be setup');
-            throw error;
-        }
+        this.client = createClient({
+            host: this.redis_host,
+            port: this.redis_port,
+            auth_pass: this.redis_auth
+        });
+        this.client.on('ready', () => {
+            log.info('Redis client set-up and running');
+        });
+        this.client.on('error', () => {
+            log.warn('Redis client can\'t be setup');
+            this.client.quit();
+        });
     }
     public async getRedisInstance(): Promise<RedisClient> {
         return this.client;

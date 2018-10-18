@@ -14,6 +14,6 @@ export class IndexController {
     @Get()
     public index(@Res() response: Response): Response {
         return new ApiResponse(response)
-            .withData('Welcome to our API endpoint!').withStatusCode(HTTP_STATUS_CODE.OK).build();
+            .withData('Welcome to our API endpoint').withStatusCode(HTTP_STATUS_CODE.OK).build();
     }
 }

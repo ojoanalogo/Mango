@@ -33,6 +33,21 @@ export class UserService {
      */
     public async findAll(page: number = 0): Promise<User[]> {
         const redis = await this.redisService.getRedisInstance();
+        // const redisResult = await new Promise((resolve, reject) => {
+        //     try {
+        //         redis.get('api:getUsers/' + page, (err, reply) => {
+        //             if (reply) {
+        //                 const users = <User[]>JSON.parse(reply);
+        //                 log.info('Returning cached data for users');
+        //                 return resolve(users);
+        //             } else {
+        //                 return reject();
+        //             }
+        //         });
+        //     } catch (error) {
+        //         reject(error);
+        //     }
+        // });
         try {
             let toSkip: number = page * 100;
             if (page === 1) {
@@ -44,7 +59,7 @@ export class UserService {
                     .take(100)
                     .getMany();
             redis.setex('api:getUsers/' + page, 5, JSON.stringify(users));
-            console.log(' i got called');
+            console.log('no deeria salir en cached data');
             return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
         } catch (error) {
             throw error;
