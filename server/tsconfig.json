@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": "./src/",
-    "rootDir": "./src/",
     "outDir": "./dist/",
     "module": "commonjs",
     "sourceMap": true,
-    "sourceRoot": ".",
     "declaration": false,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,

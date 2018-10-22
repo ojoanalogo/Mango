@@ -64,8 +64,8 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                         const newToken = await this.authService.refreshToken(token);
                         // send the new shiny token
                         response.setHeader('X-Auth-Token', newToken);
+                        // bind token and user id to request object
                         request['token'] = newToken;
-                        // bind token to request object
                         request['user'] = user;
                         next();
                         return;

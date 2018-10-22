@@ -6,18 +6,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch",
       "type": "node",
       "request": "launch",
-      // "runtimeExecutable": "nodemon",
-      // "runtimeArgs": [
-      //     "--inspect"
-      // ],
-      "useWSL": true,
+      "name": "Launch",
       "protocol": "auto",
       "port": 9229,
-      // "runtimeExecutable": "npx ts-node --inspect --project ./tsconfig.json ./src/main",
-      // "useWSL": true,
-      },
+    },
   ]
 }

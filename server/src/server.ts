@@ -15,7 +15,7 @@ import * as httpContext from 'express-http-context';
 import * as uuid from 'uuid';
 
 import 'reflect-metadata'; // global, required by typeorm and typedi
-import { authorizationChecker } from './services/authorization_checker.service';
+import { authorizationChecker } from './middleware/authorization_checker.service';
 
 process.env.NODE_ENV === 'production' ?
   dotenv.config({ path: path.join(__dirname, '../.env') }) :
