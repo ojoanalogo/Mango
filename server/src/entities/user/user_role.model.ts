@@ -13,10 +13,10 @@ export enum RoleType {
 
 export function getWeight(role: RoleType) {
     const weight = {
-        'ceo' : 1000,
-        'cto' : 999,
+        'ceo': 1000,
+        'cto': 999,
         'developer': 666,
-        'staff': 100,
+        'staff': 150,
         'sales': 100,
         'user': 1
     };

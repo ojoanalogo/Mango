@@ -4,7 +4,7 @@ import {
     NotAcceptableError, ForbiddenError
 } from 'routing-controllers';
 import { Response, Request } from 'express';
-import { AuthService } from '../services/auth.service';
+import { JWTService } from '../services/jwt.service';
 import { Logger } from '../utils/logger.util';
 import * as moment from 'moment';
 import * as jwt from 'jsonwebtoken';
@@ -14,12 +14,12 @@ const log = Logger.getInstance().getLogger();
 @Service()
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
-    constructor(private authService: AuthService) { }
+    constructor(private jwtService: JWTService) { }
 
     /**
      * JWT Middleware
-     * @param request request Object
-     * @param response response Object
+     * @param request request object
+     * @param response response object
      * @param next proceeed to next operation
      */
     async use(request: Request, response: Response, next?: (err?: any) => any): Promise<any> {
@@ -40,7 +40,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
         // test Regex for valid JWT token
         if (/[A-Za-z0-9\-\._~\+\/]+=*/.test(token) && /[Bb]earer/.test(schema)) {
             try {
-                const jwtTokenDecoded = await this.authService.verifyToken(token);
+                const jwtTokenDecoded = await this.jwtService.verifyToken(token);
                 // now we check if the decoded token belongs to the user
                 const user = jwtTokenDecoded['user'];
                 if (!user) {
@@ -52,7 +52,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                 next();
             } catch (error) {
                 if (error instanceof jwt.TokenExpiredError) {
-                    const decoded = await this.authService.decodeToken(token);
+                    const decoded = await this.jwtService.decodeToken(token);
                     const exp = moment(decoded.exp * 1000);
                     const dif = exp.diff(new Date(), 'days');
                     if (dif >= -7) {
@@ -61,7 +61,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                             throw new NotAcceptableError('Invalid Token data');
                         }
                         log.info('Refreshing token for user ID (' + user.id + ')');
-                        const newToken = await this.authService.refreshToken(token);
+                        const newToken = await this.jwtService.refreshToken(token);
                         // send the new shiny token
                         response.setHeader('X-Auth-Token', newToken);
                         // bind token and user id to request object

@@ -4,8 +4,9 @@ import { useContainer as useContainerRouting } from 'routing-controllers';
 import { useContainer as useContainerTypeORM } from 'typeorm';
 import { Database } from './database/database';
 import { Redis } from './database/redis';
-import { ErrorHandler } from './handlers/error.handler';
+import { ErrorMiddleware } from './middleware/error.middleware';
 import { NotFoundMiddleware } from './middleware/not_found.middleware';
+import { AuthChecker } from './services/authorization_checker.service';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as path from 'path';
@@ -15,7 +16,6 @@ import * as httpContext from 'express-http-context';
 import * as uuid from 'uuid';
 
 import 'reflect-metadata'; // global, required by typeorm and typedi
-import { authorizationChecker } from './middleware/authorization_checker.service';
 
 process.env.NODE_ENV === 'production' ?
   dotenv.config({ path: path.join(__dirname, '../.env') }) :
@@ -82,13 +82,14 @@ export class Server {
    * @returns void
    */
   private routerConfig(): void {
+    const authChecker: AuthChecker = Container.get(AuthChecker);
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [__dirname + '/controllers/*{.js,.ts}'],
-      middlewares: [ErrorHandler, NotFoundMiddleware],
+      middlewares: [ErrorMiddleware, NotFoundMiddleware],
       cors: true,                     // enable cors
       defaultErrorHandler: false,     // disables error handler so we can use ours
-      authorizationChecker         // role checker
+      authorizationChecker: authChecker.authorizationChecker         // role checker
     });
   }
 

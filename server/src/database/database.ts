@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { Connection, createConnection } from 'typeorm';
+import { Connection, createConnection, getConnectionManager } from 'typeorm';
 import { Logger } from '../utils/logger.util';
 const log = Logger.getInstance().getLogger();
 @Service()
@@ -48,7 +48,6 @@ export class Database {
             this.retry(error);
         }
     }
-
     /**
      * Try to reconnect to database
      * @param errorMsg Error message from database

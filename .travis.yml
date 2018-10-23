@@ -4,4 +4,10 @@ branches:
       - master
 node_js:
  - "node"
-before_install: cd server
+before_install:
+  - mysql -e 'CREATE DATABASE mango;'
+  - cd server
+addons:
+  mariadb: '10.0'
+services:
+  - redis-server

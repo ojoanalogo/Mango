@@ -6,8 +6,8 @@ import * as morgan from 'morgan';
 export class LoggingMiddleware implements ExpressMiddlewareInterface {
     /**
      * Logging middleware, logs requests and outputs every request to a file (production) and to console
-     * @param request request Object
-     * @param response response Object
+     * @param request request object
+     * @param response response object
      * @param next proceeed to next operation
      */
     use(request: Request, response: Response, next?: (err?: any) => any): any {

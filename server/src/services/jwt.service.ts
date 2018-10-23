@@ -8,13 +8,13 @@ import * as jwt from 'jsonwebtoken';
 import * as httpContext from 'express-http-context';
 
 @Service()
-export class AuthService {
+export class JWTService {
 
     constructor(private tokenRepository: TokenRepository, private userRepository: UserRepository) { }
 
     /**
      * Create a JWT token for specified user
-     * @param user user Object
+     * @param user user object
      * @param refresh should be refresh the token?
      * @returns {Promise<any>} promise with the result of the operation
      */

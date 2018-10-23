@@ -2,7 +2,8 @@ import {
     Body, Get, Delete, Post, Res, UseBefore,
     JsonController, Param, NotFoundError,
     BadRequestError, InternalServerError,
-    Authorized, Patch, QueryParam} from 'routing-controllers';
+    Authorized, Patch, QueryParam
+} from 'routing-controllers';
 import { Response } from 'express';
 import { Validator } from 'class-validator';
 import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
@@ -13,16 +14,16 @@ import { User } from '../entities/user/user.model';
 import { RoleType } from '../entities/user/user_role.model';
 
 @JsonController('/users/')
-@UseBefore(LoggingMiddleware)
+@UseBefore(LoggingMiddleware, JWTMiddleware)
 export class UserController {
 
     constructor(private userService: UserService) { }
     /**
-     * GET request to get all users, needs a valid JWT
-     * @param response response Object
+     * GET request to get all users
+     * @param response response object
+     * @param page page number
      */
     @Get()
-    @UseBefore(JWTMiddleware)
     @Authorized([RoleType.DEVELOPER])
     public async getUsers(@Res() response: Response, @QueryParam('page') page = 0): Promise<Response> {
         const userData = await this.userService.findAll(page);
@@ -32,12 +33,12 @@ export class UserController {
     }
 
     /**
-     * GET request to get user by mail, needs a valid JWT
-     * @param response response Object
+     * GET request to get user by mail
+     * @param response response object
      * @param email email parameter
      */
     @Get(':email')
-    @UseBefore(JWTMiddleware)
+    @Authorized([RoleType.USER])
     public async getUserByEmail(@Res() response: Response, @Param('email') email: string): Promise<Response> {
         const userDB = await this.userService.getUserByEmail(email);
         if (!userDB) {
@@ -50,8 +51,8 @@ export class UserController {
 
     /**
      * POST request to create a new user in database
-     * @param response response Object
-     * @param user user Object from body
+     * @param response response object
+     * @param user user object from body
      */
     @Post()
     public async createUser(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
@@ -78,11 +79,10 @@ export class UserController {
 
     /**
      * Updates user with ID supplied
-     * @param response response Object
-     * @param user user Object
+     * @param response response object
+     * @param user user object
      */
     @Delete(':id')
-    @UseBefore(JWTMiddleware)
     @Authorized([RoleType.DEVELOPER])
     public async deleteUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
         const userDB = await this.userService.getUserByID(id);
@@ -101,11 +101,10 @@ export class UserController {
 
     /**
      * Updates user with ID supplied
-     * @param response response Object
-     * @param user user Object
+     * @param response response object
+     * @param user user object
      */
     @Patch()
-    @UseBefore(JWTMiddleware)
     public async updateUserByID(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
         const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {

@@ -3,13 +3,13 @@ import {
     HttpError, BadRequestError, ForbiddenError,
     InternalServerError, MethodNotAllowedError, NotAcceptableError, NotFoundError, UnauthorizedError
 } from 'routing-controllers';
-import { HTTP_STATUS_CODE } from './api_response.handler';
-import { ApiError } from './api_error.handler';
+import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
+import { ApiError } from '../handlers/api_error.handler';
 import { Logger } from '../utils/logger.util';
 const log = Logger.getInstance().getLogger();
 
 @Middleware({ type: 'after' })
-export class ErrorHandler implements ExpressErrorMiddlewareInterface {
+export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
 
     error(error: any, request: any, response: any, next: any) {
         let status: HTTP_STATUS_CODE = HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR;

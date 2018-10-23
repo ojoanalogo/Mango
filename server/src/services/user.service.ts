@@ -9,7 +9,7 @@ import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger } from '../utils/logger.util';
 import { Redis } from '../database/redis';
-import { AuthService } from './auth.service';
+import { JWTService } from './jwt.service';
 import { UploadUtils } from '../utils/upload.utils';
 import * as gm from 'gm';
 import * as fs from 'fs';
@@ -19,8 +19,8 @@ const log = Logger.getInstance().getLogger();
 @Service()
 export class UserService {
 
-    @Inject(type => AuthService)
-    private authService: AuthService; // circular reference fix
+    @Inject(type => JWTService)
+    private jwtService: JWTService; // circular reference fix
     constructor(
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
@@ -33,21 +33,6 @@ export class UserService {
      */
     public async findAll(page: number = 0): Promise<User[]> {
         const redis = await this.redisService.getRedisInstance();
-        // const redisResult = await new Promise((resolve, reject) => {
-        //     try {
-        //         redis.get('api:getUsers/' + page, (err, reply) => {
-        //             if (reply) {
-        //                 const users = <User[]>JSON.parse(reply);
-        //                 log.info('Returning cached data for users');
-        //                 return resolve(users);
-        //             } else {
-        //                 return reject();
-        //             }
-        //         });
-        //     } catch (error) {
-        //         reject(error);
-        //     }
-        // });
         try {
             let toSkip: number = page * 100;
             if (page === 1) {
@@ -78,7 +63,7 @@ export class UserService {
             user.password = userReq.password;
             const userInstance = await this.userRepository.save(userReq);
             // create JWT tokens
-            const jwtToken = await this.authService.createJWT(userInstance);
+            const jwtToken = await this.jwtService.createJWT(userInstance);
             // create profile picture entity
             const profilePicture = new ProfilePicture();
             profilePicture.user = userInstance;
@@ -102,7 +87,7 @@ export class UserService {
 
     /**
      * Checks user credentials and validates him
-     * @param user user Object
+     * @param user user object
      */
     public async loginUser(user: User): Promise<any> {
         try {
@@ -112,7 +97,7 @@ export class UserService {
             if (rs) {
                 await this.userRepository.update(userDB.id, { last_login: new Date() });
                 // update token in repo
-                const jwtToken = await this.authService.createJWT(userDB);
+                const jwtToken = await this.jwtService.createJWT(userDB);
                 // return user data with token
                 userDB.token = jwtToken;
                 // return user model object

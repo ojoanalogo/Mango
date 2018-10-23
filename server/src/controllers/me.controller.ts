@@ -14,16 +14,15 @@ import { TokenRepository } from '../repositories/token.repository';
 import { UploadUtils } from '../utils/upload.utils';
 
 @JsonController('/me')
-@UseBefore(LoggingMiddleware)
+@UseBefore(LoggingMiddleware, JWTMiddleware)
 export class MeController {
     constructor(private userService: UserService, private tokenRepository: TokenRepository) { }
     /**
      * GET request to get user profile info, needs JWT token
-     * @param response response Object
-     * @param request request Object
+     * @param response response object
+     * @param request request object
      */
     @Get()
-    @UseBefore(JWTMiddleware)
     @Authorized([RoleType.USER])
     public async getProfile(@Req() request: Request, @Res() response: Response): Promise<Response> {
         const tokenData = await this.tokenRepository.getTokenWithUser(request['token']);
@@ -37,13 +36,12 @@ export class MeController {
     }
     /**
      * PUT request to update user profile picture
-     * @param response response Object
-     * @param request request Object
-     * @param user user Object from body
+     * @param response response object
+     * @param request request object
+     * @param user user object from body
      * @param profilePicture multipart file
      */
     @Put('/profile_picture')
-    @UseBefore(JWTMiddleware)
     @Authorized([RoleType.USER])
     public async updateProfilePicture(@Body({ required: true }) user: User,
         @UploadedFile('profile_picture',
