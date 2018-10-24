@@ -5,16 +5,14 @@ import {
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { JWTService } from '../services/jwt.service';
-import { Logger } from '../utils/logger.util';
+import { Logger } from '../services/logger.service';
 import * as moment from 'moment';
 import * as jwt from 'jsonwebtoken';
-
-const log = Logger.getInstance().getLogger();
 
 @Service()
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
-    constructor(private jwtService: JWTService) { }
+    constructor(private jwtService: JWTService, private logger: Logger) { }
 
     /**
      * JWT Middleware
@@ -60,7 +58,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                         if (!user) {
                             throw new NotAcceptableError('Invalid Token data');
                         }
-                        log.info('Refreshing token for user ID (' + user.id + ')');
+                        this.logger.getLogger().info('Refreshing token for user ID (' + user.id + ')');
                         const newToken = await this.jwtService.refreshToken(token);
                         // send the new shiny token
                         response.setHeader('X-Auth-Token', newToken);

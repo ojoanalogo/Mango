@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
-import { Connection, createConnection, getConnectionManager } from 'typeorm';
-import { Logger } from '../utils/logger.util';
-const log = Logger.getInstance().getLogger();
+import { Connection, createConnection } from 'typeorm';
+import { Logger } from '../services/logger.service';
+
 @Service()
 export class Database {
 
@@ -17,6 +17,8 @@ export class Database {
     private reconnect_max_try = parseInt(process.env.DATABASE_MAX_TRY);
     private connection: Connection;
     private syncOption = process.env.NODE_ENV === 'production' ? false : true;
+
+    constructor(private logger: Logger) { }
 
     /**
     * Setup database
@@ -41,7 +43,7 @@ export class Database {
                 }
             });
             if (this.connection) {
-                log.info(`Connected to database (${this.db_host}|${this.db_name}) successfully`);
+                this.logger.getLogger().info(`Connected to database (${this.db_host}|${this.db_name}) successfully`);
                 return this.connection;
             }
         } catch (error) {
@@ -54,14 +56,14 @@ export class Database {
      */
     private retry(errorMsg: string): void {
         // we should try to reconnect a few times
-        log.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
-        log.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
+        this.logger.getLogger().error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
+        this.logger.getLogger().warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
             `| ${this.reconnectTry}/${this.reconnect_max_try}`);
         setTimeout(() => {
             this.reconnectTry++;
             // if we can't reconnect to database after X times, we will stop trying to do so
             if (this.reconnectTry > this.reconnect_max_try) {
-                log.error(`Timed out trying to connect to the ${this.db_type} database`);
+                this.logger.getLogger().error(`Timed out trying to connect to the ${this.db_type} database`);
                 return false;
             }
             this.setupDatabase();

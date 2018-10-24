@@ -1,14 +1,17 @@
 import { Server } from './server';
-import { Logger } from './utils/logger.util';
-const log = Logger.getInstance().getLogger();
+import { Logger } from './services/logger.service';
+import { Container } from 'typedi';
 
 class Main extends Server {
   server: Express.Application;
   constructor() {
     super();
     this.server = this.app.listen(this.port, () => {
-      log.info('Running environment: ' + process.env.NODE_ENV);
-      log.info('Server is running in port: ' + this.port);
+      const log = Container.get(Logger);
+      log.getLogger()
+        .info('Running environment: ' + process.env.NODE_ENV);
+      log.getLogger()
+        .info('Server is running in port: ' + this.port);
     });
   }
 

@@ -7,7 +7,7 @@ import { User } from '../entities/user/user.model';
 import { Role, RoleType } from '../entities/user/user_role.model';
 import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
-import { Logger } from '../utils/logger.util';
+import { Logger } from '../services/logger.service';
 import { Redis } from '../database/redis';
 import { JWTService } from './jwt.service';
 import { UploadUtils } from '../utils/upload.utils';
@@ -15,7 +15,6 @@ import * as gm from 'gm';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const log = Logger.getInstance().getLogger();
 @Service()
 export class UserService {
 
@@ -25,6 +24,7 @@ export class UserService {
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
         private rolesRepository: RolesRepository,
+        private logger: Logger,
         private jsonUtils: JSONUtils,
         private redisService: Redis) { }
 
@@ -77,7 +77,7 @@ export class UserService {
             await this.rolesRepository.save(role);
             // pass full JWT tokens
             userInstance.token = jwtToken;
-            log.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
+            this.logger.getLogger().info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
             // return user model object
             return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
         } catch (error) {
@@ -121,10 +121,10 @@ export class UserService {
             const currentPassword = userDB.password;
             if (user.password && currentPassword !== user.password) {
                 await user.updatePassword();
-                log.info(`User (ID: ${userDB.id}) updated his password`);
+                this.logger.getLogger().info(`User (ID: ${userDB.id}) updated his password`);
             }
             const userUpdated = await this.userRepository.update(userDB.id, user);
-            log.info(`User (ID: ${userDB.id}) was updated`);
+            this.logger.getLogger().info(`User (ID: ${userDB.id}) was updated`);
             return userUpdated;
         } catch (error) {
             throw error;
@@ -184,7 +184,7 @@ export class UserService {
                         .noProfile()
                         .write(finalFileNameWithDir, (error) => {
                             if (!error) {
-                                log.info('Image resized');
+                                this.logger.getLogger().info('Image resized');
                             } else {
                                 throw new Error('Error trying to resize image');
                             }

@@ -1,4 +1,4 @@
-import { Action, ForbiddenError, NotFoundError } from 'routing-controllers';
+import { Action, ForbiddenError, NotFoundError, UnauthorizedError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { Request } from 'express';
 import { RolesRepository } from '../repositories/roles.repository';
@@ -53,6 +53,10 @@ export class AuthChecker {
                 true : this.roleResolver(userDB, action, resolver);
             if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
                 return true;
+            }
+            if (!rolesResolver) {
+                throw new UnauthorizedError(`You don't have
+                authorization to modify this resource (${request.originalUrl} [${request.method}])`);
             }
             throw new ForbiddenError(`Your role (${userRole}) lacks permission to use ${request.originalUrl} [${request.method}]`);
         } catch (error) {

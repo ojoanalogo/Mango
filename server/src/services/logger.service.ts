@@ -1,12 +1,14 @@
 import { Format } from 'logform';
 import { Options } from 'morgan';
+import { Service, Container } from 'typedi';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 import * as httpContext from 'express-http-context';
 
+@Service()
 export class Logger {
-    private static _instance: Logger;
+
     private logger: winston.Logger;
     private loggerHTTP: winston.Logger;
     /**
@@ -18,16 +20,9 @@ export class Logger {
         winston.format.json(),
     );
 
-    private constructor() {
+    constructor() {
         this.setupLogger();
         this.setupConsoleStream();
-    }
-    /**
-     * Returns Logger Instance if exists, create a logger instance if don't exists
-     * @returns Logger instance
-     */
-    public static getInstance(): Logger {
-        return this._instance || (this._instance = new this());
     }
 
     /**
@@ -136,7 +131,8 @@ export class Logger {
 export const morganOption: Options = {
     stream: {
         write: function (message: string) {
-            Logger.getInstance().getHTTPLogger().log('http', message.replace('\n', ''));
+            const logger = Container.get(Logger);
+            logger.getHTTPLogger().log('http', message.replace('\n', ''));
         }
     }
 };
