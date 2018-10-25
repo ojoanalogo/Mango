@@ -2,7 +2,7 @@
     "name": "mango",
     "version": "1.0.0",
     "description": "Server template",
-    "main": "index.js",
+    "main": "./dist/app.js",
     "scripts": {
         "build": "rimraf dist && tsc --project ./tsconfig.json",
         "start": "pm2 start ./ecosystem.config.js --env production",
@@ -94,7 +94,7 @@
             "json",
             "node"
         ],
-        "collectCoverage": true,
+        "collectCoverage": false,
         "collectCoverageFrom": [
             "src/**/*.ts"
         ],

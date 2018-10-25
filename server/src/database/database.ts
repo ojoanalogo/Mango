@@ -51,6 +51,12 @@ export class Database {
         }
     }
     /**
+     * Stop database
+     */
+    public async stopDatabase() {
+        this.connection.close();
+    }
+    /**
      * Try to reconnect to database
      * @param errorMsg Error message from database
      */

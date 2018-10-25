@@ -2,7 +2,7 @@ module.exports = {
   apps : [{
     name      : 'Mango',
     cwd: './dist/',
-    script    : 'main.js',
+    script    : 'app.js',
     env: {
       NODE_ENV: 'development'
     },
