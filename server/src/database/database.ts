@@ -54,7 +54,8 @@ export class Database {
      * Stop database
      */
     public async stopDatabase() {
-        this.connection.close();
+        console.log('me están llamando');
+        await this.connection.close();
     }
     /**
      * Try to reconnect to database
