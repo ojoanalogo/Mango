@@ -4,5 +4,6 @@ logs/
 uploads/
 coverage/
 public/
+docs/
 .env
 npm-debug.log

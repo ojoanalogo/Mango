@@ -30,8 +30,11 @@ export class UserService {
 
     /**
      * Returns users from database
+     * @param page - Page number
+     * @returns A list with users
      */
     public async findAll(page: number = 0): Promise<User[]> {
+
         const redis = await this.redisService.getRedisInstance();
         try {
             let toSkip: number = page * 100;
@@ -53,7 +56,8 @@ export class UserService {
 
     /**
      * Creates a new user
-     * @param user user object
+     * @param user - User object
+     * @returns The created user entity
      */
     public async createUser(userReq: User): Promise<User> {
         // create User
@@ -87,9 +91,10 @@ export class UserService {
 
     /**
      * Checks user credentials and validates him
-     * @param user user object
+     * @param user - User object
+     * @returns User entity or false if password is wrong
      */
-    public async loginUser(user: User): Promise<any> {
+    public async loginUser(user: User): Promise<User | boolean> {
         try {
             const userDB = await this.userRepository.findOne({ email: user.email });
             // compares user password from login request with the one found associated to the email in the database (user Model)
@@ -113,7 +118,8 @@ export class UserService {
 
     /**
      * Update user data in database
-     * @param user user object
+     * @param user - User object
+     * @returns UpdateResult object
      */
     public async updateUser(user: User): Promise<UpdateResult> {
         try {
@@ -133,8 +139,8 @@ export class UserService {
 
     /**
      * Update user profile picture in database
-     * @param user user object
-     * @param uploadedPicture picture object (file data)
+     * @param user - User object
+     * @param uploadedPicture - Picture object (file data)
      */
     public async updateUserProfilePicture(user: User, uploadedPicture: any): Promise<any> {
         try {
@@ -161,7 +167,7 @@ export class UserService {
             // rename uploaded file with hash signature
             const hash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
             const newPicName = hash + path.extname(uploadedPicture.path);
-            const newPicPath = path.join(__dirname, '../../uploads/profile_pictures/'
+            const newPicPath = path.join(__dirname, '../../public/profile_pictures/'
                 + newPicName);
             fs.renameSync(uploadedPicture.path, newPicPath);
             // convert $FILENAME -auto-orient +profile "*" -write \
@@ -175,7 +181,7 @@ export class UserService {
                 const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
                 newResolutions.forEach(resElement => {
                     const resolution = parseInt(resElement);
-                    const finalFileNameWithDir = path.join(__dirname, '../../uploads/profile_pictures/' + resElement + '/' + newPicName);
+                    const finalFileNameWithDir = path.join(__dirname, '../../public/profile_pictures/' + resElement + '/' + newPicName);
                     gm(newPicPath)
                         .resize(resolution, resolution, '^')
                         .gravity('Center')
@@ -190,16 +196,15 @@ export class UserService {
                             }
                         });
                     // assign new URL with res name
-                    profilePictureInstance['res_' + resElement] = '/uploads/profile_pictures/' + resElement + '/' + newPicName;
+                    profilePictureInstance['res_' + resElement] = '/public/profile_pictures/' + resElement + '/' + newPicName;
                 });
-                profilePictureInstance.res_original = '/uploads/profile_pictures/' + newPicName;
+                profilePictureInstance.res_original = '/public/profile_pictures/' + newPicName;
                 const updateResult = await this.profilePictureRepository.update({ userId: userDB.id }, profilePictureInstance);
                 setTimeout(() => {
                     // rename original picture
                     fs.renameSync(newPicPath, path.join(__dirname,
-                        '../../uploads/profile_pictures/' + newPicName));
+                        '../../public/profile_pictures/' + newPicName));
                 }, 200);
-                return updateResult;
             });
         } catch (error) {
             throw error;
@@ -208,7 +213,8 @@ export class UserService {
 
     /**
      * Deletes user from database given ID
-     * @param id ID to delete from database
+     * @param id - ID to delete from database
+     * @returns DeleteResult object
      */
     public async deleteUserByID(id: number): Promise<DeleteResult> {
         try {
@@ -221,7 +227,8 @@ export class UserService {
 
     /**
      * Returns user with the ID provided
-     * @param id ID to lookup
+     * @param id - ID to lookup
+     * @returns User entity
      */
     public async getUserByID(id: number): Promise<User> {
         try {
@@ -233,7 +240,8 @@ export class UserService {
 
     /**
      * Get user by email
-     * @param email email string
+     * @param email - Email string
+     * @returns User entity
      */
     public async getUserByEmail(userEmail: string): Promise<User> {
         try {

@@ -61,8 +61,6 @@ export class App {
       httpContext.set('ip', req.ip);
       next();
     });
-    // point static path to dist
-    this.app.use(express.static(path.join(__dirname, '../public/')));
     // helmet middleware
     this.app.use(helmet());
     // spoof the stack used, just for fun
@@ -70,14 +68,17 @@ export class App {
       res.setHeader('X-Powered-By', 'Mango');
       next();
     });
-    // catch all other routes and return the index file
-    this.app.get('^(?!\/api).*$', (req, res) => {
-      res.sendFile(path.join(__dirname, '../public/index.html'));
-    });
+    // point static path to dist
+    this.app.use(express.static(path.join(__dirname, '../public')));
+    // catch all other routes and return the index file (Angular frontend)
+    // this.app.get('^(?!\/api).*$', (req, res) => {
+    //   res.sendFile(path.join(__dirname, '../public/client/index.html'));
+    // });
+    this.app.use('/public', express.static(path.join(__dirname, '../public/')));
   }
 
   /**
-   * Setup routing-controller
+   * Setup routing-controlles
    */
   private routerConfig(): void {
     const authChecker: AuthChecker = Container.get(AuthChecker);
@@ -92,13 +93,15 @@ export class App {
   }
 
   /**
-   * Returns express server instance
+   * Get express server instance
+   * @returns The express server instance
    */
   public getAppInstance(): express.Application {
     return this.app;
   }
   /**
-   * Returns express server port
+   * Get desired express server port
+   * @returns The express server port
    */
   public getPort(): number {
     return this.port;

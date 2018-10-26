@@ -14,9 +14,9 @@ export class JWTService {
 
     /**
      * Create a JWT token for specified user
-     * @param user user object
-     * @param refresh should be refresh the token?
-     * @returns {Promise<any>} promise with the result of the operation
+     * @param user - User object
+     * @param refresh - Should be refresh the token?
+     * @returns Promise with the result of the operation
      */
     public async createJWT(user: User, refresh?: boolean): Promise<any> {
         try {
@@ -42,6 +42,11 @@ export class JWTService {
         }
     }
 
+    /**
+     * Updates an old JWT token with a new one
+     * @param token - Old JWT token
+     * @returns The new token
+     */
     public async refreshToken(token: string): Promise<any> {
         try {
             const tokenDB = await this.tokenRepository.getTokenWithUser(token);
@@ -58,7 +63,8 @@ export class JWTService {
 
     /**
      * Verifies and decode a JWT token
-     * @param token JWT token encoded
+     * @param token - JWT token encoded
+     * @returns Token verification
      */
     public async verifyToken(token: string): Promise<object | string> {
         return await jwt.verify(token, process.env.JWT_SECRET);

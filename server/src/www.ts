@@ -20,4 +20,5 @@ class Server extends App {
   }
 }
 
+// Creates a new instance of the server
 export default new Server();

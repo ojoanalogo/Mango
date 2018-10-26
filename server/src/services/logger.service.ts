@@ -127,6 +127,7 @@ export class Logger {
 
 /**
  * Overwrite stream function to throw messages to our http logger
+ * @returns Morgan options
  */
 export const morganOption: Options = {
     stream: {

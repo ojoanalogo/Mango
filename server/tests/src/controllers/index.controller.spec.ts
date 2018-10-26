@@ -1,4 +1,5 @@
 import * as request from 'supertest';
+import * as setup from '../setup';
 import { App } from '../../../src/app';
 import 'reflect-metadata';
 

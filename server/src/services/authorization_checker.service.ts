@@ -18,9 +18,12 @@ export class AuthChecker {
      */
     public roleResolver = (user: User, action: Action, resolver: Resolver) => {
         const req: Request = action.request;
+        const reqType = req.method;
+        console.log('le body:');
+        console.log(req.body);
         switch (resolver) {
             case Resolver.OWN_ACCOUNT:
-                return user.id === parseInt(req.body.id);
+                return user.id === parseInt(reqType === 'GET' ? req.params.id : req.body.id);
             default:
                 return true;
         }
@@ -55,8 +58,8 @@ export class AuthChecker {
                 return true;
             }
             if (!rolesResolver) {
-                throw new UnauthorizedError(`You don't have
-                authorization to modify this resource (${request.originalUrl} [${request.method}])`);
+                throw new UnauthorizedError(
+                    `You don't have authorization to modify this resource (${request.originalUrl} [${request.method}])`);
             }
             throw new ForbiddenError(`Your role (${userRole}) lacks permission to use ${request.originalUrl} [${request.method}]`);
         } catch (error) {

@@ -14,7 +14,7 @@ import { User } from '../entities/user/user.model';
 import { RoleType } from '../entities/user/user_role.model';
 
 @JsonController('/users/')
-@UseBefore(LoggingMiddleware, JWTMiddleware)
+@UseBefore(LoggingMiddleware)
 export class UserController {
 
     constructor(private userService: UserService) { }
@@ -24,7 +24,10 @@ export class UserController {
      * @param page page number
      */
     @Get()
-    @Authorized([RoleType.DEVELOPER])
+    @UseBefore(JWTMiddleware)
+    @Authorized({
+        roles: [RoleType.DEVELOPER]
+    })
     public async getUsers(@Res() response: Response, @QueryParam('page') page = 0): Promise<Response> {
         const userData = await this.userService.findAll(page);
         return new ApiResponse(response)
@@ -38,7 +41,10 @@ export class UserController {
      * @param email email parameter
      */
     @Get(':email')
-    @Authorized([RoleType.USER])
+    @UseBefore(JWTMiddleware)
+    @Authorized({
+        roles: [RoleType.DEVELOPER]
+    })
     public async getUserByEmail(@Res() response: Response, @Param('email') email: string): Promise<Response> {
         const userDB = await this.userService.getUserByEmail(email);
         if (!userDB) {
@@ -83,7 +89,10 @@ export class UserController {
      * @param user user object
      */
     @Delete(':id')
-    @Authorized([RoleType.DEVELOPER])
+    @UseBefore(JWTMiddleware)
+    @Authorized({
+        roles: [RoleType.DEVELOPER]
+    })
     public async deleteUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
         const userDB = await this.userService.getUserByID(id);
         if (!userDB) {
@@ -105,6 +114,10 @@ export class UserController {
      * @param user user object
      */
     @Patch()
+    @UseBefore(JWTMiddleware)
+    @Authorized({
+        roles: [RoleType.DEVELOPER]
+    })
     public async updateUserByID(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
         const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {

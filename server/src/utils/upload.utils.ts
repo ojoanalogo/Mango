@@ -9,8 +9,8 @@ export class UploadUtils {
         const options: multer.Options = {
             storage: multer.diskStorage({
                 destination(req, fileName, cb) {
-                    const uploadsFolder = path.join(__dirname, '../../uploads');
-                    const profilePicturesFolder = path.join(__dirname, '../../uploads/profile_pictures');
+                    const uploadsFolder = path.join(__dirname, '../../public');
+                    const profilePicturesFolder = path.join(__dirname, '../../public/profile_pictures');
                     if (!fs.existsSync(uploadsFolder)) {
                         fs.mkdirSync(uploadsFolder);
                     }
