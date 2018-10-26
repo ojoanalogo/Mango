@@ -3,14 +3,13 @@ import { UnauthorizedError } from 'routing-controllers';
 import { User } from '../entities/user/user.model';
 import { Token } from '../entities/token/token.model';
 import { TokenRepository } from '../repositories/token.repository';
-import { UserRepository } from '../repositories/user.repository';
 import * as jwt from 'jsonwebtoken';
 import * as httpContext from 'express-http-context';
 
 @Service()
 export class JWTService {
 
-    constructor(private tokenRepository: TokenRepository, private userRepository: UserRepository) { }
+    constructor(private tokenRepository: TokenRepository) { }
 
     /**
      * Create a JWT token for specified user

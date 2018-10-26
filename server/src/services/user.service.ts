@@ -205,6 +205,7 @@ export class UserService {
                     fs.renameSync(newPicPath, path.join(__dirname,
                         '../../public/profile_pictures/' + newPicName));
                 }, 200);
+                return updateResult;
             });
         } catch (error) {
             throw error;

@@ -1,4 +1,4 @@
-import { Action, ForbiddenError, NotFoundError, UnauthorizedError } from 'routing-controllers';
+import { Action, ForbiddenError, NotFoundError, UnauthorizedError, InternalServerError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { Request } from 'express';
 import { RolesRepository } from '../repositories/roles.repository';
@@ -6,6 +6,7 @@ import { RoleType, getWeight } from '../entities/user/user_role.model';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user/user.model';
 import { Resolver } from '../handlers/resolver.handler';
+import multer = require('multer');
 
 @Service()
 export class AuthChecker {
@@ -13,14 +14,16 @@ export class AuthChecker {
     constructor(private userRepository: UserRepository, private rolesRepository: RolesRepository) { }
 
 
+    public actionBody = (req, res, next) => {
+        return multer().any()(req, res, next);
+    }
+
     /**
      * fuck this m8 just mock everything
      */
     public roleResolver = (user: User, action: Action, resolver: Resolver) => {
         const req: Request = action.request;
         const reqType = req.method;
-        console.log('le body:');
-        console.log(req.body);
         switch (resolver) {
             case Resolver.OWN_ACCOUNT:
                 return user.id === parseInt(reqType === 'GET' ? req.params.id : req.body.id);
@@ -36,10 +39,13 @@ export class AuthChecker {
     // TODO: Refactor this function
     public authorizationChecker = async (action: Action, rolesParam: any) => {
         const request: Request = action.request;
-        const user = request['user'];
+        const user: User = request['user'];
         const roles = rolesParam[0].roles;
         const resolver = rolesParam[0].resolver;
         try {
+            if (!roles) {
+                throw new InternalServerError('No roles defined');
+            }
             const userDB = await this.userRepository.findOne({ id: user.id });
             if (!userDB) {
                 throw new NotFoundError('User not found');
@@ -54,6 +60,7 @@ export class AuthChecker {
             const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));
             const rolesResolver = getWeight(userRole) >= getWeight(RoleType.DEVELOPER) ?
                 true : this.roleResolver(userDB, action, resolver);
+            console.log('resultado:' + rolesResolver);
             if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
                 return true;
             }
