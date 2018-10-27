@@ -13,6 +13,7 @@ export class Logger {
     private loggerHTTP: winston.Logger;
     /**
     * Common logger format, we strip colors and add a Timestamp
+    * @returns LogFormat
     */
     private logFormat: Format = winston.format.combine(
         winston.format.uncolorize(),
@@ -35,7 +36,7 @@ export class Logger {
 
     /**
      * Get http logger
-     * @returns winston logger object
+     * @returns winston HTTP logger object
      */
     public getHTTPLogger(): winston.Logger {
         return this.loggerHTTP;

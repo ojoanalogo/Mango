@@ -7,9 +7,10 @@ export class ApiResponse {
     private data: any;
 
     constructor(private _response: Response) { }
+
     /**
      * Adds data to the Response object
-     * @param data data object
+     * @param data - Data object
      */
     public withData(data: any): ApiResponse {
         this.data = data;
@@ -17,7 +18,7 @@ export class ApiResponse {
     }
     /**
      * What status code should we return
-     * @param statusCode statusCode
+     * @param statusCode - StatusCode
      */
     public withStatusCode(statusCode: HTTP_STATUS_CODE): ApiResponse {
         this.statusCode = statusCode;
@@ -26,7 +27,7 @@ export class ApiResponse {
 
     /**
      * Creates a response object from a set of parameters
-     * @returns {Response} response object with the defined payload
+     * @returns Response object with the defined payload
      */
     public build(): Response {
         return this._response

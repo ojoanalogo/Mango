@@ -15,10 +15,11 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
     constructor(private jwtService: JWTService, private logger: Logger) { }
 
     /**
-     * JWT Middleware
-     * @param request request object
-     * @param response response object
-     * @param next proceeed to next operation
+     * JWT Middleware, here we check if request has a valid JWT token and we renew it if is still valid
+     *
+     * @param request - Request object
+     * @param response - Response object
+     * @param next - Next function
      */
     async use(request: Request, response: Response, next?: (err?: any) => any): Promise<any> {
         // get auth header from request

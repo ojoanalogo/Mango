@@ -1,5 +1,8 @@
 import { CreateDateColumn, Column, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 
+/**
+ * Abstract class for Created, updated and Deleted at columns
+ */
 export abstract class CUD {
 
     @PrimaryGeneratedColumn()

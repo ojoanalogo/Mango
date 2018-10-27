@@ -11,6 +11,14 @@ import { Logger } from '../services/logger.service';
 @Middleware({ type: 'after' })
 export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
 
+    /**
+     * Custom error interceptor
+     *
+     * @param error - Error object
+     * @param request - Request object
+     * @param response - Response object
+     * @param next - Next function
+     */
     error(error: any, request: any, response: any, next: any) {
         let status: HTTP_STATUS_CODE = HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR;
         const log = Container.get(Logger);

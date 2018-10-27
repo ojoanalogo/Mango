@@ -68,11 +68,12 @@ export class App {
       res.setHeader('X-Powered-By', 'Mango');
       next();
     });
-    // point static path to dist
+    // point static path to public
     this.app.use(express.static(path.join(__dirname, '../public')));
     // catch all other routes and return the index file (Angular frontend)
+    // enable this to use a frontend client and let it use his own router
     // this.app.get('^(?!\/api).*$', (req, res) => {
-    //   res.sendFile(path.join(__dirname, '../public/client/index.html'));
+    //   res.sendFile(path.join(__dirname, '../../dist/client/index.html'));
     // });
     this.app.use('/public', express.static(path.join(__dirname, '../public/')));
   }

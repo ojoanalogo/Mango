@@ -22,7 +22,7 @@ export class Database {
 
     /**
     * Setup database
-    * @returns {Promise<void>} Promise with the operation result
+    * @returns Promise with the operation result
     */
     public async setupDatabase(): Promise<Connection> {
         try {
@@ -50,16 +50,17 @@ export class Database {
             this.retry(error);
         }
     }
+
     /**
      * Stop database
      */
     public async stopDatabase() {
-        console.log('me están llamando');
         await this.connection.close();
     }
+
     /**
      * Try to reconnect to database
-     * @param errorMsg Error message from database
+     * @param errorMsg - Error message from database
      */
     private retry(errorMsg: string): void {
         // we should try to reconnect a few times

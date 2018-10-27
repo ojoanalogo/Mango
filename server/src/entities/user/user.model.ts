@@ -36,12 +36,18 @@ export class User extends CUD {
     @OneToOne(type => ProfilePicture, profile_picture => profile_picture.user)
     profile_picture: ProfilePicture;
 
+    /**
+     * Before insertion
+     */
     @BeforeInsert()
     async beforeInsertion() {
         // store password as a hash
         await this.updatePassword();
     }
 
+    /**
+     * This gets triggered before table updates
+     */
     @BeforeUpdate()
     async beforeUpdate() {
         // capitalize first and second name
@@ -56,7 +62,8 @@ export class User extends CUD {
     }
     /**
      * Compare a password with the one encrypted in the database
-     * @param passwordToCompare Password to check against
+     * @param passwordToCompare - Password to check against
+     * @returns Returns is password is valid
      */
     async comparePassword(passwordToCompare: string): Promise<boolean> {
         return await bcrypt.compare(passwordToCompare, this.password);

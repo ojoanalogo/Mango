@@ -71,7 +71,8 @@ export class JWTService {
 
     /**
      * Decode JWT token without verifyng signature
-     * @param token JWT token
+     * @param token - JWT token
+     * @returns Decoded token
      */
     public async decodeToken(token: string): Promise<any> {
         return await jwt.decode(token);

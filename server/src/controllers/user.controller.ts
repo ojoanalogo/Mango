@@ -20,8 +20,9 @@ export class UserController {
     constructor(private userService: UserService) { }
     /**
      * GET request to get all users
-     * @param response response object
-     * @param page page number
+     * @param response - Response object
+     * @param page - Page number
+     * @returns User list
      */
     @Get()
     @UseBefore(JWTMiddleware)
@@ -37,8 +38,9 @@ export class UserController {
 
     /**
      * GET request to get user by mail
-     * @param response response object
-     * @param email email parameter
+     * @param response - Response object
+     * @param email - Email parameter
+     * @returns User specified from email
      */
     @Get(':email')
     @UseBefore(JWTMiddleware)
@@ -57,8 +59,9 @@ export class UserController {
 
     /**
      * POST request to create a new user in database
-     * @param response response object
-     * @param user user object from body
+     * @param response - Response object
+     * @param user - User object from body
+     * @returns Created user data
      */
     @Post()
     public async createUser(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
@@ -85,8 +88,9 @@ export class UserController {
 
     /**
      * Updates user with ID supplied
-     * @param response response object
-     * @param user user object
+     * @param response - Response object
+     * @param id - User ID
+     * @returns Delete result
      */
     @Delete(':id')
     @UseBefore(JWTMiddleware)
@@ -110,8 +114,9 @@ export class UserController {
 
     /**
      * Updates user with ID supplied
-     * @param response response object
-     * @param user user object
+     * @param response - Response object
+     * @param user - User object
+     * @returns Update result
      */
     @Patch()
     @UseBefore(JWTMiddleware)

@@ -14,8 +14,9 @@ export class AuthController {
 
     /**
      * Login user with email and password data
-     * @param response response object
-     * @param user user object
+     * @param response - Response object
+     * @param user - User object
+     * @returns Login response
      */
     @Post()
     public async login(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {

@@ -18,11 +18,14 @@ import * as multer from 'multer';
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)
 export class MeController {
+
     constructor(private userService: UserService, private tokenRepository: TokenRepository) { }
+
     /**
      * GET request to get user profile info
-     * @param response response object
-     * @param request request object
+     * @param response - Response object
+     * @param request - Request object
+     * @returns User profile
      */
     @Get()
     @UseBefore(JWTMiddleware)
@@ -39,10 +42,13 @@ export class MeController {
             .withData(userProfile)
             .withStatusCode(HTTP_STATUS_CODE.OK).build();
     }
+
     /**
      * PUT request to update user profile info
-     * @param response response object
-     * @param request request object
+     * @param response - Response object
+     * @param request - Request object
+     * @param user - User object from body
+     * @returns Update profile result
      */
     @Put()
     @UseBefore(JWTMiddleware)
@@ -67,12 +73,14 @@ export class MeController {
             .withStatusCode(HTTP_STATUS_CODE.OK)
             .build();
     }
+
     /**
      * PUT request to update user profile picture
-     * @param response response object
-     * @param request request object
-     * @param user user object from body
-     * @param profilePicture multipart file
+     * @param response - Response object
+     * @param request - Request object
+     * @param user - User object from body
+     * @param profilePicture - Multipart file
+     * @returns Update profile picture result
      */
     @Put('/profile_picture')
     @UseBefore(JWTMiddleware, multer(UploadUtils.getProfileUploadMulterOptions()).any())
@@ -89,7 +97,7 @@ export class MeController {
         if (!userDB) {
             throw new NotFoundError('User not found');
         }
-        const updateRS = await this.userService.updateUserProfilePicture(user, file);
-        return new ApiResponse(res).withData(updateRS).withStatusCode(HTTP_STATUS_CODE.OK).build();
+        await this.userService.updateUserProfilePicture(user, file);
+        return new ApiResponse(res).withData('Profile picture updated').withStatusCode(HTTP_STATUS_CODE.OK).build();
     }
 }

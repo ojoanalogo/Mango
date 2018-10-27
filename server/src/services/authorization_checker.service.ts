@@ -13,15 +13,11 @@ export class AuthChecker {
 
     constructor(private userRepository: UserRepository, private rolesRepository: RolesRepository) { }
 
-
-    public actionBody = (req, res, next) => {
-        return multer().any()(req, res, next);
-    }
-
     /**
-     * fuck this m8 just mock everything
+     * Resolve account (checks if resource is valid to modification)
+     * @returns Resource authorization check
      */
-    public roleResolver = (user: User, action: Action, resolver: Resolver) => {
+    private roleResolver = (user: User, action: Action, resolver: Resolver) => {
         const req: Request = action.request;
         const reqType = req.method;
         switch (resolver) {
@@ -33,10 +29,13 @@ export class AuthChecker {
     }
     /**
     * Checks if user is authorized to access route
-    * @param action action object from routing controllers
-    * @param roles roles array
+    *
+    * TODO: Refactor this function
+    *
+    * @param action - Action object from routing controllers
+    * @param roles - Roles array
+    * @returns Authorization result
     */
-    // TODO: Refactor this function
     public authorizationChecker = async (action: Action, rolesParam: any) => {
         const request: Request = action.request;
         const user: User = request['user'];

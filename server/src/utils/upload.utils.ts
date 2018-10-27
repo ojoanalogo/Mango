@@ -5,7 +5,11 @@ import * as multer from 'multer';
 import * as crypto from 'crypto';
 export class UploadUtils {
 
-    public static getProfileUploadMulterOptions() {
+    /**
+     * Gets Multer options for profile picture upload
+     * @returns Multer options
+     */
+    public static getProfileUploadMulterOptions(): multer.Options {
         const options: multer.Options = {
             storage: multer.diskStorage({
                 destination(req, fileName, cb) {
@@ -42,6 +46,12 @@ export class UploadUtils {
         return options;
     }
 
+    /**
+     * Returns hash for file
+     * @param filename - Filename
+     * @param algorithm - Hash algorithm
+     * @returns File hash
+     */
     public static getFileHash(filename, algorithm = 'md5'): Promise<string> {
         return new Promise((resolve, reject) => {
             // Algorithm depends on availability of OpenSSL on platform

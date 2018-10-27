@@ -25,8 +25,7 @@ export class UserService {
         private profilePictureRepository: ProfilePictureRepository,
         private rolesRepository: RolesRepository,
         private logger: Logger,
-        private jsonUtils: JSONUtils,
-        private redisService: Redis) { }
+        private jsonUtils: JSONUtils) { }
 
     /**
      * Returns users from database
@@ -34,8 +33,6 @@ export class UserService {
      * @returns A list with users
      */
     public async findAll(page: number = 0): Promise<User[]> {
-
-        const redis = await this.redisService.getRedisInstance();
         try {
             let toSkip: number = page * 100;
             if (page === 1) {
@@ -46,9 +43,7 @@ export class UserService {
                     .skip(toSkip)
                     .take(100)
                     .getMany();
-            redis.setex('api:getUsers/' + page, 5, JSON.stringify(users));
-            console.log('no deeria salir en cached data');
-            return this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties);
+            return <User[]>(this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties));
         } catch (error) {
             throw error;
         }
@@ -141,6 +136,7 @@ export class UserService {
      * Update user profile picture in database
      * @param user - User object
      * @param uploadedPicture - Picture object (file data)
+     * @returns Update result
      */
     public async updateUserProfilePicture(user: User, uploadedPicture: any): Promise<any> {
         try {

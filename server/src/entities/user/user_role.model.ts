@@ -11,6 +11,10 @@ export enum RoleType {
     USER = 'user'
 }
 
+/**
+ * Returns weight for the user role
+ * @param role - RoleType
+ */
 export function getWeight(role: RoleType) {
     const weight = {
         'ceo': 1000,
@@ -20,7 +24,7 @@ export function getWeight(role: RoleType) {
         'sales': 100,
         'user': 1
     };
-    return weight[role];
+    return weight[role] !== undefined ? weight[role] : 1;
 }
 
 export const table_name = 'roles';

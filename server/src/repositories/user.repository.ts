@@ -10,8 +10,9 @@ export class UserRepository extends BaseRepository<User> {
 
     /**
      * Get user profile from database
-     * @param conditions conditions like email = :email
-     * @param conditionsValues value for conditions
+     * @param conditions - Conditions like email = :email
+     * @param conditionsValues - Value for conditions ({email: 'bla'})
+     * @returns User profile entity
      */
     async getProfile(conditions: string, conditionsValues: any): Promise<User> {
         return await this.createQueryBuilder('user')

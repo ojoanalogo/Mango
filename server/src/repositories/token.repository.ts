@@ -9,7 +9,8 @@ export class TokenRepository extends BaseRepository<Token> {
     }
     /**
      * Returns user data associated to token
-     * @param token Token to look for
+     * @param token - Token to look for
+     * @returns Token entity with user entity loaded
      */
     async getTokenWithUser(token): Promise<Token> {
         return await this.createQueryBuilder('token')

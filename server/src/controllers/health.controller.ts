@@ -9,9 +9,11 @@ import { HealthService } from '../services/health.service';
 export class HealthController {
 
     constructor(private healthService: HealthService) { }
+
     /**
      * GET request for Health status
-     * @param response response object
+     * @param response - Response object
+     * @returns Health status check
      */
     @Get()
     public healthStatus(@Res() response: Response): Response {

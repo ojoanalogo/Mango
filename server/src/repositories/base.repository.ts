@@ -8,7 +8,7 @@ export abstract class BaseRepository<T> {
     }
     /**
      * Returns repository for the given entity
-     * @param entity entity name
+     * @param entity - Entity name
      */
     public getRepository(entity?: string | Function | (new () => {})): Repository<T> {
         const man: EntityManager = getManager();
@@ -17,7 +17,7 @@ export abstract class BaseRepository<T> {
     }
     /**
      * Returns repository for the given class
-     * @param entityClass entity class
+     * @param entityClass - Entity class
      */
     public getRepoFromClass(entityClass?: Function | (new () => {})): Repository<{}> {
         const man: EntityManager = getManager();
@@ -25,7 +25,7 @@ export abstract class BaseRepository<T> {
     }
     /**
      * Execute a repository function in asynchronous way
-     * @param repositoryFunction a function
+     * @param repositoryFunction - A repo function
      */
     private async executeRepositoryFunction(repositoryFunction: Promise<any>): Promise<any> {
         try {

@@ -4,11 +4,13 @@ import { morganOption } from '../services/logger.service';
 import * as morgan from 'morgan';
 
 export class LoggingMiddleware implements ExpressMiddlewareInterface {
+
     /**
      * Logging middleware, logs requests and outputs every request to a file (production) and to console
-     * @param request request object
-     * @param response response object
-     * @param next proceeed to next operation
+     *
+     * @param request - Request object
+     * @param response - Response object
+     * @param next - Next function
      */
     use(request: Request, response: Response, next?: (err?: any) => any): any {
         const morganLevel = process.env.NODE_ENV !== 'production' ? 'dev' : 'common';
