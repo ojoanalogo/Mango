@@ -7,8 +7,7 @@ import { User } from '../entities/user/user.model';
 import { Role, RoleType } from '../entities/user/user_role.model';
 import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
-import { Logger } from '../services/logger.service';
-import { Redis } from '../database/redis';
+import { Logger, LoggerService } from '../services/logger.service';
 import { JWTService } from './jwt.service';
 import { UploadUtils } from '../utils/upload.utils';
 import * as gm from 'gm';
@@ -21,11 +20,11 @@ export class UserService {
     @Inject(type => JWTService)
     private jwtService: JWTService; // circular reference fix
     constructor(
+        @Logger() private logger: LoggerService,
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
         private rolesRepository: RolesRepository,
-        private logger: Logger,
-        private jsonUtils: JSONUtils) { }
+        private jsonUtils: JSONUtils) {}
 
     /**
      * Returns users from database

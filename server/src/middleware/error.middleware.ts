@@ -6,7 +6,7 @@ import {
 import { Container } from 'typedi';
 import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { ApiError } from '../handlers/api_error.handler';
-import { Logger } from '../services/logger.service';
+import { LoggerService } from '../services/logger.service';
 
 @Middleware({ type: 'after' })
 export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
@@ -21,7 +21,7 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
      */
     error(error: any, request: any, response: any, next: any) {
         let status: HTTP_STATUS_CODE = HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR;
-        const log = Container.get(Logger);
+        const log = Container.get(LoggerService);
         const apiError = new ApiError(response);
         apiError.withData(error.message);
         apiError.withErrorName(error.name);

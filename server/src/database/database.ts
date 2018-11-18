@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { Connection, createConnection } from 'typeorm';
-import { Logger } from '../services/logger.service';
+import { Logger, LoggerService } from '../services/logger.service';
 
 @Service()
 export class Database {
@@ -18,7 +18,7 @@ export class Database {
     private connection: Connection;
     private syncOption = process.env.NODE_ENV === 'production' ? false : true;
 
-    constructor(private logger: Logger) { }
+    constructor(@Logger() private logger: LoggerService) { }
 
     /**
     * Setup database

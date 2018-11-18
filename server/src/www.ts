@@ -1,5 +1,5 @@
 import { App } from './app';
-import { Logger } from './services/logger.service';
+import { LoggerService } from './services/logger.service';
 import { Container } from 'typedi';
 import { createServer } from 'http';
 
@@ -11,7 +11,7 @@ class Server extends App {
      */
     const server = createServer(this.getAppInstance());
     server.listen(this.getPort(), () => {
-      const log = Container.get(Logger);
+      const log = Container.get(LoggerService);
       log.getLogger()
         .info('Running environment: ' + process.env.NODE_ENV);
       log.getLogger()

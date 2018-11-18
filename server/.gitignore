@@ -3,7 +3,7 @@ dist/
 logs/
 uploads/
 coverage/
-public/
+public/profile_pictures
 docs/
 .env
 npm-debug.log

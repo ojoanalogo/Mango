@@ -75,7 +75,6 @@ export class App {
     // this.app.get('^(?!\/api).*$', (req, res) => {
     //   res.sendFile(path.join(__dirname, '../../dist/client/index.html'));
     // });
-    this.app.use('/public', express.static(path.join(__dirname, '../public/')));
   }
 
   /**

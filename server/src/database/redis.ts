@@ -1,6 +1,6 @@
 import { createClient, RedisClient } from 'redis';
 import { Service } from 'typedi/decorators/Service';
-import { Logger } from '../services/logger.service';
+import { Logger, LoggerService } from '../services/logger.service';
 
 @Service()
 export class Redis {
@@ -10,7 +10,7 @@ export class Redis {
     private redis_port: number = parseInt(process.env.REDIS_PORT) || 6379;
     private redis_auth: string = process.env.REDIS_AUTH || '';
 
-    constructor(private logger: Logger) {}
+    constructor(@Logger() private logger: LoggerService) { }
 
     public async setupRedis() {
         this.client = createClient({

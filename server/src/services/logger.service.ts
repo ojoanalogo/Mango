@@ -6,8 +6,16 @@ import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 import * as httpContext from 'express-http-context';
 
+
+export function Logger() {
+    return function(object: Object, propertyName: string, index?: number) {
+        const logger = new LoggerService();
+        Container.registerHandler({ object, propertyName, index, value: containerInstance => logger });
+    };
+}
+
 @Service()
-export class Logger {
+export class LoggerService {
 
     private logger: winston.Logger;
     private loggerHTTP: winston.Logger;
@@ -114,7 +122,7 @@ export class Logger {
                             timestamp, level, message, ...args
                         } = info;
                         const reqId = httpContext.get('reqId');
-                        const msgNew = reqId ? '(' + reqId + ')' + info.message : info.message;
+                        const msgNew = reqId ? '\tRequestID: (' + reqId + ') ' + info.message.replace('\t', '') : info.message;
                         const ts = timestamp.slice(0, 19).replace('T', ' ');
                         return `${ts} ${level}: ${msgNew} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
                     })
@@ -133,7 +141,7 @@ export class Logger {
 export const morganOption: Options = {
     stream: {
         write: function (message: string) {
-            const logger = Container.get(Logger);
+            const logger = Container.get(LoggerService);
             logger.getHTTPLogger().log('http', message.replace('\n', ''));
         }
     }

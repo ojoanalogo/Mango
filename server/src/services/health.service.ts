@@ -1,9 +1,10 @@
 import { Service } from 'typedi';
+import { Logger, LoggerService } from './logger.service';
 
 @Service()
 export class HealthService {
 
-    constructor() { }
+    constructor(@Logger() private logger: LoggerService) { }
 
     /**
      * Returns health status
@@ -18,6 +19,7 @@ export class HealthService {
         const minutes = Math.floor(uptime % (60 * 60) / 60);
         const seconds = Math.floor(uptime % 60);
         const formatted = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+        this.logger.getLogger().info('Uptime: ' + formatted);
         return {
             ping: 'pong',
             uptime: uptime,

@@ -6,7 +6,6 @@ import { RoleType, getWeight } from '../entities/user/user_role.model';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user/user.model';
 import { Resolver } from '../handlers/resolver.handler';
-import multer = require('multer');
 
 @Service()
 export class AuthChecker {
@@ -43,7 +42,7 @@ export class AuthChecker {
         const resolver = rolesParam[0].resolver;
         try {
             if (!roles) {
-                throw new InternalServerError('No roles defined');
+                throw new InternalServerError('No roles defined in controller action');
             }
             const userDB = await this.userRepository.findOne({ id: user.id });
             if (!userDB) {
@@ -59,7 +58,6 @@ export class AuthChecker {
             const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));
             const rolesResolver = getWeight(userRole) >= getWeight(RoleType.DEVELOPER) ?
                 true : this.roleResolver(userDB, action, resolver);
-            console.log('resultado:' + rolesResolver);
             if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
                 return true;
             }

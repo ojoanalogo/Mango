@@ -5,14 +5,15 @@ import {
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { JWTService } from '../services/jwt.service';
-import { Logger } from '../services/logger.service';
+import { Logger, LoggerService } from '../services/logger.service';
+import { User } from '../entities/user/user.model';
 import * as moment from 'moment';
 import * as jwt from 'jsonwebtoken';
 
 @Service()
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
-    constructor(private jwtService: JWTService, private logger: Logger) { }
+    constructor(@Logger() private logger: LoggerService, private jwtService: JWTService) { }
 
     /**
      * JWT Middleware, here we check if request has a valid JWT token and we renew it if is still valid
@@ -55,7 +56,7 @@ export class JWTMiddleware implements ExpressMiddlewareInterface {
                     const exp = moment(decoded.exp * 1000);
                     const dif = exp.diff(new Date(), 'days');
                     if (dif >= -7) {
-                        const user = decoded['user'];
+                        const user: User = decoded['user'];
                         if (!user) {
                             throw new NotAcceptableError('Invalid Token data');
                         }
