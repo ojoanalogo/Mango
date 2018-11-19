@@ -89,11 +89,12 @@ export class MeController {
         resolver: Resolver.OWN_ACCOUNT
     })
     public async updateProfilePicture(@Req() req: Request, @Res() res: Response, @Body() user: User): Promise<any> {
-        const file = req.files[0];
+        console.log(user);
+        const file: Express.Multer.File = req.files[0];
         if (!file) {
             throw new BadRequestError('Please upload an image');
         }
-        const userDB = await this.userService.getUserByEmail(user.email);
+        const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {
             throw new NotFoundError('User not found');
         }

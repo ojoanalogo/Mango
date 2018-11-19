@@ -7,6 +7,7 @@ import { Container } from 'typedi';
 import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { ApiError } from '../handlers/api_error.handler';
 import { LoggerService } from '../services/logger.service';
+import { unlinkSync } from 'fs';
 
 @Middleware({ type: 'after' })
 export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
@@ -35,6 +36,11 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
             error instanceof UnauthorizedError) {
             status = error.httpCode;
         }
+        if (request.files[0]) {
+            // remove file if exists because we don't need it
+            unlinkSync(request.files[0].path);
+        }
+        // begin building apiError object with status code
         apiError.withStatusCode(status);
         if (status >= 400 && status < 500) {
             log.getLogger().warn(error);

@@ -3,15 +3,11 @@ import { Token } from '../token/token.model';
 import { ProfilePicture } from './user_profile_picture.model';
 import { Role } from './user_role.model';
 import { CUD } from '../CUD';
-import * as uuid from 'uuid';
 import * as bcrypt from 'bcrypt';
 
 export const table_name = 'users';
 @Entity(table_name)
 export class User extends CUD {
-
-    @Column({ default: uuid.v4(), unique: true })
-    guid: string;
 
     @Column()
     first_name: string;

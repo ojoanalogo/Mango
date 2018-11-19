@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import {
     ExpressMiddlewareInterface, UnauthorizedError,
-    NotAcceptableError, ForbiddenError
+    NotAcceptableError, ForbiddenError, Middleware
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { JWTService } from '../services/jwt.service';
@@ -11,6 +11,7 @@ import * as moment from 'moment';
 import * as jwt from 'jsonwebtoken';
 
 @Service()
+@Middleware({ type: 'before' })
 export class JWTMiddleware implements ExpressMiddlewareInterface {
 
     constructor(@Logger() private logger: LoggerService, private jwtService: JWTService) { }

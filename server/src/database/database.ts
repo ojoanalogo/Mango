@@ -37,7 +37,7 @@ export class Database {
                 entities: [__dirname + '../../entities/**/*{.js,.ts}'],
                 migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
                 synchronize: this.syncOption,
-                logging: false,
+                logging: true,
                 cache: {
                     duration: 2000
                 }

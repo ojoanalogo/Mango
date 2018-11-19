@@ -1,4 +1,4 @@
-import { Action, ForbiddenError, NotFoundError, UnauthorizedError, InternalServerError } from 'routing-controllers';
+import { Action, ForbiddenError, UnauthorizedError, InternalServerError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { Request } from 'express';
 import { RolesRepository } from '../repositories/roles.repository';
@@ -46,7 +46,7 @@ export class AuthChecker {
             }
             const userDB = await this.userRepository.findOne({ id: user.id });
             if (!userDB) {
-                throw new NotFoundError('User not found');
+                throw new ForbiddenError('Your user not longer exists in the database');
             }
             const userRoleDB = await this.rolesRepository.createQueryBuilder('rol')
                 .leftJoin('rol.user', 'user')

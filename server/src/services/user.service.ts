@@ -135,12 +135,13 @@ export class UserService {
      * Update user profile picture in database
      * @param user - User object
      * @param uploadedPicture - Picture object (file data)
+     *
      * @returns Update result
      */
-    public async updateUserProfilePicture(user: User, uploadedPicture: any): Promise<any> {
+    public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
         try {
             const userDB = await this.userRepository.findOne({ email: user.email });
-            const profilePictureInstance = await this.profilePictureRepository.findOne({ userId: userDB.id });
+            const profilePictureInstance = await this.profilePictureRepository.findOne({ user: userDB.id });
             const resolutions = ['480', '240', '96', '64', '32']; // picture resolutions
             // delete original file
             const originalFilePath = path.join(__dirname, '../../' +
@@ -194,7 +195,7 @@ export class UserService {
                     profilePictureInstance['res_' + resElement] = '/public/profile_pictures/' + resElement + '/' + newPicName;
                 });
                 profilePictureInstance.res_original = '/public/profile_pictures/' + newPicName;
-                const updateResult = await this.profilePictureRepository.update({ userId: userDB.id }, profilePictureInstance);
+                const updateResult = await this.profilePictureRepository.update({ user: userDB.id }, profilePictureInstance);
                 setTimeout(() => {
                     // rename original picture
                     fs.renameSync(newPicPath, path.join(__dirname,
