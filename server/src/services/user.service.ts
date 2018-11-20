@@ -24,7 +24,7 @@ export class UserService {
         private userRepository: UserRepository,
         private profilePictureRepository: ProfilePictureRepository,
         private rolesRepository: RolesRepository,
-        private jsonUtils: JSONUtils) {}
+        private jsonUtils: JSONUtils) { }
 
     /**
      * Returns users from database
@@ -59,16 +59,16 @@ export class UserService {
             const user = new User();
             user.email = userReq.email;
             user.password = userReq.password;
-            const userInstance = await this.userRepository.save(userReq);
+            const userInstance: User = await this.userRepository.save(userReq);
             // create JWT tokens
             const jwtToken = await this.jwtService.createJWT(userInstance);
             // create profile picture entity
-            const profilePicture = new ProfilePicture();
+            const profilePicture: ProfilePicture = new ProfilePicture();
             profilePicture.user = userInstance;
             // save profile picture in profile picture repository
             await this.profilePictureRepository.save(profilePicture);
             // now assign default Role
-            const role = new Role();
+            const role: Role = new Role();
             role.role = RoleType.USER;
             role.user = userInstance;
             // save role in role repository
@@ -186,13 +186,13 @@ export class UserService {
                         .noProfile()
                         .write(finalFileNameWithDir, (error) => {
                             if (!error) {
-                                this.logger.getLogger().info('Image resized');
+                                this.logger.getLogger().info(`Image resized (${resolution} x ${resolution})`);
                             } else {
                                 throw new Error('Error trying to resize image');
                             }
                         });
                     // assign new URL with res name
-                    profilePictureInstance['res_' + resElement] = '/public/profile_pictures/' + resElement + '/' + newPicName;
+                    profilePictureInstance['res_' + resElement] = '/profile_pictures/' + resElement + '/' + newPicName;
                 });
                 profilePictureInstance.res_original = '/public/profile_pictures/' + newPicName;
                 const updateResult = await this.profilePictureRepository.update({ user: userDB.id }, profilePictureInstance);
@@ -217,6 +217,34 @@ export class UserService {
         try {
             const deleteResult = await this.userRepository.delete(id);
             return deleteResult;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Check if user exists with email
+     * @param userEmail - User email
+     * @returns User exists
+     */
+    public async userExistsByEmail(userEmail: string): Promise<boolean> {
+        try {
+            const exists = await this.userRepository.count({ email: userEmail });
+            return Boolean(exists);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Check if user exists with ID
+     * @param id - User ID
+     * @returns User exists
+     */
+    public async userExistsByID(id: number): Promise<boolean> {
+        try {
+            const exists = await this.userRepository.count({ id: id });
+            return Boolean(exists);
         } catch (error) {
             throw error;
         }

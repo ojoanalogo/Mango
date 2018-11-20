@@ -72,8 +72,8 @@ export class UserController {
         if (validator.isEmpty(user.password)) {
             throw new BadRequestError('Password field empty');
         }
-        const userDB = await this.userService.getUserByEmail(user.email);
-        if (userDB) {
+        const userExists = await this.userService.userExistsByEmail(user.email);
+        if (userExists) {
             return new ApiResponse(response)
                 .withData('User already registered')
                 .withStatusCode(HTTP_STATUS_CODE.CONFLICT)

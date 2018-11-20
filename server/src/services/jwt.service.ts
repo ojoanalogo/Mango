@@ -35,7 +35,7 @@ export class JWTService {
                 tokenInstance.token = token;
                 tokenInstance.agent = userAgent;
                 tokenInstance.user = user; // asign relationship
-                this.logger.getLogger().info('Creating new token for: ' + JSON.stringify({ user: user.id, agent: userAgent }));
+                this.logger.getLogger().info(`Creating new token for user id: ${user.id}, agent: ${userAgent}`);
                 // now we save the token in our token repository
                 await this.tokenRepository.save(tokenInstance);
             }
@@ -57,8 +57,7 @@ export class JWTService {
                 throw new UnauthorizedError('Token no longer valid (already refreshed)');
             }
             const newToken = await this.createJWT(tokenDB.user, true);
-            this.logger.getLogger().info('Refreshing user token for: ' + JSON.stringify(
-                { user: tokenDB.user.id, agent: tokenDB.agent }));
+            this.logger.getLogger().info(`Refreshing user token for user id: ${tokenDB.user.id}, agent: ${tokenDB.agent}`);
             await this.tokenRepository.update({ token: token }, { token: newToken, last_time_refreshed: new Date() });
             return newToken;
         } catch (error) {

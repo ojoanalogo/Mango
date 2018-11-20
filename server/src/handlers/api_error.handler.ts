@@ -6,7 +6,7 @@ export class ApiError extends ApiResponse {
 
     /**
      * Adds error field
-     * @param error Error name
+     * @param error - Error name
      */
     public withErrorName(error: string) {
         this.error = error;
@@ -14,7 +14,7 @@ export class ApiError extends ApiResponse {
     }
     /**
      * If needed, add stacktrace to the response
-     * @param stack stacktrace
+     * @param stack - Stacktrace
      */
     public withStackTrace(stack: any) {
         this.stack = stack;

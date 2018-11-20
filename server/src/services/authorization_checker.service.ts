@@ -16,7 +16,7 @@ export class AuthChecker {
      * Resolve account (checks if resource is valid to modification)
      * @returns Resource authorization check
      */
-    private roleResolver = (user: User, action: Action, resolver: Resolver) => {
+    private roleResolver = (user: User, action: Action, resolver: Resolver): boolean => {
         const req: Request = action.request;
         const reqType = req.method;
         switch (resolver) {
@@ -35,7 +35,7 @@ export class AuthChecker {
     * @param roles - Roles array
     * @returns Authorization result
     */
-    public authorizationChecker = async (action: Action, rolesParam: any) => {
+    public authorizationChecker = async (action: Action, rolesParam: any): Promise<boolean> => {
         const request: Request = action.request;
         const user: User = request['user'];
         const roles = rolesParam[0].roles;

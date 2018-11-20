@@ -4,10 +4,11 @@ import {
     InternalServerError, MethodNotAllowedError, NotAcceptableError, NotFoundError, UnauthorizedError
 } from 'routing-controllers';
 import { Container } from 'typedi';
+import { Request, Response } from 'express';
 import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { ApiError } from '../handlers/api_error.handler';
 import { LoggerService } from '../services/logger.service';
-import { unlinkSync } from 'fs';
+import { unlink } from 'fs';
 
 @Middleware({ type: 'after' })
 export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
@@ -20,7 +21,7 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
      * @param response - Response object
      * @param next - Next function
      */
-    error(error: any, request: any, response: any, next: any) {
+    error(error: any, request: Request, response: Response, next: any) {
         let status: HTTP_STATUS_CODE = HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR;
         const log = Container.get(LoggerService);
         const apiError = new ApiError(response);
@@ -36,9 +37,15 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
             error instanceof UnauthorizedError) {
             status = error.httpCode;
         }
-        if (request.files[0]) {
-            // remove file if exists because we don't need it
-            unlinkSync(request.files[0].path);
+        if (request.files) {
+            // remove files if exists because we don't need it
+            log.getLogger().info('Removing uploaded files (' + request.files.length + ') because operation failed');
+            for (let index = 0; index < request.files.length; index++) {
+                unlink(request.files[index].path, (err) => {
+                    !err ? log.getLogger().info('Done removing file (' + index + ')') :
+                        log.getLogger().info('Something went wrong deleting file (' + index + ')');
+                });
+            }
         }
         // begin building apiError object with status code
         apiError.withStatusCode(status);

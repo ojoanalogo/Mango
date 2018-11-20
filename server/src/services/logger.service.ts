@@ -8,7 +8,7 @@ import * as httpContext from 'express-http-context';
 
 
 export function Logger() {
-    return function(object: Object, propertyName: string, index?: number) {
+    return function (object: Object, propertyName: string, index?: number) {
         const logger = new LoggerService();
         Container.registerHandler({ object, propertyName, index, value: containerInstance => logger });
     };
@@ -62,7 +62,6 @@ export class LoggerService {
                         level: 'error',
                         filename: path.join(__dirname, `../../logs/error-%DATE%.log`),
                         format: this.logFormat,
-
                         datePattern: 'YYYY-MM-DD-HH',
                         zippedArchive: true,
                         maxSize: '20m',
@@ -111,26 +110,24 @@ export class LoggerService {
         /**
         * formatted thanks to https://github.com/winstonjs/winston/issues/1135#issuecomment-343980350
         */
-        if (process.env.NODE_ENV !== 'production') {
-            const settings = {
-                format: winston.format.combine(
-                    winston.format.colorize(),
-                    winston.format.timestamp(),
-                    winston.format.align(),
-                    winston.format.printf((info) => {
-                        const {
-                            timestamp, level, message, ...args
-                        } = info;
-                        const reqId = httpContext.get('reqId');
-                        const msgNew = reqId ? '\tRequestID: (' + reqId + ') ' + info.message.replace('\t', '') : info.message;
-                        const ts = timestamp.slice(0, 19).replace('T', ' ');
-                        return `${ts} ${level}: ${msgNew} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
-                    })
-                )
-            };
-            this.logger.add(new winston.transports.Console(settings));
-            this.loggerHTTP.add(new winston.transports.Console(settings));
-        }
+        const settings = {
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.timestamp(),
+                winston.format.align(),
+                winston.format.printf((info) => {
+                    const {
+                        timestamp, level, message, ...args
+                    } = info;
+                    const reqId = httpContext.get('reqId');
+                    const msgNew = reqId ? '\tRequestID: (' + reqId + ') ' + info.message.replace('\t', '') : info.message;
+                    const ts = timestamp.slice(0, 19).replace('T', ' ');
+                    return `${ts} ${level}: ${msgNew} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+                })
+            )
+        };
+        this.logger.add(new winston.transports.Console(settings));
+        this.loggerHTTP.add(new winston.transports.Console(settings));
     }
 }
 
