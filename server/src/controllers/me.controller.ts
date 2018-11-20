@@ -14,6 +14,7 @@ import { TokenRepository } from '../repositories/token.repository';
 import { UploadUtils } from '../utils/upload.utils';
 import { Resolver } from '../handlers/resolver.handler';
 import * as multer from 'multer';
+import { Validator } from 'class-validator';
 
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)
@@ -56,7 +57,7 @@ export class MeController {
         roles: [RoleType.USER],
         resolver: Resolver.OWN_ACCOUNT
     })
-    public async updateProfileByID(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
+    public async updateProfile(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
         const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {
             throw new NotFoundError('User not found');
@@ -66,6 +67,16 @@ export class MeController {
                 .withData('User already registered')
                 .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
                 .build();
+        }
+        const validator = new Validator();
+        if (user.email !== undefined && (!validator.isEmail(user.email) || validator.isEmpty(user.email))) {
+            throw new BadRequestError('Not valid email');
+        }
+        if (user.password !== undefined && validator.isEmpty(user.password)) {
+            throw new BadRequestError('Password field empty');
+        }
+        if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(user.password)) {
+            throw new BadRequestError('Password must be at least 8 characters and have one letter and one number');
         }
         await this.userService.updateUser(user);
         return new ApiResponse(response)
@@ -88,12 +99,18 @@ export class MeController {
         roles: [RoleType.USER],
         resolver: Resolver.OWN_ACCOUNT
     })
-    public async updateProfilePicture(@Req() req: Request, @Res() res: Response, @Body() user: User): Promise<any> {
+    public async updateProfilePicture(@Req() req: Request, @Res() res: Response, @Body({ required: true }) user: User): Promise<any> {
         const file: Express.Multer.File = req.files[0];
+        if (!user.email) {
+            throw new NotFoundError('Email field is required');
+        }
+        if (!user.id) {
+            throw new NotFoundError('ID field is required');
+        }
         if (!file) {
             throw new BadRequestError('Please upload an image');
         }
-        const userDB = await this.userService.getUserByID(user.id);
+        const userDB = await this.userService.userExistsByEmail(user.email);
         if (!userDB) {
             throw new NotFoundError('User not found');
         }

@@ -40,7 +40,7 @@ export class UploadUtils {
                     : cb(new NotAcceptableError('Not acceptable image format'), false);
             },
             limits: {
-                fileSize: 2097152
+                fileSize: 54525952
             }
         };
         return options;

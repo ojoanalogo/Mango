@@ -44,20 +44,21 @@ export class AuthChecker {
             if (!roles) {
                 throw new InternalServerError('No roles defined in controller action');
             }
-            const userDB = await this.userRepository.findOne({ id: user.id });
-            if (!userDB) {
+            // check if user exists in database
+            const userExists = await this.userRepository.count({ id: user.id });
+            if (!userExists) {
                 throw new ForbiddenError('Your user not longer exists in the database');
             }
             const userRoleDB = await this.rolesRepository.createQueryBuilder('rol')
                 .leftJoin('rol.user', 'user')
-                .where('rol.user = :user', { user: userDB.id }).getOne();
+                .where('rol.user = :user', { user: user.id }).getOne();
             const userRole = userRoleDB.role;
             if (!roles.length && userRoleDB) {
                 return true;
             }
             const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));
             const rolesResolver = getWeight(userRole) >= getWeight(RoleType.DEVELOPER) ?
-                true : this.roleResolver(userDB, action, resolver);
+                true : this.roleResolver(user, action, resolver);
             if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
                 return true;
             }
