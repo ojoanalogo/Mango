@@ -1,0 +1,61 @@
+import { Get, UseBefore, JsonController, Res, Delete, Patch, Put, Post } from 'routing-controllers';
+import { Response } from 'express';
+import { LoggingMiddleware } from '../middleware/http_logging.middleware';
+import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
+
+@JsonController('/{{route}}')
+@UseBefore(LoggingMiddleware)
+export class {{firstUpperCase name}}Controller {
+
+    // constructor(private userService: UserService) { }
+
+    /**
+     * GET request for {{upperCase name}} API
+     * @param response - Response object
+     */
+    @Get()
+    public get(@Res() response: Response): Response {
+        return new ApiResponse(response)
+            .withData('Hello').withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+
+     /**
+     * POST request for {{upperCase name}} API
+     * @param response - Response object
+     */
+    @Post()
+    public post(@Res() response: Response): Response {
+        return new ApiResponse(response)
+            .withData('Hello').withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+
+    /**
+     * PUT request for {{upperCase name}} API
+     * @param response - Response object
+     */
+    @Put()
+    public put(@Res() response: Response): Response {
+        return new ApiResponse(response)
+            .withData('Hello').withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+
+    /**
+     * PATCH request for {{upperCase name}} API
+     * @param response - Response object
+     */
+    @Patch()
+    public patch(@Res() response: Response): Response {
+        return new ApiResponse(response)
+            .withData('Hello').withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+
+    /**
+     * DELETE request for {{upperCase name}} API
+     * @param response - Response object
+     */
+    @Delete()
+    public delete(@Res() response: Response): Response {
+        return new ApiResponse(response)
+            .withData('Hello').withStatusCode(HTTP_STATUS_CODE.OK).build();
+    }
+}
