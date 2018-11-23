@@ -7,7 +7,8 @@ import { Redis } from './database/redis';
 import { ErrorMiddleware } from './middleware/error.middleware';
 import { NotFoundMiddleware } from './middleware/not_found.middleware';
 import { AuthChecker } from './services/authorization_checker.service';
-import * as httpContext from 'express-http-context';
+import httpContext = require('express-http-context');
+// import * as httpContext from 'express-http-context';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as path from 'path';
@@ -47,14 +48,6 @@ export class App {
   * Setup express server
   */
   private config(): void {
-    // support for UUID and route context
-    this.app.use(httpContext.middleware);
-    this.app.use((req, res, next) => {
-      httpContext.set('reqId', uuid.v4());
-      httpContext.set('useragent', req.headers['user-agent']);
-      httpContext.set('ip', req.ip);
-      next();
-    });
     // support application/json type post data
     this.app.use(bodyParser.json());
     // support application/x-www-form-urlencoded post data
@@ -66,6 +59,14 @@ export class App {
     // spoof the stack used, just for fun
     this.app.use((req, res, next) => {
       res.setHeader('X-Powered-By', 'Mango');
+      next();
+    });
+    // support for UUID and route context
+    this.app.use(httpContext.middleware);
+    this.app.use((req, res, next) => {
+      httpContext.set('reqId', uuid.v1());
+      httpContext.set('useragent', req.headers['user-agent']);
+      httpContext.set('ip', req.ip);
       next();
     });
     // point static path to public

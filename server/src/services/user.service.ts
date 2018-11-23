@@ -138,6 +138,7 @@ export class UserService {
      *
      * @returns Update result
      */
+
     public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
         try {
             const userDB = await this.userRepository.findOne({ email: user.email });
@@ -152,10 +153,9 @@ export class UserService {
             // delete old files if they exist
             resolutions.forEach(resolution => {
                 if (profilePictureInstance['res_' + resolution]) {
-                    const fileResPath =
-                        path.join(__dirname, '../../' + profilePictureInstance['res_' + resolution]);
-                    if (fs.existsSync(fileResPath)) {
-                        fs.unlinkSync(fileResPath);
+                    const filePathFromDB = path.join(__dirname, '../../public' + profilePictureInstance['res_' + resolution]);
+                    if (fs.existsSync(filePathFromDB)) {
+                        fs.unlinkSync(filePathFromDB);
                     }
                     profilePictureInstance['res_' + resolution] = null;
                 }
@@ -170,39 +170,41 @@ export class UserService {
             // "mpr:source" -resize "1080x1080^" -gravity center -crop "1080x1080+0+0" +repage -write "$NAME-1080.jpg" +delete \
             // "mpr:source" "$NAME-original.jpg"
             // we should only resize file to lower resolutions
-            gm(newPicPath).size(async (err, dimensions) => {
-                if (err) {
-                    throw err;
-                }
-                const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
-                newResolutions.forEach(resElement => {
-                    const resolution = parseInt(resElement);
-                    const finalFileNameWithDir = path.join(__dirname, '../../public/profile_pictures/' + resElement + '/' + newPicName);
-                    gm(newPicPath)
-                        .resize(resolution, resolution, '^')
-                        .gravity('Center')
-                        .crop(resolution, resolution, 0, 0)
-                        .repage('+')
-                        .noProfile()
-                        .write(finalFileNameWithDir, (error) => {
-                            if (!error) {
-                                this.logger.getLogger().info(`Image resized (${resolution} x ${resolution})`);
-                            } else {
-                                throw new Error('Error trying to resize image');
-                            }
-                        });
-                    // assign new URL with res name
-                    profilePictureInstance['res_' + resElement] = '/profile_pictures/' + resElement + '/' + newPicName;
+            const dimensions = await new Promise<gm.Dimensions>((resolve, reject) => {
+                gm(newPicPath).size((err, dim) => {
+                    err ? reject(err) : resolve(dim);
                 });
-                profilePictureInstance.res_original = '/public/profile_pictures/' + newPicName;
-                const updateResult = await this.profilePictureRepository.update({ user: userDB.id }, profilePictureInstance);
-                setTimeout(() => {
-                    // rename original picture
-                    fs.renameSync(newPicPath, path.join(__dirname,
-                        '../../public/profile_pictures/' + newPicName));
-                }, 200);
-                return updateResult;
             });
+            // get only those resolutions we should resize
+            const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
+            // resize files
+            newResolutions.forEach(async resElement => {
+                const resolution = parseInt(resElement);
+                const finalFileNameWithDir = path.join(__dirname, '../../public/profile_pictures/' + resElement + '/' + newPicName);
+                gm(newPicPath)
+                    .resize(resolution, resolution, '^')
+                    .gravity('Center')
+                    .crop(resolution, resolution, 0, 0)
+                    .repage('+')
+                    .noProfile()
+                    .write(finalFileNameWithDir, (error) => {
+                        if (!error) {
+                            this.logger.getLogger().info(`Image resized (${resolution}x${resolution})`);
+                        } else {
+                            throw new Error('Error trying to resize image');
+                        }
+                    });
+                // assign new URL with res name
+                profilePictureInstance['res_' + resElement] = '/profile_pictures/' + resElement + '/' + newPicName;
+            });
+            setTimeout(() => {
+                // rename original picture
+                fs.renameSync(newPicPath, path.join(__dirname,
+                    '../../public/profile_pictures/' + newPicName));
+            }, 200);
+            profilePictureInstance.res_original = '/public/profile_pictures/' + newPicName;
+            const updateResult = await this.profilePictureRepository.update({ user: userDB.id }, profilePictureInstance);
+            return updateResult;
         } catch (error) {
             throw error;
         }
