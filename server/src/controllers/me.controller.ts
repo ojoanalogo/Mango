@@ -4,6 +4,7 @@ import {
     BadRequestError, Authorized, Req, Put
 } from 'routing-controllers';
 import { Response, Request } from 'express';
+import { Validator } from 'class-validator';
 import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { UserService } from '../services/user.service';
 import { LoggingMiddleware } from '../middleware/http_logging.middleware';
@@ -14,7 +15,6 @@ import { TokenRepository } from '../repositories/token.repository';
 import { UploadUtils } from '../utils/upload.utils';
 import { Resolver } from '../handlers/resolver.handler';
 import * as multer from 'multer';
-import { Validator } from 'class-validator';
 
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)
