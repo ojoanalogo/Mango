@@ -27,6 +27,8 @@ export class App {
   private port: number = parseInt(process.env.PORT) || 1337;
 
   constructor() {
+    // check env variables
+    this.checkEnvVariables();
     // create express app
     this.app = express();
     // use container from typeDI
@@ -41,6 +43,20 @@ export class App {
     // setup express server
     this.config();
     this.routerConfig();
+  }
+
+  /**
+   * Check environment variables before starting server
+   */
+  private checkEnvVariables(): void {
+    [
+      'NODE_ENV',
+      'PORT'
+    ].forEach((name) => {
+      if (!process.env[name]) {
+        throw new Error(`Environment variable ${name} is missing`);
+      }
+    });
   }
 
   /**
