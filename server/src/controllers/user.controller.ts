@@ -9,7 +9,6 @@ import { Validator } from 'class-validator';
 import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { UserService } from '../services/user.service';
 import { LoggingMiddleware } from '../middleware/http_logging.middleware';
-import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
 import { RoleType } from '../entities/user/user_role.model';
 
@@ -25,7 +24,6 @@ export class UserController {
      * @returns User list
      */
     @Get()
-    @UseBefore(JWTMiddleware)
     @Authorized({
         roles: [RoleType.DEVELOPER]
     })
@@ -37,18 +35,17 @@ export class UserController {
     }
 
     /**
-     * GET request to get user by mail
+     * GET request to get user by ID
      * @param response - Response object
-     * @param email - Email parameter
-     * @returns User specified from email
+     * @param id - ID parameter
+     * @returns User specified from ID
      */
-    @Get(':email')
-    @UseBefore(JWTMiddleware)
+    @Get(':id')
     @Authorized({
         roles: [RoleType.DEVELOPER]
     })
-    public async getUserByEmail(@Res() response: Response, @Param('email') email: string): Promise<Response> {
-        const userDB = await this.userService.getUserByEmail(email);
+    public async getUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
+        const userDB = await this.userService.getUserByID(id);
         if (!userDB) {
             throw new NotFoundError('User not found');
         }
@@ -72,6 +69,12 @@ export class UserController {
         if (validator.isEmpty(user.password)) {
             throw new BadRequestError('Password field empty');
         }
+        if (user.password !== undefined && validator.isEmpty(user.password)) {
+            throw new BadRequestError('Password field empty');
+        }
+        if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(user.password)) {
+            throw new BadRequestError('Password must be at least 8 characters and have one letter and one number');
+        }
         const userExists = await this.userService.userExistsByEmail(user.email);
         if (userExists) {
             return new ApiResponse(response)
@@ -93,11 +96,13 @@ export class UserController {
      * @returns Delete result
      */
     @Delete(':id')
-    @UseBefore(JWTMiddleware)
     @Authorized({
         roles: [RoleType.DEVELOPER]
     })
     public async deleteUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
+        if (!id) {
+            throw new BadRequestError('ID field is required');
+        }
         const userDB = await this.userService.getUserByID(id);
         if (!userDB) {
             throw new NotFoundError('User not found');
@@ -119,11 +124,13 @@ export class UserController {
      * @returns Update result
      */
     @Patch()
-    @UseBefore(JWTMiddleware)
     @Authorized({
         roles: [RoleType.DEVELOPER]
     })
     public async updateUserByID(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
+        if (!user.id) {
+            throw new BadRequestError('ID field is required');
+        }
         const userDB = await this.userService.getUserByID(user.id);
         if (!userDB) {
             throw new NotFoundError('User not found');

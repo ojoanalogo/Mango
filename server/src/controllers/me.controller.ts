@@ -8,7 +8,6 @@ import { Validator } from 'class-validator';
 import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { UserService } from '../services/user.service';
 import { LoggingMiddleware } from '../middleware/http_logging.middleware';
-import { JWTMiddleware } from '../middleware/jwt.middleware';
 import { User } from '../entities/user/user.model';
 import { RoleType } from '../entities/user/user_role.model';
 import { TokenRepository } from '../repositories/token.repository';
@@ -29,7 +28,6 @@ export class MeController {
      * @returns User profile
      */
     @Get()
-    @UseBefore(JWTMiddleware)
     @Authorized({
         roles: [RoleType.USER]
     })
@@ -38,7 +36,7 @@ export class MeController {
         if (!tokenData) {
             throw new NotFoundError('Cannot find user associated to token');
         }
-        const userProfile = await this.userService.getUserByEmail(tokenData.user.email);
+        const userProfile = await this.userService.getUserByID(tokenData.user.id);
         return new ApiResponse(response)
             .withData(userProfile)
             .withStatusCode(HTTP_STATUS_CODE.OK).build();
@@ -52,7 +50,6 @@ export class MeController {
      * @returns Update profile result
      */
     @Put()
-    @UseBefore(JWTMiddleware)
     @Authorized({
         roles: [RoleType.USER],
         resolver: Resolver.OWN_ACCOUNT
@@ -94,23 +91,20 @@ export class MeController {
      * @returns Update profile picture result
      */
     @Put('/profile_picture')
-    @UseBefore(JWTMiddleware, multer(UploadUtils.getProfileUploadMulterOptions()).any())
+    @UseBefore(multer(UploadUtils.getProfileUploadMulterOptions()).any())
     @Authorized({
         roles: [RoleType.USER],
         resolver: Resolver.OWN_ACCOUNT
     })
     public async updateProfilePicture(@Req() req: Request, @Res() res: Response, @Body({ required: true }) user: User): Promise<any> {
         const file: Express.Multer.File = req.files[0];
-        if (!user.email) {
-            throw new NotFoundError('Email field is required');
-        }
         if (!user.id) {
-            throw new NotFoundError('ID field is required');
+            throw new BadRequestError('ID field is required');
         }
         if (!file) {
             throw new BadRequestError('Please upload an image');
         }
-        const userDB = await this.userService.userExistsByEmail(user.email);
+        const userDB = await this.userService.userExistsByID(user.id);
         if (!userDB) {
             throw new NotFoundError('User not found');
         }

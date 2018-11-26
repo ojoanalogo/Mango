@@ -75,11 +75,11 @@ const response = new ApiResponse(response)
 ```
 A request can have the following properties
 
-Key | Description | Note
+Method | Description | Note
 --- | --- | ---
-`withData(object)` | Anything you want |
-`withStatusCode(HTTP_STATUS_CODE)` | HTTP Status code (see HTTP_STATUS_CODE class) | Defaults to 200
-`build()` | Finish building request | Required
+`.withData(object)` | Anything you want |
+`.withStatusCode(HTTP_STATUS_CODE)` | HTTP Status code (see HTTP_STATUS_CODE class) | Defaults to 200
+`.build()` | Finish building request | Required to finish building request
 
 ## 💥 How to add a new controller
 
@@ -93,11 +93,10 @@ and follow the steps ✅
 
 ## 🔐 Adding authorization or role protection to routes
 
-Adding authorization to a route it's easy, just use the @Authorized annotation and add a roles property (can be an array of roles, but there's a weight system in place so users with high role can use routes that are for lower roles)
+Adding authorization to a route it's easy, just use the @Authorized annotation and add a roles property (can be an array of roles (or null if you only want to verify if there's a JWT token in request), but there's a weight system in place so users with high role can use routes that are for lower roles)
 
 ```typescript
     @Post()
-    @UseBefore(JWTMiddleware)
     @Authorized({
         roles: [RoleType.USER],
         resolver: Resolver.OWN_ACCOUNT
@@ -109,6 +108,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 ```
 .
+├── LICENSE
 ├── README.md
 └── server
     ├── ecosystem.config.js
@@ -147,7 +147,6 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   ├── middleware
     │   │   ├── error.middleware.ts
     │   │   ├── http_logging.middleware.ts
-    │   │   ├── jwt.middleware.ts
     │   │   └── not_found.middleware.ts
     │   ├── repositories
     │   │   ├── base.repository.ts
@@ -187,6 +186,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 ## ✍ Changelog
 
 - 0.1 - First release
+- 0.1.1 - Refactored authorization function, moved JWT middleware to auth function
 
 ## 🤗 Credits
 

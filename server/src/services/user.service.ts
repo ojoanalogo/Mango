@@ -8,8 +8,8 @@ import { Role, RoleType } from '../entities/user/user_role.model';
 import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger, LoggerService } from '../services/logger.service';
-import { JWTService } from './jwt.service';
 import { UploadUtils } from '../utils/upload.utils';
+import { JWTService } from './jwt.service';
 import * as gm from 'gm';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -141,7 +141,7 @@ export class UserService {
 
     public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
         try {
-            const userDB = await this.userRepository.findOne({ email: user.email });
+            const userDB = await this.userRepository.findOne({ id: user.id });
             const profilePictureInstance = await this.profilePictureRepository.findOne({ user: userDB.id });
             const resolutions = ['480', '240', '96', '64', '32']; // picture resolutions
             // delete original file

@@ -13,7 +13,7 @@ export class AuthController {
     constructor(private userService: UserService) { }
 
     /**
-     * Login user with email and password data
+     * POST Request to Login user with email and password data
      * @param response - Response object
      * @param user - User object
      * @returns Login response
