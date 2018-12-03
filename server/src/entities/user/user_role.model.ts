@@ -1,6 +1,6 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { User } from '../user/user.model';
-import { CUD } from '../CUD';
+import { CUID } from '../CUID';
 
 export enum RoleType {
     CEO = 'ceo',
@@ -27,9 +27,8 @@ export function getWeight(role: RoleType) {
     return weight[role] !== undefined ? weight[role] : 1;
 }
 
-export const table_name = 'roles';
-@Entity(table_name)
-export class Role extends CUD {
+@Entity('roles')
+export class Role extends CUID {
 
     @Column({
         type: 'enum',
@@ -37,7 +36,7 @@ export class Role extends CUD {
     })
     role: RoleType;
 
-    @OneToOne(type => User, user => user.role, {
+    @OneToOne(() => User, user => user.role, {
         onDelete: 'CASCADE'
     })
     @JoinColumn()

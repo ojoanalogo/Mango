@@ -2,5 +2,6 @@
  * Resolver types
  */
 export enum Resolver {
-    OWN_ACCOUNT
+    OWN_ACCOUNT,
+    NONE
 }

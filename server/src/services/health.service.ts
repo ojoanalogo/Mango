@@ -5,7 +5,7 @@ import { getConnection } from 'typeorm';
 @Service()
 export class HealthService {
 
-    constructor(@Logger() private logger: LoggerService) { }
+    constructor(@Logger(__filename) private logger: LoggerService) { }
 
     /**
      * Returns health status
@@ -21,7 +21,6 @@ export class HealthService {
         const seconds = Math.floor(uptime % 60);
         const formatted = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
         const dbHealth = getConnection().isConnected ? 'alive' : 'dead';
-        this.logger.getLogger().info('Uptime: ' + formatted);
         return {
             ping: 'pong',
             uptime: uptime,

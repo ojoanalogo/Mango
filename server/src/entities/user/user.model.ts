@@ -1,13 +1,12 @@
-import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, BeforeUpdate, OneToMany } from 'typeorm';
-import { Token } from '../token/token.model';
+import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
+import { JwtToken } from '../token/token.model';
 import { ProfilePicture } from './user_profile_picture.model';
 import { Role } from './user_role.model';
-import { CUD } from '../CUD';
+import { CUID } from '../CUID';
 import * as bcrypt from 'bcrypt';
 
-export const table_name = 'users';
-@Entity(table_name)
-export class User extends CUD {
+@Entity('users')
+export class User extends CUID {
 
     @Column()
     first_name: string;
@@ -27,13 +26,13 @@ export class User extends CUD {
     @UpdateDateColumn()
     last_login: Date;
 
-    @OneToMany(type => Token, token => token.user)
-    token: Token;
+    @OneToMany(() => JwtToken, token => token.user)
+    token: JwtToken;
 
-    @OneToOne(type => Role, role => role.user)
+    @OneToOne(() => Role, role => role.user)
     role: Role;
 
-    @OneToOne(type => ProfilePicture, profile_picture => profile_picture.user)
+    @OneToOne(() => ProfilePicture, profile_picture => profile_picture.user)
     profile_picture: ProfilePicture;
 
     /**
@@ -45,21 +44,6 @@ export class User extends CUD {
         await this.updatePassword();
     }
 
-    /**
-     * This gets triggered before table updates
-     */
-    @BeforeUpdate()
-    async beforeUpdate() {
-        // capitalize first and second name
-        this.first_name.toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-        this.second_name.toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    }
     /**
      * Compare a password with the one encrypted in the database
      * @param passwordToCompare - Password to check against

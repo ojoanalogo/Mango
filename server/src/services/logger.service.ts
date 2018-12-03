@@ -7,9 +7,9 @@ import * as path from 'path';
 import * as httpContext from 'express-http-context';
 
 
-export function Logger() {
+export function Logger(dirName: string) {
     return function (object: Object, propertyName: string, index?: number) {
-        const logger = new LoggerService();
+        const logger = new LoggerService(dirName);
         Container.registerHandler({ object, propertyName, index, value: containerInstance => logger });
     };
 }
@@ -29,7 +29,7 @@ export class LoggerService {
         winston.format.json(),
     );
 
-    constructor() {
+    constructor(private dirName: string) {
         this.setupLogger();
         this.setupConsoleStream();
     }
@@ -54,7 +54,7 @@ export class LoggerService {
      * Setup main logger
      */
     private setupLogger() {
-        process.env.NODE_ENV === 'production' ?
+        if (process.env.NODE_ENV === 'production') {
             this.logger = winston.createLogger({
                 level: 'info',
                 transports: [
@@ -76,8 +76,7 @@ export class LoggerService {
                         maxFiles: '31d'
                     })
                 ]
-            }) : this.logger = winston.createLogger({ level: 'info' });
-        process.env.NODE_ENV === 'production' ?
+            });
             this.loggerHTTP = winston.createLogger({
                 level: 'http',
                 levels: {
@@ -88,8 +87,7 @@ export class LoggerService {
                         format: winston.format.combine(
                             winston.format.uncolorize(),
                             winston.format.printf((info) => {
-                                const reqId = httpContext.get('reqId');
-                                const message = reqId ? '(' + reqId + ')' + info.message : info.message;
+                                const message = info.message;
                                 return message;
                             })
                         ),
@@ -100,7 +98,11 @@ export class LoggerService {
                         maxFiles: '31d'
                     })
                 ]
-            }) : this.loggerHTTP = winston.createLogger({ level: 'http' });
+            });
+        } else {
+            this.loggerHTTP = winston.createLogger({ level: 'http' });
+            this.logger = winston.createLogger({ level: 'info' });
+        }
     }
 
     /**
@@ -119,10 +121,18 @@ export class LoggerService {
                     const {
                         timestamp, level, message, ...args
                     } = info;
+                    let origin = this.dirName || 'dev';
+                    if (this.dirName) {
+                        origin = origin.replace(process.cwd(), '');
+                        origin = origin.replace(`${path.sep}src${path.sep}`, '');
+                        origin = origin.replace(`${path.sep}dist${path.sep}`, '');
+                        origin = origin.replace(/.(ts)|(js)/, '');
+                    }
                     const reqId = httpContext.get('reqId');
-                    const msgNew = reqId ? '\tRequestID: (' + reqId + ') ' + info.message.replace('\t', '') : info.message;
+                    const msgNew = reqId ? 'RequestID: (' + reqId + ') ' + info.message : info.message;
                     const ts = timestamp.slice(0, 19).replace('T', ' ');
-                    return `${ts} ${level}: ${msgNew} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+                    // tslint:disable-next-line:max-line-length
+                    return `${ts} | ${level} | ${origin} »: ${msgNew.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
                 })
             )
         };

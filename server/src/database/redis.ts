@@ -10,7 +10,7 @@ export class Redis {
     private redis_port: number = parseInt(process.env.REDIS_PORT) || 6379;
     private redis_auth: string = process.env.REDIS_AUTH || '';
 
-    constructor(@Logger() private logger: LoggerService) { }
+    constructor(@Logger(__filename) private logger: LoggerService) { }
 
     public async setupRedis() {
         this.client = createClient({

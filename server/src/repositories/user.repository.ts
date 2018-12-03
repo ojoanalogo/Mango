@@ -1,12 +1,10 @@
 import { Service } from 'typedi';
-import { User, table_name } from '../entities/user/user.model';
-import { BaseRepository } from '../repositories/base.repository';
+import { Repository, EntityRepository } from 'typeorm';
+import { User } from '../entities/user/user.model';
 
 @Service()
-export class UserRepository extends BaseRepository<User> {
-    constructor() {
-        super(table_name);
-    }
+@EntityRepository(User)
+export class UserRepository extends Repository<User> {
 
     /**
      * Get user profile from database
@@ -14,12 +12,14 @@ export class UserRepository extends BaseRepository<User> {
      * @param conditionsValues - Value for conditions ({email: 'bla'})
      * @returns User profile entity
      */
-    async getProfile(conditions: string, conditionsValues: any): Promise<User> {
+    public async getProfile(conditions: string, conditionsValues: any): Promise<User> {
         return await this.createQueryBuilder('user')
+        .innerJoin('user.role', 'role')
+        .innerJoin('user.profile_picture', 'profile_picture')
             .select(['user.id', 'user.email', 'user.first_name',
-                'user.second_name', 'user.last_login', 'profile_picture', 'role.role'])
-            .leftJoin('user.role', 'role')
-            .leftJoin('user.profile_picture', 'profile_picture')
+                'user.second_name',
+                'profile_picture.res_480', 'profile_picture.res_240', 'profile_picture.res_96',
+                'profile_picture.res_64', 'profile_picture.res_32', 'role.role'])
             .where(conditions, conditionsValues)
             .getOne();
     }

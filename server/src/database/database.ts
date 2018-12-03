@@ -1,6 +1,10 @@
 import { Service } from 'typedi';
 import { Connection, createConnection } from 'typeorm';
 import { Logger, LoggerService } from '../services/logger.service';
+import { User } from '../entities/user/user.model';
+import { JwtToken } from '../entities/token/token.model';
+import { ProfilePicture } from '../entities/user/user_profile_picture.model';
+import { Role } from '../entities/user/user_role.model';
 
 @Service()
 export class Database {
@@ -18,7 +22,7 @@ export class Database {
     private connection: Connection;
     private syncOption = process.env.NODE_ENV === 'production' ? false : true;
 
-    constructor(@Logger() private logger: LoggerService) { }
+    constructor(@Logger(__filename) private logger: LoggerService) { }
 
     /**
     * Setup database
@@ -34,7 +38,7 @@ export class Database {
                 password: this.db_password,
                 database: this.db_name,
                 entityPrefix: this.db_prefix,
-                entities: [__dirname + '../../entities/**/*{.js,.ts}'],
+                entities: [User, JwtToken, ProfilePicture, Role ],
                 migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
                 synchronize: this.syncOption,
                 logging: false,
@@ -43,7 +47,7 @@ export class Database {
                 }
             });
             if (this.connection) {
-                this.logger.getLogger().info(`Connected to database (${this.db_host}|${this.db_name}) successfully`);
+                this.logger.getLogger().info(`Connected to database (${this.db_name}) successfully`);
                 return this.connection;
             }
         } catch (error) {

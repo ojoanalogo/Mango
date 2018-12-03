@@ -1,7 +1,8 @@
+import 'reflect-metadata'; // global, required by typeorm and typedi
 import { useExpressServer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { useContainer as useContainerRouting } from 'routing-controllers';
-import { useContainer as useContainerTypeORM } from 'typeorm';
+import { useContainer as useContainerORM } from 'typeorm';
 import { Database } from './database/database';
 import { Redis } from './database/redis';
 import { ErrorMiddleware } from './middleware/error.middleware';
@@ -15,33 +16,33 @@ import * as dotenv from 'dotenv';
 import * as helmet from 'helmet';
 import * as uuid from 'uuid';
 
-import 'reflect-metadata'; // global, required by typeorm and typedi
-
-process.env.NODE_ENV === 'production' ?
-  dotenv.config({ path: path.join(__dirname, '../.env') }) :
-  dotenv.config({ path: path.join(__dirname, '../.example.env') });
+// setup dotenv
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 export class App {
 
   private app: express.Application;
   private port: number = parseInt(process.env.PORT) || 1337;
 
-  constructor() {
+  constructor() { }
+
+  public async initialize(): Promise<void> {
     // check env variables
     this.checkEnvVariables();
     // create express app
     this.app = express();
     // use container from typeDI
+    useContainerORM(Container);
     useContainerRouting(Container);
-    useContainerTypeORM(Container);
-    // setup database
-    const database: Database = Container.get(Database);
-    database.setupDatabase();
     // setup redis
     const redis: Redis = Container.get(Redis);
     redis.setupRedis();
     // setup express server
     this.config();
+    // setup database
+    const database: Database = Container.get(Database);
+    await database.setupDatabase();
+    // setup routing-controllers
     this.routerConfig();
   }
 
@@ -54,7 +55,8 @@ export class App {
       'PORT'
     ].forEach((name) => {
       if (!process.env[name]) {
-        throw new Error(`Environment variable ${name} is missing`);
+        console.error(`Environment variable ${name} is missing`);
+        process.exit(0);
       }
     });
   }
@@ -86,11 +88,6 @@ export class App {
     });
     // point static path to public
     this.app.use(express.static(path.join(__dirname, '../public')));
-    // catch all other routes and return the index file (Angular frontend)
-    // enable this to use a frontend client and let it use his own router
-    // this.app.get('^(?!\/api).*$', (req, res) => {
-    //   res.sendFile(path.join(__dirname, '../../dist/client/index.html'));
-    // });
   }
 
   /**
@@ -104,7 +101,8 @@ export class App {
       middlewares: [ErrorMiddleware, NotFoundMiddleware],
       cors: true,                     // enable cors
       defaultErrorHandler: false,     // disables error handler so we can use ours
-      authorizationChecker: authChecker.authorizationChecker         // role checker
+      authorizationChecker: authChecker.authorizationChecker,         // role checker
+      currentUserChecker: authChecker.getUserFromToken
     });
   }
 

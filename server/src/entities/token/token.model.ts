@@ -1,9 +1,8 @@
-import { Entity, Column, JoinColumn, ManyToOne, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../user/user.model';
 
-export const table_name = 'tokens';
-@Entity(table_name)
-export class Token {
+@Entity('tokens')
+export class JwtToken {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -20,7 +19,7 @@ export class Token {
     @Column()
     agent: string;
 
-    @ManyToOne(type => User, user => user.token, {
+    @ManyToOne(() => User, user => user.token, {
         onDelete: 'CASCADE',
         nullable: false
     })

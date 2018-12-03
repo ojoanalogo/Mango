@@ -53,6 +53,7 @@
         "routing-controllers": "^0.7.7",
         "typedi": "^0.8.0",
         "typeorm": "0.2.9",
+        "typeorm-typedi-extensions": "^0.2.1",
         "uuid": "^3.3.2",
         "winston": "^3.1.0",
         "winston-daily-rotate-file": "3.5.1"

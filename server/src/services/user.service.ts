@@ -1,15 +1,14 @@
-import { Service, Inject } from 'typedi';
-import { UpdateResult, DeleteResult } from 'typeorm';
-import { UserRepository } from '../repositories/user.repository';
-import { RolesRepository } from '../repositories/roles.repository';
-import { ProfilePictureRepository } from '../repositories/profile_picture.repository';
+import { Service } from 'typedi';
+import { DeleteResult, Repository } from 'typeorm';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { User } from '../entities/user/user.model';
 import { Role, RoleType } from '../entities/user/user_role.model';
-import { JSONUtils } from '../utils/json.utils';
 import { ProfilePicture } from '../entities/user/user_profile_picture.model';
 import { Logger, LoggerService } from '../services/logger.service';
-import { UploadUtils } from '../utils/upload.utils';
 import { JWTService } from './jwt.service';
+import { UploadUtils } from '../utils/upload.utils';
+import { JSONUtils } from '../utils/json.utils';
+import { UserRepository } from '../repositories/user.repository';
 import * as gm from 'gm';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,13 +16,17 @@ import * as path from 'path';
 @Service()
 export class UserService {
 
-    @Inject(type => JWTService)
-    private jwtService: JWTService; // circular reference fix
     constructor(
-        @Logger() private logger: LoggerService,
+        @Logger(__filename) private logger: LoggerService,
+        // begin injecting repos
+        @InjectRepository(User)
         private userRepository: UserRepository,
-        private profilePictureRepository: ProfilePictureRepository,
-        private rolesRepository: RolesRepository,
+        @InjectRepository(Role)
+        private rolesRepository: Repository<Role>,
+        @InjectRepository(ProfilePicture)
+        private profilePictureRepository: Repository<ProfilePicture>,
+        // other services
+        private jwtService: JWTService,
         private jsonUtils: JSONUtils) { }
 
     /**
@@ -32,20 +35,16 @@ export class UserService {
      * @returns A list with users
      */
     public async findAll(page: number = 0): Promise<User[]> {
-        try {
-            let toSkip: number = page * 100;
-            if (page === 1) {
-                toSkip = 0;
-            }
-            const users = await
-                this.userRepository.createQueryBuilder().where('is_active= :is_active', { is_active: 1 })
-                    .skip(toSkip)
-                    .take(100)
-                    .getMany();
-            return <User[]>(this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties));
-        } catch (error) {
-            throw error;
+        let toSkip: number = page * 100;
+        if (page === 1) {
+            toSkip = 0;
         }
+        const users = await
+            this.userRepository.createQueryBuilder().where('is_active= :is_active', { is_active: 1 })
+                .skip(toSkip)
+                .take(100)
+                .getMany();
+        return <User[]>(this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties));
     }
 
     /**
@@ -55,32 +54,28 @@ export class UserService {
      */
     public async createUser(userReq: User): Promise<User> {
         // create User
-        try {
-            const user = new User();
-            user.email = userReq.email;
-            user.password = userReq.password;
-            const userInstance: User = await this.userRepository.save(userReq);
-            // create JWT tokens
-            const jwtToken = await this.jwtService.createJWT(userInstance);
-            // create profile picture entity
-            const profilePicture: ProfilePicture = new ProfilePicture();
-            profilePicture.user = userInstance;
-            // save profile picture in profile picture repository
-            await this.profilePictureRepository.save(profilePicture);
-            // now assign default Role
-            const role: Role = new Role();
-            role.role = RoleType.USER;
-            role.user = userInstance;
-            // save role in role repository
-            await this.rolesRepository.save(role);
-            // pass full JWT tokens
-            userInstance.token = jwtToken;
-            this.logger.getLogger().info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
-            // return user model object
-            return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
-        } catch (error) {
-            throw error;
-        }
+        const user = new User();
+        user.email = userReq.email;
+        user.password = userReq.password;
+        const userInstance: User = await this.userRepository.save(userReq);
+        // create JWT tokens
+        const jwtToken = await this.jwtService.createJWT(userInstance);
+        // create profile picture entity
+        const profilePicture: ProfilePicture = new ProfilePicture();
+        profilePicture.user = userInstance;
+        // save profile picture in profile picture repository
+        await this.profilePictureRepository.save(profilePicture);
+        // now assign default Role
+        const role: Role = new Role();
+        role.role = RoleType.USER;
+        role.user = userInstance;
+        // save role in role repository
+        await this.rolesRepository.save(role);
+        // pass full JWT tokens
+        userInstance.token = jwtToken;
+        this.logger.getLogger().info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
+        // return user model object
+        return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
     }
 
     /**
@@ -89,24 +84,20 @@ export class UserService {
      * @returns User entity or false if password is wrong
      */
     public async loginUser(user: User): Promise<User | boolean> {
-        try {
-            const userDB = await this.userRepository.findOne({ email: user.email });
-            // compares user password from login request with the one found associated to the email in the database (user Model)
-            const rs = await userDB.comparePassword(user.password);
-            if (rs) {
-                await this.userRepository.update(userDB.id, { last_login: new Date() });
-                // update token in repo
-                const jwtToken = await this.jwtService.createJWT(userDB);
-                // return user data with token
-                userDB.token = jwtToken;
-                // return user model object
-                return this.jsonUtils.filterDataFromObject(userDB, this.jsonUtils.commonUserProperties);
-            } else {
-                // wrong password mate
-                return false;
-            }
-        } catch (error) {
-            throw error;
+        const userDB = await this.userRepository.findOne({ email: user.email });
+        // compares user password from login request with the one found associated to the email in the database (user Model)
+        const rs = await userDB.comparePassword(user.password);
+        if (rs) {
+            await this.userRepository.update(userDB.id, { last_login: new Date() });
+            // update token in repo
+            const jwtToken = await this.jwtService.createJWT(userDB);
+            // return user data with token
+            userDB.token = jwtToken;
+            // return user model object
+            return this.jsonUtils.filterDataFromObject(userDB, this.jsonUtils.commonUserProperties);
+        } else {
+            // wrong password mate
+            return false;
         }
     }
 
@@ -115,20 +106,27 @@ export class UserService {
      * @param user - User object
      * @returns UpdateResult object
      */
-    public async updateUser(user: User): Promise<UpdateResult> {
-        try {
-            const userDB = await this.userRepository.findOne({ id: user.id });
-            const currentPassword = userDB.password;
-            if (user.password && currentPassword !== user.password) {
-                await user.updatePassword();
-                this.logger.getLogger().info(`User (ID: ${userDB.id}) updated his password`);
-            }
-            const userUpdated = await this.userRepository.update(userDB.id, user);
-            this.logger.getLogger().info(`User (ID: ${userDB.id}) was updated`);
-            return userUpdated;
-        } catch (error) {
-            throw error;
+    public async updateUser(user: User): Promise<User> {
+        const userDB = await this.userRepository.findOne({ id: user.id });
+        const currentPassword = userDB.password;
+        let jwtToken;
+        if (user.password && currentPassword !== user.password) {
+            await user.updatePassword();
+            this.logger.getLogger().info(`User (ID: ${userDB.id}) updated his password`);
         }
+        // delete all JWT tokens and create a new one if user updates his password or email
+        if (user.password || user.email) {
+            // delete old tokens
+            await this.jwtService.deleteTokens(userDB);
+            // create JWT tokens
+            jwtToken = await this.jwtService.createJWT(user);
+        }
+        await this.userRepository.update(userDB.id, user);
+        if (jwtToken) {
+            user.token = jwtToken;
+        }
+        this.logger.getLogger().info(`User (ID: ${userDB.id}) was updated`);
+        return await this.getUserByID(userDB.id);
     }
 
     /**
@@ -140,88 +138,114 @@ export class UserService {
      */
 
     public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
-        try {
-            const userDB = await this.userRepository.findOne({ id: user.id });
-            const profilePictureInstance = await this.profilePictureRepository.findOne({ user: userDB.id });
-            const resolutions = ['480', '240', '96', '64', '32']; // picture resolutions
-            // delete original file
-            const originalFilePath = path.join(__dirname, '../../' +
-                profilePictureInstance.res_original);
-            if (fs.existsSync(originalFilePath)) {
-                fs.unlinkSync(originalFilePath);
-            }
-            // delete old files if they exist
-            resolutions.forEach(resolution => {
-                if (profilePictureInstance['res_' + resolution]) {
-                    const filePathFromDB = path.join(__dirname, '../../public' + profilePictureInstance['res_' + resolution]);
-                    if (fs.existsSync(filePathFromDB)) {
-                        fs.unlinkSync(filePathFromDB);
-                    }
-                    profilePictureInstance['res_' + resolution] = null;
-                }
-            });
-            // rename uploaded file with hash signature
-            const hash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
-            const newPicName = hash + path.extname(uploadedPicture.path);
-            const newPicPath = path.join(__dirname, '../../public/profile_pictures/'
-                + newPicName);
-            fs.renameSync(uploadedPicture.path, newPicPath);
-            // convert $FILENAME -auto-orient +profile "*" -write \
-            // "mpr:source" -resize "1080x1080^" -gravity center -crop "1080x1080+0+0" +repage -write "$NAME-1080.jpg" +delete \
-            // "mpr:source" "$NAME-original.jpg"
-            // we should only resize file to lower resolutions
-            const dimensions = await new Promise<gm.Dimensions>((resolve, reject) => {
-                gm(newPicPath).size((err, dim) => {
-                    err ? reject(err) : resolve(dim);
-                });
-            });
-            // get only those resolutions we should resize
-            const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
-            // resize files
-            newResolutions.forEach(async resElement => {
-                const resolution = parseInt(resElement);
-                const finalFileNameWithDir = path.join(__dirname, '../../public/profile_pictures/' + resElement + '/' + newPicName);
-                gm(newPicPath)
-                    .resize(resolution, resolution, '^')
-                    .gravity('Center')
-                    .crop(resolution, resolution, 0, 0)
-                    .repage('+')
-                    .noProfile()
-                    .write(finalFileNameWithDir, (error) => {
-                        if (!error) {
-                            this.logger.getLogger().info(`Image resized (${resolution}x${resolution})`);
-                        } else {
-                            throw new Error('Error trying to resize image');
-                        }
-                    });
-                // assign new URL with res name
-                profilePictureInstance['res_' + resElement] = '/profile_pictures/' + resElement + '/' + newPicName;
-            });
-            setTimeout(() => {
-                // rename original picture
-                fs.renameSync(newPicPath, path.join(__dirname,
-                    '../../public/profile_pictures/' + newPicName));
-            }, 200);
-            profilePictureInstance.res_original = '/public/profile_pictures/' + newPicName;
-            const updateResult = await this.profilePictureRepository.update({ user: userDB.id }, profilePictureInstance);
-            return updateResult;
-        } catch (error) {
-            throw error;
-        }
+        const userDB = await this.userRepository.findOne({ id: user.id });
+        let profilePictureInstance = await this.profilePictureRepository.findOne({ user: userDB });
+        // profile picture resolutions
+        const profilePictureResolutions = ['480', '240', '96', '64', '32'];
+        // delete old files if they exist
+        profilePictureInstance = this.deleteOldProfilePictures(profilePictureResolutions, profilePictureInstance);
+        // rename uploaded file with hash signature
+        const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
+        const newOriginalPicName = fileHash + '-' + user.id + path.extname(uploadedPicture.path);
+        const newOriginalPicPath = path.join(__dirname, '../../public/profile_pictures/'
+            + newOriginalPicName);
+        fs.renameSync(uploadedPicture.path, newOriginalPicPath);
+        // resize files
+        profilePictureInstance = await this.resizeProfilePictures(profilePictureResolutions,
+            newOriginalPicPath, newOriginalPicName, profilePictureInstance);
+        // assign original resolution path to profile picture instance and update instance in database
+        profilePictureInstance.res_original = '/public/profile_pictures/' + newOriginalPicName;
+        const updateResult = await this.profilePictureRepository.update({ user: userDB }, profilePictureInstance);
+        return updateResult;
     }
 
+    /**
+     *
+     * @param profilePictureResolutions - Profile picture resolutions
+     * @param profilePictureInstance - Profile picture instance
+     */
+    private deleteOldProfilePictures(profilePictureResolutions: Array<string>, profilePictureInstance: ProfilePicture): ProfilePicture {
+        // delete original file
+        const originalFilePath = path.join(__dirname, '../../' +
+            profilePictureInstance.res_original);
+        if (fs.existsSync(originalFilePath)) {
+            fs.unlinkSync(originalFilePath);
+        }
+        // delete the other profile pictures
+        profilePictureResolutions.forEach(resolution => {
+            if (profilePictureInstance['res_' + resolution]) {
+                const filePathFromDB = path.join(__dirname, '../../public' + profilePictureInstance['res_' + resolution]);
+                if (fs.existsSync(filePathFromDB)) {
+                    fs.unlinkSync(filePathFromDB);
+                }
+                profilePictureInstance['res_' + resolution] = null;
+            }
+        });
+        return profilePictureInstance;
+    }
+
+    /**
+     * Checks profile picture image dimensions
+     * @param picPath - Profile picture path
+     * @returns Profile picture image dimensions
+     */
+    private async getImageDimensions(picPath: string): Promise<gm.Dimensions> {
+        // we should only resize file to lower resolutions
+        const dimensions = await new Promise<gm.Dimensions>((resolve, reject) => {
+            gm(picPath).size((err, dim) => {
+                err ? reject(err) : resolve(dim);
+            });
+        });
+        return dimensions;
+    }
+
+    /**
+     * Resize profile pictures in every possible resolution
+     * @param resolutions - Profile picture resolutions
+     * @param newOriginalPicPath - Path for original profile picture
+     * @param newOriginalPicName - Name for oroginal profile picture
+     * @param profilePictureInstance - Profile picture instance
+     */
+    private async resizeProfilePictures(resolutions: Array<string>, newOriginalPicPath: string,
+        newOriginalPicName: string, profilePictureInstance: ProfilePicture): Promise<ProfilePicture> {
+        // get file dimension
+        const dimensions: gm.Dimensions = await this.getImageDimensions(newOriginalPicPath);
+        // get only those resolutions we should resize
+        const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
+        newResolutions.forEach(async resElement => {
+            const resolution = parseInt(resElement);
+            const finalFileNameWithDir = path.join(__dirname, '../../public/profile_pictures/' + resElement + '/' + newOriginalPicName);
+            gm(newOriginalPicPath)
+                .resize(resolution, resolution, '^')
+                .gravity('Center')
+                .crop(resolution, resolution, 0, 0)
+                .repage('+')
+                .noProfile()
+                .write(finalFileNameWithDir, (error) => {
+                    if (!error) {
+                        this.logger.getLogger().info(`Image resized (${resolution}x${resolution})`);
+                    } else {
+                        throw new Error('Error trying to resize image');
+                    }
+                });
+            // assign new URL with res name
+            profilePictureInstance['res_' + resElement] = '/profile_pictures/' + resElement + '/' + newOriginalPicName;
+        });
+        setTimeout(() =>
+            // rename original picture
+            fs.renameSync(newOriginalPicPath, path.join(__dirname,
+                '../../public/profile_pictures/' + newOriginalPicName))
+            , 200);
+        return profilePictureInstance;
+    }
     /**
      * Deletes user from database given ID
      * @param id - ID to delete from database
      * @returns DeleteResult object
      */
     public async deleteUserByID(id: number): Promise<DeleteResult> {
-        try {
-            const deleteResult = await this.userRepository.delete(id);
-            return deleteResult;
-        } catch (error) {
-            throw error;
-        }
+        const deleteResult = await this.userRepository.delete(id);
+        return deleteResult;
     }
 
     /**
@@ -230,12 +254,8 @@ export class UserService {
      * @returns User exists
      */
     public async userExistsByEmail(userEmail: string): Promise<boolean> {
-        try {
-            const exists = await this.userRepository.count({ email: userEmail });
-            return Boolean(exists);
-        } catch (error) {
-            throw error;
-        }
+        const exists = await this.userRepository.count({ email: userEmail });
+        return exists > 0;
     }
 
     /**
@@ -244,12 +264,8 @@ export class UserService {
      * @returns User exists
      */
     public async userExistsByID(id: number): Promise<boolean> {
-        try {
-            const exists = await this.userRepository.count({ id: id });
-            return Boolean(exists);
-        } catch (error) {
-            throw error;
-        }
+        const exists = await this.userRepository.count({ id: id });
+        return exists > 0;
     }
 
     /**
@@ -258,11 +274,7 @@ export class UserService {
      * @returns User entity
      */
     public async getUserByID(id: number): Promise<User> {
-        try {
-            return await this.userRepository.getProfile('user.id = :id', { id: id });
-        } catch (error) {
-            throw error;
-        }
+        return await this.userRepository.getProfile('user.id = :id', { id: id });
     }
 
     /**
@@ -271,10 +283,6 @@ export class UserService {
      * @returns User entity
      */
     public async getUserByEmail(userEmail: string): Promise<User> {
-        try {
-            return await this.userRepository.getProfile('user.email = :email', { email: userEmail });
-        } catch (error) {
-            throw error;
-        }
+        return await this.userRepository.getProfile('user.email = :email', { email: userEmail });
     }
 }

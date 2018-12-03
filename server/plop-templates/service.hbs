@@ -4,7 +4,7 @@ import { Logger, LoggerService } from './logger.service';
 @Service()
 export class {{firstUpperCase name}}Service {
 
-    constructor(@Logger() private logger: LoggerService) { }
+    constructor(@Logger({__filename}) private logger: LoggerService) { }
 
     /**
      * Service example

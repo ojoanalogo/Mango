@@ -1,9 +1,12 @@
-import { CreateDateColumn, Column, UpdateDateColumn } from 'typeorm';
+import { CreateDateColumn, Column, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * Abstract class for Created, updated and Deleted at columns with ID field
  */
-export abstract class CUD {
+export abstract class CUID {
+
+    @PrimaryGeneratedColumn()
+    id: number;
 
     @CreateDateColumn()
     created_at: Date;

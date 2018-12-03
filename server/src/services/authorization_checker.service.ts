@@ -1,13 +1,15 @@
 import { Action, ForbiddenError, UnauthorizedError, NotAcceptableError } from 'routing-controllers';
+import { Repository } from 'typeorm';
 import { Service } from 'typedi';
+import { InjectRepository } from 'typeorm-typedi-extensions';
 import { Request, Response } from 'express';
-import { RolesRepository } from '../repositories/roles.repository';
-import { RoleType, getWeight } from '../entities/user/user_role.model';
-import { UserRepository } from '../repositories/user.repository';
+import { RoleType, getWeight, Role } from '../entities/user/user_role.model';
 import { User } from '../entities/user/user.model';
 import { Resolver } from '../handlers/resolver.handler';
-import { JWTService } from './jwt.service';
 import { Logger, LoggerService } from './logger.service';
+import { JWTService } from './jwt.service';
+import { TokenRepository } from '../repositories/token.repository';
+import { UserRepository } from '../repositories/user.repository';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
 
@@ -15,10 +17,14 @@ import * as moment from 'moment';
 export class AuthChecker {
 
     constructor(
-        @Logger() private logger: LoggerService,
+        @Logger(__filename) private logger: LoggerService,
+        private jwtService: JWTService,
+        @InjectRepository(User)
         private userRepository: UserRepository,
-        private rolesRepository: RolesRepository,
-        private jwtService: JWTService) { }
+        @InjectRepository()
+        private tokenRepository: TokenRepository,
+        @InjectRepository(Role)
+        private rolesRepository: Repository<Role>) { }
 
     /**
      * Try to refresh JWT token
@@ -96,6 +102,24 @@ export class AuthChecker {
     }
 
     /**
+     * Returns user from token
+     * @param action - Action object from routing controllers
+     * @returns User object
+     */
+    public getUserFromToken = async (action: Action) => {
+        const request: Request = action.request;
+        const token: string = request.headers['authorization'].split(' ')[1];
+        if (token == null) {
+            throw new UnauthorizedError('Authorization required');
+        }
+        const tokenDataWithUser = await this.tokenRepository.getTokenWithUser(token);
+        if (!tokenDataWithUser) {
+            throw new ForbiddenError('Cannot find user associated to token');
+        }
+        return tokenDataWithUser.user;
+    }
+
+    /**
     * Checks if user is authorized to access route
     *
     * TODO: Refactor this function
@@ -108,42 +132,35 @@ export class AuthChecker {
         const request: Request = action.request;
         const response: Response = action.response;
         const roles: RoleType[] = rolesParam[0] ? rolesParam[0].roles : [RoleType.USER];
-        const resolver: Resolver = rolesParam[0] ? rolesParam[0].resolver : Resolver.OWN_ACCOUNT;
+        const resolver: Resolver = rolesParam[0] ? rolesParam[0].resolver : Resolver.NONE;
         // first we verify the JWT token
         await this.checkToken(request, response);
         // user param should now be available
         const user: User = request['user'];
-        if (!roles) {
-            action.next();
+        // check if user exists in database
+        const userExists = await this.userRepository.count({ id: user.id });
+        if (!userExists) {
+            throw new ForbiddenError('Your user not longer exists in the database');
         }
-        try {
-            // check if user exists in database
-            const userExists = await this.userRepository.count({ id: user.id });
-            if (!userExists) {
-                throw new ForbiddenError('Your user not longer exists in the database');
-            }
-            const userRoleDB = await this.rolesRepository.createQueryBuilder('rol')
-                .leftJoin('rol.user', 'user')
-                .where('rol.user = :user', { user: user.id }).getOne();
-            const userRole = userRoleDB.role;
-            if (!roles.length && userRoleDB) {
-                return true;
-            }
-            // filter and check if user has a role with enought weight to use controller
-            const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));
-            const rolesResolver = getWeight(userRole) >= getWeight(RoleType.DEVELOPER) ?
-                true : this.roleResolver(user, action, resolver);
-            if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
-                return true;
-            }
-            if (!rolesResolver) {
-                throw new UnauthorizedError(
-                    `You don't have authorization to modify this resource (${request.originalUrl} [${request.method}])`);
-            }
-            throw new ForbiddenError(`Your role (${userRole}) lacks permission to use ${request.originalUrl} [${request.method}]`);
-        } catch (error) {
-            throw error;
+        const userRoleDB = await this.rolesRepository.createQueryBuilder('rol')
+            .leftJoin('rol.user', 'user')
+            .where('rol.user = :user', { user: user.id }).getOne();
+        const userRole = userRoleDB.role;
+        if (!roles.length && userRoleDB) {
+            return true;
         }
+        // filter and check if user has a role with enought weight to use controller
+        const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));
+        const rolesResolver = getWeight(userRole) >= getWeight(RoleType.DEVELOPER) ?
+            true : this.roleResolver(user, action, resolver);
+        if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
+            return true;
+        }
+        if (!rolesResolver) {
+            throw new UnauthorizedError(
+                `You don't have authorization to modify this resource (${request.originalUrl} [${request.method}])`);
+        }
+        throw new ForbiddenError(`Your role (${userRole}) lacks permission to use ${request.originalUrl} [${request.method}]`);
     }
 
     /**

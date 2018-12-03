@@ -1,10 +1,9 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { User } from './user.model';
-import { CUD } from '../CUD';
+import { CUID } from '../CUID';
 
-export const table_name = 'users_profile_pictures';
-@Entity(table_name)
-export class ProfilePicture extends CUD {
+@Entity('users_profile_pictures')
+export class ProfilePicture extends CUID {
 
     @Column({ nullable: true })
     res_original: string;
@@ -18,7 +17,7 @@ export class ProfilePicture extends CUD {
     res_64: string;
     @Column({ nullable: true })
     res_32: string;
-    @OneToOne(type => User, user => user.profile_picture, {
+    @OneToOne(() => User, user => user.profile_picture, {
         onDelete: 'CASCADE',
         nullable: false
     })

@@ -6,6 +6,7 @@ import { createServer } from 'http';
 class Server extends App {
   constructor() {
     super();
+    this.initialize();
     /**
      * Create http server instance
      */
