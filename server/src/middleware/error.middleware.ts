@@ -39,21 +39,21 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
         }
         if (request.files) {
             // remove files if exists because we don't need it
-            log.getLogger().info('Removing uploaded files (' + request.files.length + ') because operation failed');
+            log.info('Removing uploaded files (' + request.files.length + ') because operation failed');
             for (let index = 0; index < request.files.length; index++) {
                 unlink(request.files[index].path, (err) => {
-                    !err ? log.getLogger().info('Done removing file (' + index + ')') :
-                        log.getLogger().info('Something went wrong deleting file (' + index + ')');
+                    !err ? log.info('Done removing file (' + index + ')') :
+                        log.info('Something went wrong deleting file (' + index + ')');
                 });
             }
         }
         // begin building apiError object with status code
         apiError.withStatusCode(status);
         if (status >= 400 && status < 500) {
-            log.getLogger().warn(error);
+            log.warn(error);
         }
         if (status >= 500) {
-            log.getLogger().error(error.message);
+            log.error(error.message);
             if (process.env.NODE_ENV !== 'production') {
                 apiError.withStackTrace(error.stack);
             }

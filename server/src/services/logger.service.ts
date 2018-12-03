@@ -7,16 +7,18 @@ import * as path from 'path';
 import * as httpContext from 'express-http-context';
 
 
-export function Logger(dirName: string) {
+/**
+ * @Logger decorator
+ * @param fileName - Filename context
+ */
+export function Logger(fileName: string) {
     return function (object: Object, propertyName: string, index?: number) {
-        const logger = new LoggerService(dirName);
+        const logger = new LoggerService(fileName);
         Container.registerHandler({ object, propertyName, index, value: containerInstance => logger });
     };
 }
-
 @Service()
 export class LoggerService {
-
     private logger: winston.Logger;
     private loggerHTTP: winston.Logger;
     /**
@@ -29,7 +31,7 @@ export class LoggerService {
         winston.format.json(),
     );
 
-    constructor(private dirName: string) {
+    constructor(private fileName: string) {
         this.setupLogger();
         this.setupConsoleStream();
     }
@@ -55,54 +57,68 @@ export class LoggerService {
      */
     private setupLogger() {
         if (process.env.NODE_ENV === 'production') {
+            // setup transports
+            const transportError = new DailyRotateFile({
+                level: 'error',
+                filename: path.join(__dirname, `../../logs/error-%DATE%.log`),
+                format: this.logFormat,
+                datePattern: 'YYYY-MM-DD-HH',
+                zippedArchive: true,
+                maxSize: '20m',
+                maxFiles: '31d'
+            });
+            const transportCombined = new DailyRotateFile({
+                filename: path.join(__dirname, `../../logs/combined-%DATE%.log`),
+                format: this.logFormat,
+                datePattern: 'YYYY-MM-DD-HH',
+                zippedArchive: true,
+                maxSize: '20m',
+                maxFiles: '31d'
+            });
+            const transportHTTP = new DailyRotateFile({
+                format: winston.format.combine(
+                    winston.format.uncolorize(),
+                    winston.format.printf((info) => {
+                        const message = info.message;
+                        return message;
+                    })
+                ),
+                filename: path.join(__dirname, `../../logs/http-%DATE%.log`),
+                datePattern: 'YYYY-MM-DD-HH',
+                zippedArchive: true,
+                maxSize: '20m',
+                maxFiles: '31d'
+            });
             this.logger = winston.createLogger({
                 level: 'info',
-                transports: [
-                    new DailyRotateFile({
-                        level: 'error',
-                        filename: path.join(__dirname, `../../logs/error-%DATE%.log`),
-                        format: this.logFormat,
-                        datePattern: 'YYYY-MM-DD-HH',
-                        zippedArchive: true,
-                        maxSize: '20m',
-                        maxFiles: '31d'
-                    }),
-                    new DailyRotateFile({
-                        filename: path.join(__dirname, `../../logs/combined-%DATE%.log`),
-                        format: this.logFormat,
-                        datePattern: 'YYYY-MM-DD-HH',
-                        zippedArchive: true,
-                        maxSize: '20m',
-                        maxFiles: '31d'
-                    })
-                ]
+                transports: [transportError, transportCombined]
             });
             this.loggerHTTP = winston.createLogger({
                 level: 'http',
                 levels: {
                     http: 1
                 },
-                transports: [
-                    new DailyRotateFile({
-                        format: winston.format.combine(
-                            winston.format.uncolorize(),
-                            winston.format.printf((info) => {
-                                const message = info.message;
-                                return message;
-                            })
-                        ),
-                        filename: path.join(__dirname, `../../logs/http-%DATE%.log`),
-                        datePattern: 'YYYY-MM-DD-HH',
-                        zippedArchive: true,
-                        maxSize: '20m',
-                        maxFiles: '31d'
-                    })
-                ]
+                transports: [transportHTTP]
             });
         } else {
             this.loggerHTTP = winston.createLogger({ level: 'http' });
             this.logger = winston.createLogger({ level: 'info' });
         }
+    }
+
+    /**
+     * This function is used to get origin from logger object (@Logger(__origin))
+     * @returns Returns log origin from file
+     */
+    private getOrigin(): string {
+        let origin = this.fileName || 'dev';
+        if (this.fileName) {
+            origin = origin.replace(process.cwd(), '');
+            origin = origin.replace(`${path.sep}src${path.sep}`, '');
+            origin = origin.replace(`${path.sep}dist${path.sep}`, '');
+            origin = origin.replace(/.(ts)|(js)/, '');
+        }
+        return origin;
     }
 
     /**
@@ -121,23 +137,77 @@ export class LoggerService {
                     const {
                         timestamp, level, message, ...args
                     } = info;
-                    let origin = this.dirName || 'dev';
-                    if (this.dirName) {
-                        origin = origin.replace(process.cwd(), '');
-                        origin = origin.replace(`${path.sep}src${path.sep}`, '');
-                        origin = origin.replace(`${path.sep}dist${path.sep}`, '');
-                        origin = origin.replace(/.(ts)|(js)/, '');
-                    }
-                    const reqId = httpContext.get('reqId');
-                    const msgNew = reqId ? 'RequestID: (' + reqId + ') ' + info.message : info.message;
                     const ts = timestamp.slice(0, 19).replace('T', ' ');
                     // tslint:disable-next-line:max-line-length
-                    return `${ts} | ${level} | ${origin} »: ${msgNew.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+                    return `${ts} | ${level} | ${this.getOrigin()} »: ${message.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
                 })
             )
         };
         this.logger.add(new winston.transports.Console(settings));
         this.loggerHTTP.add(new winston.transports.Console(settings));
+    }
+
+    private addContext(message: string) {
+        const reqId = httpContext.get('reqId');
+        const msgNew = reqId ? 'RequestID: (' + reqId + ') | ' + message : message;
+        return msgNew;
+    }
+
+    /**
+     * Log to winston
+     * @param level - Logger level
+     * @param message - Logger message
+     */
+    log(level: string, message: string): void {
+        this.getLogger().log(level, this.addContext(message));
+    }
+    /**
+     * Log error to winston
+     * @param message - Message
+     * @param args - args
+     */
+    error(message: string, args?: any): void {
+        this.getLogger().error(this.addContext(message), args);
+    }
+    /**
+     * Log warning to winston
+     * @param message - Message
+     * @param args - args
+     */
+    warn(message: string, args?: any): void {
+        this.getLogger().warn(this.addContext(message), args);
+    }
+    /**
+     * Log verbose to winston
+     * @param message - Message
+     * @param args - args
+     */
+    verbose(message: string, args?: any): void {
+        this.getLogger().verbose(this.addContext(message), args);
+    }
+    /**
+     * Log info to winston
+     * @param message - Message
+     * @param args - args
+     */
+    info(message: string, args?: any): void {
+        this.getLogger().info(this.addContext(message), args);
+    }
+    /**
+     * Log debug to winston
+     * @param message - Message
+     * @param args - args
+     */
+    debug(message: string, args?: any): void {
+        this.getLogger().debug(this.addContext(message), args);
+    }
+    /**
+     * Log silly to winston
+     * @param message - Message
+     * @param args - args
+     */
+    silly(message: string, args?: any): void {
+        this.getLogger().silly(this.addContext(message), args);
     }
 }
 

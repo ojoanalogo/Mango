@@ -36,7 +36,7 @@ export class JWTService {
             tokenInstance.token = token;
             tokenInstance.agent = userAgent;
             tokenInstance.user = user; // asign relationship
-            this.logger.getLogger().info(`Creating new token for user id: ${user.id}, agent: ${userAgent}`);
+            this.logger.info(`Creating new token for user id: ${user.id}, agent: ${userAgent}`);
             // now we save the token in our token repository
             await this.tokenRepository.save(tokenInstance);
         }
@@ -49,7 +49,7 @@ export class JWTService {
      */
     public async deleteTokens(user: User): Promise<any> {
         await this.tokenRepository.delete({ user: user });
-        this.logger.getLogger().info('Deleted tokens for user id: ' + user.id);
+        this.logger.info('Deleted tokens for user id: ' + user.id);
     }
 
     /**
@@ -63,7 +63,7 @@ export class JWTService {
             throw new UnauthorizedError('Token no longer valid (already refreshed)');
         }
         const newToken = await this.createJWT(tokenDB.user, true);
-        this.logger.getLogger().info(`Refreshing user token for user id: ${tokenDB.user.id}, agent: ${tokenDB.agent}`);
+        this.logger.info(`Refreshing user token for user id: ${tokenDB.user.id}, agent: ${tokenDB.agent}`);
         await this.tokenRepository.update({ token: token }, { token: newToken, last_time_refreshed: new Date() });
         return newToken;
     }

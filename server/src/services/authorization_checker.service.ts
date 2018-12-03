@@ -41,7 +41,7 @@ export class AuthChecker {
             if (!user) {
                 throw new NotAcceptableError('Invalid Token data');
             }
-            this.logger.getLogger().info('Refreshing token for user ID (' + user.id + ')');
+            this.logger.info('Refreshing token for user ID (' + user.id + ')');
             const newToken = await this.jwtService.refreshToken(token);
             // send the new shiny token
             response.setHeader('X-Auth-Token', newToken);

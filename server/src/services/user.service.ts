@@ -73,7 +73,7 @@ export class UserService {
         await this.rolesRepository.save(role);
         // pass full JWT tokens
         userInstance.token = jwtToken;
-        this.logger.getLogger().info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
+        this.logger.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
         // return user model object
         return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
     }
@@ -112,7 +112,7 @@ export class UserService {
         let jwtToken;
         if (user.password && currentPassword !== user.password) {
             await user.updatePassword();
-            this.logger.getLogger().info(`User (ID: ${userDB.id}) updated his password`);
+            this.logger.info(`User (ID: ${userDB.id}) updated his password`);
         }
         // delete all JWT tokens and create a new one if user updates his password or email
         if (user.password || user.email) {
@@ -125,8 +125,11 @@ export class UserService {
         if (jwtToken) {
             user.token = jwtToken;
         }
-        this.logger.getLogger().info(`User (ID: ${userDB.id}) was updated`);
-        return await this.getUserByID(userDB.id);
+        this.logger.info(`User (ID: ${userDB.id}) was updated`);
+        const userUpdated = await this.getUserByID(userDB.id);
+        // attach jwt token to userUpdated object
+        userUpdated.token = jwtToken;
+        return userUpdated;
     }
 
     /**
@@ -223,7 +226,7 @@ export class UserService {
                 .noProfile()
                 .write(finalFileNameWithDir, (error) => {
                     if (!error) {
-                        this.logger.getLogger().info(`Image resized (${resolution}x${resolution})`);
+                        this.logger.info(`Image resized (${resolution}x${resolution})`);
                     } else {
                         throw new Error('Error trying to resize image');
                     }

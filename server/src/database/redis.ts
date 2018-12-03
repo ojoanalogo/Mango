@@ -19,10 +19,10 @@ export class Redis {
             auth_pass: this.redis_auth
         });
         this.client.on('ready', () => {
-            this.logger.getLogger().info('Redis client set-up and running');
+            this.logger.info('Redis client set-up and running');
         });
         this.client.on('error', () => {
-            this.logger.getLogger().warn('Redis client can\'t be setup');
+            this.logger.warn('Redis client can\'t be setup');
             this.client.quit();
         });
     }

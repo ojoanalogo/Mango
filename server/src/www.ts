@@ -13,10 +13,8 @@ class Server extends App {
     const server = createServer(this.getAppInstance());
     server.listen(this.getPort(), () => {
       const log = Container.get(LoggerService);
-      log.getLogger()
-        .info('Running environment: ' + process.env.NODE_ENV);
-      log.getLogger()
-        .info('Server is running in port: ' + this.getPort());
+      log.info('Running environment: ' + process.env.NODE_ENV);
+      log.info('Server is running in port: ' + this.getPort());
     });
   }
 }

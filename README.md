@@ -134,6 +134,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │   └── redis.ts
     │   ├── entities
     │   │   ├── CUD.ts
+    │   │   ├── CUID.ts
     │   │   ├── token
     │   │   │   └── token.model.ts
     │   │   └── user
@@ -149,9 +150,6 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │   ├── http_logging.middleware.ts
     │   │   └── not_found.middleware.ts
     │   ├── repositories
-    │   │   ├── base.repository.ts
-    │   │   ├── profile_picture.repository.ts
-    │   │   ├── roles.repository.ts
     │   │   ├── token.repository.ts
     │   │   └── user.repository.ts
     │   ├── services
@@ -177,9 +175,9 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 ## 📋 ToDo
 
 - [x] Add JWT token refresh
+- [x] Better authorization token flow
 - [ ] Better readme
 - [ ] Add docker support
-- [ ] Better authorization token flow
 - [ ] Add GraphQL?
 - [ ] Add unit test and integration tests (help wanted)
 
@@ -187,6 +185,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 - 0.1 - First release
 - 0.1.1 - Refactored authorization function, moved JWT middleware to auth function
+- 0.1.2 - Refactored logging system, now it supports context for file, changed the way repositories are created (uses typedi injection), added current user checker, added some validation to me controller, tokens are now deleted when user changes his password or email. Refactored profile upload methods.
 
 ## 🤗 Credits
 

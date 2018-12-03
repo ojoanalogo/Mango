@@ -42,12 +42,10 @@ export class Database {
                 migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
                 synchronize: this.syncOption,
                 logging: false,
-                cache: {
-                    duration: 1500
-                }
+                cache: true
             });
             if (this.connection) {
-                this.logger.getLogger().info(`Connected to database (${this.db_name}) successfully`);
+                this.logger.info(`Connected to database (${this.db_name}) successfully`);
                 return this.connection;
             }
         } catch (error) {
@@ -68,14 +66,14 @@ export class Database {
      */
     private retry(errorMsg: string): void {
         // we should try to reconnect a few times
-        this.logger.getLogger().error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
-        this.logger.getLogger().warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
+        this.logger.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
+        this.logger.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
             `| ${this.reconnectTry}/${this.reconnect_max_try}`);
         setTimeout(() => {
             this.reconnectTry++;
             // if we can't reconnect to database after X times, we will stop trying to do so
             if (this.reconnectTry > this.reconnect_max_try) {
-                this.logger.getLogger().error(`Timed out trying to connect to the ${this.db_type} database`);
+                this.logger.error(`Timed out trying to connect to the ${this.db_type} database`);
                 return false;
             }
             this.setupDatabase();
