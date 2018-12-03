@@ -47,6 +47,7 @@
 ## ❓ How to use
 
 To clone and run this server template, you'll need [Git](https://git-scm.com) and [NodeJS](https://nodejs.org/es/)
+MySQL is also needed (or change the database driver in database.ts file, check [TypeORM](https://github.com/typeorm/typeorm) documentation for a how-to)
 
 ```bash
 # Clone this repository
@@ -57,6 +58,9 @@ $ cd Mango/server
 
 # Install dependencies
 $ npm install
+
+# Rename .example.env to .env
+mv .example.env .env
 
 # Run the server
 $ npm run dev
