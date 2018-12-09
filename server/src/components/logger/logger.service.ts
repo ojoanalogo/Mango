@@ -67,8 +67,9 @@ export class LoggerService {
                 maxSize: '20m',
                 maxFiles: '31d'
             });
-            const transportCombined = new DailyRotateFile({
-                filename: path.join(__dirname, `../../logs/combined-%DATE%.log`),
+            const transportInfo = new DailyRotateFile({
+                level: 'info',
+                filename: path.join(__dirname, `../../logs/info-%DATE%.log`),
                 format: this.logFormat,
                 datePattern: 'YYYY-MM-DD-HH',
                 zippedArchive: true,
@@ -91,7 +92,7 @@ export class LoggerService {
             });
             this.logger = winston.createLogger({
                 level: 'info',
-                transports: [transportError, transportCombined]
+                transports: [transportError, transportInfo]
             });
             this.loggerHTTP = winston.createLogger({
                 level: 'http',
@@ -116,7 +117,7 @@ export class LoggerService {
             origin = origin.replace(process.cwd(), '');
             origin = origin.replace(`${path.sep}src${path.sep}`, '');
             origin = origin.replace(`${path.sep}dist${path.sep}`, '');
-            origin = origin.replace(/.(ts)|(js)/, '');
+            origin = origin.replace(/([.]ts)|([.]js)/, '');
         }
         return origin;
     }
@@ -139,7 +140,7 @@ export class LoggerService {
                     } = info;
                     const ts = timestamp.slice(0, 19).replace('T', ' ');
                     // tslint:disable-next-line:max-line-length
-                    return `${ts} | ${level} | ${this.getOrigin()} »: ${message.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+                    return `${ts} | ${level} | ${this.getOrigin()} » ${message.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
                 })
             )
         };

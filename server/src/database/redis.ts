@@ -1,6 +1,6 @@
 import { createClient, RedisClient } from 'redis';
 import { Service } from 'typedi/decorators/Service';
-import { Logger, LoggerService } from '../services/logger.service';
+import { Logger, LoggerService } from '../components/logger/logger.service';
 
 @Service()
 export class Redis {

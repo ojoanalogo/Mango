@@ -7,7 +7,7 @@ import { Container } from 'typedi';
 import { Request, Response } from 'express';
 import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { ApiError } from '../handlers/api_error.handler';
-import { LoggerService } from '../services/logger.service';
+import { LoggerService } from '../components/logger/logger.service';
 import { unlink } from 'fs';
 
 @Middleware({ type: 'after' })

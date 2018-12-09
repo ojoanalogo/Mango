@@ -7,7 +7,7 @@ import { Database } from './database/database';
 import { Redis } from './database/redis';
 import { ErrorMiddleware } from './middleware/error.middleware';
 import { NotFoundMiddleware } from './middleware/not_found.middleware';
-import { AuthChecker } from './services/authorization_checker.service';
+import { AuthChecker } from './components/auth/authorization_checker.service';
 import * as httpContext from 'express-http-context';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
@@ -27,8 +27,6 @@ export class App {
   constructor() { }
 
   public async initialize(): Promise<void> {
-    // check env variables
-    this.checkEnvVariables();
     // create express app
     this.app = express();
     // use container from typeDI
@@ -38,33 +36,18 @@ export class App {
     const redis: Redis = Container.get(Redis);
     redis.setupRedis();
     // setup express server
-    this.config();
+    this.setupServer();
     // setup database
     const database: Database = Container.get(Database);
     await database.setupDatabase();
     // setup routing-controllers
-    this.routerConfig();
-  }
-
-  /**
-   * Check environment variables before starting server
-   */
-  private checkEnvVariables(): void {
-    [
-      'NODE_ENV',
-      'PORT'
-    ].forEach((name) => {
-      if (!process.env[name]) {
-        console.error(`Environment variable ${name} is missing`);
-        process.exit(0);
-      }
-    });
+    this.setupRouting();
   }
 
   /**
   * Setup express server
   */
-  private config(): void {
+  private setupServer(): void {
     // support application/json type post data
     this.app.use(bodyParser.json());
     // support application/x-www-form-urlencoded post data
@@ -93,11 +76,11 @@ export class App {
   /**
    * Setup routing-controlles
    */
-  private routerConfig(): void {
+  private setupRouting(): void {
     const authChecker: AuthChecker = Container.get(AuthChecker);
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
-      controllers: [__dirname + '/controllers/*{.js,.ts}'],
+      controllers: [__dirname + '/**/*.controller{.js,.ts}'],
       middlewares: [ErrorMiddleware, NotFoundMiddleware],
       cors: true,                     // enable cors
       defaultErrorHandler: false,     // disables error handler so we can use ours

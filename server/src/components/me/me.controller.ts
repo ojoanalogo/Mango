@@ -4,11 +4,11 @@ import {
 } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { Validator } from 'class-validator';
-import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
-import { UserService } from '../services/user.service';
-import { LoggingMiddleware } from '../middleware/http_logging.middleware';
-import { User } from '../entities/user/user.model';
-import { UploadUtils } from '../utils/upload.utils';
+import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
+import { UserService } from '../users/user.service';
+import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
+import { User } from '../users/user.model';
+import { UploadUtils } from '../../utils/upload.utils';
 import * as multer from 'multer';
 
 @JsonController('/me')

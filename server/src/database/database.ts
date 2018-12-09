@@ -1,10 +1,6 @@
 import { Service } from 'typedi';
 import { Connection, createConnection } from 'typeorm';
-import { Logger, LoggerService } from '../services/logger.service';
-import { User } from '../entities/user/user.model';
-import { JwtToken } from '../entities/token/token.model';
-import { ProfilePicture } from '../entities/user/user_profile_picture.model';
-import { Role } from '../entities/user/user_role.model';
+import { Logger, LoggerService } from '../components/logger/logger.service';
 
 @Service()
 export class Database {
@@ -38,7 +34,7 @@ export class Database {
                 password: this.db_password,
                 database: this.db_name,
                 entityPrefix: this.db_prefix,
-                entities: [User, JwtToken, ProfilePicture, Role ],
+                entities: [__dirname + '../../**/*.model{.js,.ts}'],
                 migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
                 synchronize: this.syncOption,
                 logging: false,

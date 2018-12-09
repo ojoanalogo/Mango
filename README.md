@@ -127,24 +127,37 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   └── index.html
     ├── src
     │   ├── app.ts
-    │   ├── controllers
-    │   │   ├── auth.controller.ts
-    │   │   ├── health.controller.ts
-    │   │   ├── index.controller.ts
-    │   │   ├── me.controller.ts
-    │   │   └── user.controller.ts
+    │   ├── bin
+    │   │   └── www.ts
+    │   ├── components
+    │   │   ├── auth
+    │   │   │   ├── auth.controller.ts
+    │   │   │   ├── authorization_checker.service.ts
+    │   │   │   ├── jwt.service.ts
+    │   │   │   ├── token.model.ts
+    │   │   │   └── token.repository.ts
+    │   │   ├── common
+    │   │   │   ├── CUD.ts
+    │   │   │   └── CUID.ts
+    │   │   ├── health
+    │   │   │   ├── health.controller.ts
+    │   │   │   └── health.service.ts
+    │   │   ├── index
+    │   │   │   └── index.controller.ts
+    │   │   ├── logger
+    │   │   │   └── logger.service.ts
+    │   │   ├── me
+    │   │   │   └── me.controller.ts
+    │   │   └── users
+    │   │       ├── user.model.ts
+    │   │       ├── user_profile_picture.model.ts
+    │   │       ├── user.repository.ts
+    │   │       ├── user_role.model.ts
+    │   │       ├── users.controller.ts
+    │   │       └── user.service.ts
     │   ├── database
     │   │   ├── database.ts
     │   │   └── redis.ts
-    │   ├── entities
-    │   │   ├── CUD.ts
-    │   │   ├── CUID.ts
-    │   │   ├── token
-    │   │   │   └── token.model.ts
-    │   │   └── user
-    │   │       ├── user.model.ts
-    │   │       ├── user_profile_picture.model.ts
-    │   │       └── user_role.model.ts
     │   ├── handlers
     │   │   ├── api_error.handler.ts
     │   │   ├── api_response.handler.ts
@@ -153,19 +166,9 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │   ├── error.middleware.ts
     │   │   ├── http_logging.middleware.ts
     │   │   └── not_found.middleware.ts
-    │   ├── repositories
-    │   │   ├── token.repository.ts
-    │   │   └── user.repository.ts
-    │   ├── services
-    │   │   ├── authorization_checker.service.ts
-    │   │   ├── health.service.ts
-    │   │   ├── jwt.service.ts
-    │   │   ├── logger.service.ts
-    │   │   └── user.service.ts
-    │   ├── utils
-    │   │   ├── json.utils.ts
-    │   │   └── upload.utils.ts
-    │   └── www.ts
+    │   └── utils
+    │       ├── json.utils.ts
+    │       └── upload.utils.ts
     ├── tests
     │   ├── src
     │   │   ├── controllers
@@ -180,6 +183,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 - [x] Add JWT token refresh
 - [x] Better authorization token flow
+- [x] Better project structure
 - [ ] Better readme
 - [ ] Add docker support
 - [ ] Add GraphQL?
@@ -190,6 +194,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 - 0.1 - First release
 - 0.1.1 - Refactored authorization function, moved JWT middleware to auth function
 - 0.1.2 - Refactored logging system, now it supports context for file, changed the way repositories are created (uses typedi injection), added current user checker, added some validation to me controller, tokens are now deleted when user changes his password or email. Refactored profile upload methods.
+- 0.1.3 - Better project structure
 
 ## 🤗 Credits
 

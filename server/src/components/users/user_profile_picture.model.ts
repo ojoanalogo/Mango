@@ -1,6 +1,6 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { User } from './user.model';
-import { CUID } from '../CUID';
+import { CUID } from '../common/CUID';
 
 @Entity('users_profile_pictures')
 export class ProfilePicture extends CUID {

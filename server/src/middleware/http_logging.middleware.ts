@@ -1,6 +1,6 @@
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { Response, Request } from 'express';
-import { morganOption } from '../services/logger.service';
+import { morganOption } from '../components/logger/logger.service';
 import * as morgan from 'morgan';
 
 @Middleware({ type: 'before' })

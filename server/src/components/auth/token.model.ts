@@ -1,5 +1,5 @@
 import { Entity, Column, JoinColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../user/user.model';
+import { User } from '../users/user.model';
 
 @Entity('tokens')
 export class JwtToken {

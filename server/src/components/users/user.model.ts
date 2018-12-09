@@ -1,8 +1,8 @@
 import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
-import { JwtToken } from '../token/token.model';
+import { JwtToken } from '../auth/token.model';
 import { ProfilePicture } from './user_profile_picture.model';
 import { Role } from './user_role.model';
-import { CUID } from '../CUID';
+import { CUID } from '../common/CUID';
 import * as bcrypt from 'bcrypt';
 
 @Entity('users')

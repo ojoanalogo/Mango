@@ -6,11 +6,11 @@ import {
 } from 'routing-controllers';
 import { Response } from 'express';
 import { Validator } from 'class-validator';
-import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
-import { UserService } from '../services/user.service';
-import { LoggingMiddleware } from '../middleware/http_logging.middleware';
-import { User } from '../entities/user/user.model';
-import { RoleType } from '../entities/user/user_role.model';
+import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
+import { UserService } from './user.service';
+import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
+import { User } from './user.model';
+import { RoleType } from './user_role.model';
 
 @JsonController('/users/')
 @UseBefore(LoggingMiddleware)

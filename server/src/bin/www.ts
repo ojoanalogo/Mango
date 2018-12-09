@@ -1,5 +1,5 @@
-import { App } from './app';
-import { LoggerService } from './services/logger.service';
+import { App } from '../app';
+import { LoggerService } from '../components/logger/logger.service';
 import { Container } from 'typedi';
 import { createServer } from 'http';
 

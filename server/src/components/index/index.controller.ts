@@ -1,7 +1,7 @@
 import { Get, UseBefore, JsonController, Res } from 'routing-controllers';
 import { Response } from 'express';
-import { LoggingMiddleware } from '../middleware/http_logging.middleware';
-import { ApiResponse, HTTP_STATUS_CODE } from '../handlers/api_response.handler';
+import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
+import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
 
 @JsonController()
 @UseBefore(LoggingMiddleware)
