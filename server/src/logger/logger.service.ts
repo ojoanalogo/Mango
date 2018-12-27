@@ -6,7 +6,6 @@ import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 import * as httpContext from 'express-http-context';
 
-
 /**
  * @Logger decorator
  * @param fileName - Filename context
@@ -14,22 +13,14 @@ import * as httpContext from 'express-http-context';
 export function Logger(fileName: string) {
     return function (object: Object, propertyName: string, index?: number) {
         const logger = new LoggerService(fileName);
-        Container.registerHandler({ object, propertyName, index, value: containerInstance => logger });
+        Container.registerHandler({ object, propertyName, index, value: () => logger });
     };
 }
+
 @Service()
 export class LoggerService {
     private logger: winston.Logger;
     private loggerHTTP: winston.Logger;
-    /**
-    * Common logger format, we strip colors and add a Timestamp
-    * @returns LogFormat
-    */
-    private logFormat: Format = winston.format.combine(
-        winston.format.uncolorize(),
-        winston.format.timestamp(),
-        winston.format.json(),
-    );
 
     constructor(private fileName: string) {
         this.setupLogger();
@@ -53,6 +44,50 @@ export class LoggerService {
     }
 
     /**
+    * Common logger format, we strip colors and add a Timestamp
+    * @returns LogFormat
+    */
+    private getFileLogFormat(): Format {
+        const addRequestUUID = winston.format(info => {
+            const reqID = this.getRequestUUID();
+            if (reqID) {
+                info.requestID = reqID;
+            }
+            return info;
+        });
+        return winston.format.combine(
+            winston.format.uncolorize(),
+            winston.format.timestamp(),
+            addRequestUUID(),
+            winston.format.json()
+        );
+    }
+
+    /**
+    * Console logger format
+    * @returns LogFormat
+    */
+    private getConsoleLogFormat(): Format {
+        /**
+        * formatted thanks to https://github.com/winstonjs/winston/issues/1135#issuecomment-343980350
+        */
+        return winston.format.combine(
+            winston.format.colorize(),
+            winston.format.timestamp(),
+            winston.format.align(),
+            winston.format.printf((info) => {
+                const {
+                    timestamp, level, message, ...args
+                } = info;
+                const ts = timestamp.slice(0, 19).replace('T', ' ');
+                // tslint:disable-next-line:max-line-length
+                const format = `${ts} | ${level} | ${this.getOrigin()} | ${this.getRequestUUID() ? `${this.getRequestUUID()} ` : ''}» ${message.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+                return format;
+            })
+        );
+    }
+
+    /**
      * Setup main logger
      */
     private setupLogger() {
@@ -61,16 +96,16 @@ export class LoggerService {
             const transportError = new DailyRotateFile({
                 level: 'error',
                 filename: path.join(__dirname, `../../logs/error-%DATE%.log`),
-                format: this.logFormat,
+                format: this.getFileLogFormat(),
                 datePattern: 'YYYY-MM-DD-HH',
                 zippedArchive: true,
                 maxSize: '20m',
                 maxFiles: '31d'
             });
-            const transportInfo = new DailyRotateFile({
+            const transportCombined = new DailyRotateFile({
                 level: 'info',
-                filename: path.join(__dirname, `../../logs/info-%DATE%.log`),
-                format: this.logFormat,
+                filename: path.join(__dirname, `../../logs/combined-%DATE%.log`),
+                format: this.getFileLogFormat(),
                 datePattern: 'YYYY-MM-DD-HH',
                 zippedArchive: true,
                 maxSize: '20m',
@@ -92,7 +127,7 @@ export class LoggerService {
             });
             this.logger = winston.createLogger({
                 level: 'info',
-                transports: [transportError, transportInfo]
+                transports: [transportError, transportCombined]
             });
             this.loggerHTTP = winston.createLogger({
                 level: 'http',
@@ -102,8 +137,8 @@ export class LoggerService {
                 transports: [transportHTTP]
             });
         } else {
-            this.loggerHTTP = winston.createLogger({ level: 'http' });
             this.logger = winston.createLogger({ level: 'info' });
+            this.loggerHTTP = winston.createLogger({ level: 'http' });
         }
     }
 
@@ -123,35 +158,20 @@ export class LoggerService {
     }
 
     /**
+     * Get request context (UUID)
+     * @returns request context
+     */
+    private getRequestUUID(): string {
+        const reqId = httpContext.get('reqId');
+        return reqId;
+    }
+
+    /**
      * Setup console stream
      */
     private setupConsoleStream() {
-        /**
-        * formatted thanks to https://github.com/winstonjs/winston/issues/1135#issuecomment-343980350
-        */
-        const settings = {
-            format: winston.format.combine(
-                winston.format.colorize(),
-                winston.format.timestamp(),
-                winston.format.align(),
-                winston.format.printf((info) => {
-                    const {
-                        timestamp, level, message, ...args
-                    } = info;
-                    const ts = timestamp.slice(0, 19).replace('T', ' ');
-                    // tslint:disable-next-line:max-line-length
-                    return `${ts} | ${level} | ${this.getOrigin()} » ${message.replace('\t', '')} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
-                })
-            )
-        };
-        this.logger.add(new winston.transports.Console(settings));
-        this.loggerHTTP.add(new winston.transports.Console(settings));
-    }
-
-    private addContext(message: string) {
-        const reqId = httpContext.get('reqId');
-        const msgNew = reqId ? 'RequestID: (' + reqId + ') | ' + message : message;
-        return msgNew;
+        this.logger.add(new winston.transports.Console({ format: this.getConsoleLogFormat() }));
+        this.loggerHTTP.add(new winston.transports.Console({ format: this.getConsoleLogFormat() }));
     }
 
     /**
@@ -160,7 +180,7 @@ export class LoggerService {
      * @param message - Logger message
      */
     log(level: string, message: string): void {
-        this.getLogger().log(level, this.addContext(message));
+        this.getLogger().log(level, message);
     }
     /**
      * Log error to winston
@@ -168,7 +188,7 @@ export class LoggerService {
      * @param args - args
      */
     error(message: string, args?: any): void {
-        this.getLogger().error(this.addContext(message), args);
+        this.getLogger().error(message, args);
     }
     /**
      * Log warning to winston
@@ -176,7 +196,7 @@ export class LoggerService {
      * @param args - args
      */
     warn(message: string, args?: any): void {
-        this.getLogger().warn(this.addContext(message), args);
+        this.getLogger().warn(message, args);
     }
     /**
      * Log verbose to winston
@@ -184,7 +204,7 @@ export class LoggerService {
      * @param args - args
      */
     verbose(message: string, args?: any): void {
-        this.getLogger().verbose(this.addContext(message), args);
+        this.getLogger().verbose(message, args);
     }
     /**
      * Log info to winston
@@ -192,7 +212,7 @@ export class LoggerService {
      * @param args - args
      */
     info(message: string, args?: any): void {
-        this.getLogger().info(this.addContext(message), args);
+        this.getLogger().info(message, args);
     }
     /**
      * Log debug to winston
@@ -200,7 +220,7 @@ export class LoggerService {
      * @param args - args
      */
     debug(message: string, args?: any): void {
-        this.getLogger().debug(this.addContext(message), args);
+        this.getLogger().debug(message, args);
     }
     /**
      * Log silly to winston
@@ -208,7 +228,7 @@ export class LoggerService {
      * @param args - args
      */
     silly(message: string, args?: any): void {
-        this.getLogger().silly(this.addContext(message), args);
+        this.getLogger().silly(message, args);
     }
 }
 
@@ -218,7 +238,7 @@ export class LoggerService {
  */
 export const morganOption: Options = {
     stream: {
-        write: function (message: string) {
+        write: (message: string) => {
             const logger = Container.get(LoggerService);
             logger.getHTTPLogger().log('http', message.replace('\n', ''));
         }

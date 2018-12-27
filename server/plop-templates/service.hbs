@@ -1,10 +1,10 @@
 import { Service } from 'typedi';
-import { Logger, LoggerService } from './logger.service';
+import { Logger, LoggerService } from '../../logger/logger.service';
 
 @Service()
 export class {{firstUpperCase name}}Service {
 
-    constructor(@Logger({__filename}) private logger: LoggerService) { }
+    constructor(@Logger(__filename) private logger: LoggerService) {
 
     /**
      * Service example
@@ -17,3 +17,4 @@ export class {{firstUpperCase name}}Service {
     }
 
 }
+

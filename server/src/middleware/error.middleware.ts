@@ -7,8 +7,8 @@ import { Container } from 'typedi';
 import { Request, Response } from 'express';
 import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { ApiError } from '../handlers/api_error.handler';
-import { LoggerService } from '../components/logger/logger.service';
-import { unlink } from 'fs';
+import { LoggerService } from '../logger/logger.service';
+import { unlink, exists } from 'fs';
 
 @Middleware({ type: 'after' })
 export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
@@ -41,19 +41,23 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
             // remove files if exists because we don't need it
             log.info('Removing uploaded files (' + request.files.length + ') because operation failed');
             for (let index = 0; index < request.files.length; index++) {
-                unlink(request.files[index].path, (err) => {
-                    !err ? log.info('Done removing file (' + index + ')') :
-                        log.info('Something went wrong deleting file (' + index + ')');
+                exists(request.files[index].path, (fileExists: boolean) => {
+                    if (fileExists) {
+                        unlink(request.files[index].path, (err) => {
+                            !err ? log.info(`Done removing file (${index + 1})`) :
+                                log.error(`Something went wrong deleting uploaded files (${index + 1})`, err);
+                        });
+                    }
                 });
             }
         }
         // begin building apiError object with status code
         apiError.withStatusCode(status);
         if (status >= 400 && status < 500) {
-            log.warn(error);
+            log.warn(error.message, error);
         }
         if (status >= 500) {
-            log.error(error.message);
+            log.error(error.message, error);
             if (process.env.NODE_ENV !== 'production') {
                 apiError.withStackTrace(error.stack);
             }

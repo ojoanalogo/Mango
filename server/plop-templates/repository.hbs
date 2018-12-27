@@ -1,0 +1,15 @@
+import { Service } from 'typedi';
+import { Repository, EntityRepository } from 'typeorm';
+
+@Service()
+@EntityRepository({{firstUpperCase name}})
+export class {{firstUpperCase name}}Repository extends Repository< {{firstUpperCase name}}> {
+
+   /**
+   * Example function for custom repository
+   * @returns {{firstUpperCase name}} entity
+   */
+   public async getProfile(conditions: string, conditionsValues: any): Promise< {{firstUpperCase name}}> {
+      return await this.createQueryBuilder('{{name}}').getOne();
+   }
+}

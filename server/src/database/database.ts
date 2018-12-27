@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { Connection, createConnection } from 'typeorm';
-import { Logger, LoggerService } from '../components/logger/logger.service';
+import { Logger, LoggerService } from '../logger/logger.service';
 
 @Service()
 export class Database {
@@ -19,6 +19,10 @@ export class Database {
     private syncOption = process.env.NODE_ENV === 'production' ? false : true;
 
     constructor(@Logger(__filename) private logger: LoggerService) { }
+
+    private timeout(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     /**
     * Setup database
@@ -40,39 +44,26 @@ export class Database {
                 logging: false,
                 cache: true
             });
-            if (this.connection) {
-                this.logger.info(`Connected to database (${this.db_name}) successfully`);
-                return this.connection;
+            this.logger.info(`Connected to database (${this.db_name}) successfully`);
+            return this.connection;
+        } catch (err) {
+            if (this.reconnectTry > this.reconnect_max_try) {
+                this.logger.error(`Timed out trying to connect to the ${this.db_type} database`, err);
+                throw err;
             }
-        } catch (error) {
-            this.retry(error);
+            // we should try to reconnect a few times
+            this.logger.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${err}`);
+            this.logger.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
+                `| ${this.reconnectTry}/${this.reconnect_max_try}`);
+            this.reconnectTry = this.reconnectTry + 1;
+            await this.timeout(this.reconnect_seconds * 1000);
+            return this.setupDatabase();
         }
     }
-
     /**
      * Stop database
      */
     public async stopDatabase() {
         await this.connection.close();
-    }
-
-    /**
-     * Try to reconnect to database
-     * @param errorMsg - Error message from database
-     */
-    private retry(errorMsg: string): void {
-        // we should try to reconnect a few times
-        this.logger.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${errorMsg}`);
-        this.logger.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
-            `| ${this.reconnectTry}/${this.reconnect_max_try}`);
-        setTimeout(() => {
-            this.reconnectTry++;
-            // if we can't reconnect to database after X times, we will stop trying to do so
-            if (this.reconnectTry > this.reconnect_max_try) {
-                this.logger.error(`Timed out trying to connect to the ${this.db_type} database`);
-                return false;
-            }
-            this.setupDatabase();
-        }, 1000 * this.reconnect_seconds);
     }
 }

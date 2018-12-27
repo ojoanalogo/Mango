@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { DeleteResult, Repository } from 'typeorm';
 import { InjectRepository } from 'typeorm-typedi-extensions';
-import { Logger, LoggerService } from '../logger/logger.service';
+import { Logger, LoggerService } from '../../logger/logger.service';
 import { JWTService } from '../auth/jwt.service';
 import { UploadUtils } from '../../utils/upload.utils';
 import { JSONUtils } from '../../utils/json.utils';
@@ -9,8 +9,8 @@ import { UserRepository } from './user.repository';
 import { User } from './user.model';
 import { Role, RoleType } from './user_role.model';
 import { ProfilePicture } from './user_profile_picture.model';
-import * as gm from 'gm';
 import * as fs from 'fs';
+import * as sharp from 'sharp';
 import * as path from 'path';
 
 @Service()
@@ -150,7 +150,7 @@ export class UserService {
         // rename uploaded file with hash signature
         const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
         const newOriginalPicName = fileHash + '-' + user.id + path.extname(uploadedPicture.path);
-        const newOriginalPicPath = path.join(__dirname, '../../public/profile_pictures/'
+        const newOriginalPicPath = path.join(__dirname, '../../../public/profile_pictures/'
             + newOriginalPicName);
         fs.renameSync(uploadedPicture.path, newOriginalPicPath);
         // resize files
@@ -169,7 +169,7 @@ export class UserService {
      */
     private deleteOldProfilePictures(profilePictureResolutions: Array<string>, profilePictureInstance: ProfilePicture): ProfilePicture {
         // delete original file
-        const originalFilePath = path.join(__dirname, '../../' +
+        const originalFilePath = path.join(__dirname, '../../../' +
             profilePictureInstance.res_original);
         if (fs.existsSync(originalFilePath)) {
             fs.unlinkSync(originalFilePath);
@@ -177,7 +177,7 @@ export class UserService {
         // delete the other profile pictures
         profilePictureResolutions.forEach(resolution => {
             if (profilePictureInstance['res_' + resolution]) {
-                const filePathFromDB = path.join(__dirname, '../../public' + profilePictureInstance['res_' + resolution]);
+                const filePathFromDB = path.join(__dirname, '../../../public/' + profilePictureInstance['res_' + resolution]);
                 if (fs.existsSync(filePathFromDB)) {
                     fs.unlinkSync(filePathFromDB);
                 }
@@ -192,14 +192,14 @@ export class UserService {
      * @param picPath - Profile picture path
      * @returns Profile picture image dimensions
      */
-    private async getImageDimensions(picPath: string): Promise<gm.Dimensions> {
+    private async getImageDimensions(picPath: string): Promise<PictureSize> {
         // we should only resize file to lower resolutions
-        const dimensions = await new Promise<gm.Dimensions>((resolve, reject) => {
-            gm(picPath).size((err, dim) => {
-                err ? reject(err) : resolve(dim);
-            });
-        });
-        return dimensions;
+        try {
+            const metadata = await sharp(picPath).metadata();
+            return { width: metadata.width, height: metadata.height };
+        } catch (error) {
+            throw error;
+        }
     }
 
     /**
@@ -212,33 +212,28 @@ export class UserService {
     private async resizeProfilePictures(resolutions: Array<string>, newOriginalPicPath: string,
         newOriginalPicName: string, profilePictureInstance: ProfilePicture): Promise<ProfilePicture> {
         // get file dimension
-        const dimensions: gm.Dimensions = await this.getImageDimensions(newOriginalPicPath);
+        const dimensions: PictureSize = await this.getImageDimensions(newOriginalPicPath);
         // get only those resolutions we should resize
         const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
-        newResolutions.forEach(async resElement => {
+        for (const resElement of newResolutions) {
             const resolution = parseInt(resElement);
-            const finalFileNameWithDir = path.join(__dirname, '../../public/profile_pictures/' + resElement + '/' + newOriginalPicName);
-            gm(newOriginalPicPath)
-                .resize(resolution, resolution, '^')
-                .gravity('Center')
-                .crop(resolution, resolution, 0, 0)
-                .repage('+')
-                .noProfile()
-                .write(finalFileNameWithDir, (error) => {
-                    if (!error) {
-                        this.logger.info(`Image resized (${resolution}x${resolution})`);
-                    } else {
-                        throw new Error('Error trying to resize image');
-                    }
-                });
-            // assign new URL with res name
+            const finalFileNameWithDir = path.join(__dirname, '../../../public/profile_pictures/' + resElement + '/' + newOriginalPicName);
+            try {
+                await sharp(newOriginalPicPath)
+                    .resize(resolution, resolution, {
+                        position: 'centre'
+                    })
+                    .toFile(finalFileNameWithDir);
+                this.logger.info(`Image resized (${resolution}x${resolution})`);
+            } catch (error) {
+                throw new Error('Error trying to resize image');
+
+            }
             profilePictureInstance['res_' + resElement] = '/profile_pictures/' + resElement + '/' + newOriginalPicName;
-        });
-        setTimeout(() =>
-            // rename original picture
-            fs.renameSync(newOriginalPicPath, path.join(__dirname,
-                '../../public/profile_pictures/' + newOriginalPicName))
-            , 200);
+        }
+        // rename original picture
+        fs.renameSync(newOriginalPicPath, path.join(__dirname,
+            '../../../public/profile_pictures/' + newOriginalPicName));
         return profilePictureInstance;
     }
     /**
@@ -288,4 +283,9 @@ export class UserService {
     public async getUserByEmail(userEmail: string): Promise<User> {
         return await this.userRepository.getProfile('user.email = :email', { email: userEmail });
     }
+}
+
+interface PictureSize {
+    width: number;
+    height: number;
 }

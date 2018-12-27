@@ -85,10 +85,10 @@ export class MeController {
     @UseBefore(multer(UploadUtils.getProfileUploadMulterOptions()).any())
     @Authorized()
     public async updateProfilePicture(@Req() req: Request, @Res() res: Response, @CurrentUser() user: User): Promise<any> {
-        const file: Express.Multer.File = req.files[0];
-        if (!file) {
+        if (!req.files) {
             throw new BadRequestError('Please upload an image');
         }
+        const file: Express.Multer.File = req.files[0];
         await this.userService.updateUserProfilePicture(user, file);
         return new ApiResponse(res).withData('Profile picture updated').withStatusCode(HTTP_STATUS_CODE.OK).build();
     }

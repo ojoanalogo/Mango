@@ -24,9 +24,7 @@ export class UserController {
      * @returns User list
      */
     @Get()
-    @Authorized({
-        roles: [RoleType.DEVELOPER]
-    })
+    @Authorized([RoleType.DEVELOPER])
     public async getUsers(@Res() response: Response, @QueryParam('page') page = 0): Promise<Response> {
         const userData = await this.userService.findAll(page);
         return new ApiResponse(response)
@@ -41,9 +39,7 @@ export class UserController {
      * @returns User specified from ID
      */
     @Get(':id')
-    @Authorized({
-        roles: [RoleType.DEVELOPER]
-    })
+    @Authorized([RoleType.DEVELOPER])
     public async getUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
         const userDB = await this.userService.getUserByID(id);
         if (!userDB) {
@@ -96,9 +92,7 @@ export class UserController {
      * @returns Delete result
      */
     @Delete(':id')
-    @Authorized({
-        roles: [RoleType.DEVELOPER]
-    })
+    @Authorized([RoleType.DEVELOPER])
     public async deleteUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
         if (!id) {
             throw new BadRequestError('ID field is required');
@@ -124,9 +118,7 @@ export class UserController {
      * @returns Update result
      */
     @Patch()
-    @Authorized({
-        roles: [RoleType.DEVELOPER]
-    })
+    @Authorized([RoleType.DEVELOPER])
     public async updateUserByID(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
         if (!user.id) {
             throw new BadRequestError('ID field is required');

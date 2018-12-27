@@ -2,9 +2,9 @@ import { Post, UseBefore, JsonController, Res, Body, NotFoundError, BadRequestEr
 import { Response } from 'express';
 import { Validator } from 'class-validator';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
+import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
 import { UserService } from '../users/user.service';
 import { User } from '../users/user.model';
-import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
 
 @JsonController('/auth/')
 @UseBefore(LoggingMiddleware)

@@ -1,8 +1,9 @@
-import { NotAcceptableError } from 'routing-controllers';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as multer from 'multer';
 import * as crypto from 'crypto';
+import { NotAcceptableError } from 'routing-controllers';
+
 export class UploadUtils {
 
     /**
@@ -40,7 +41,8 @@ export class UploadUtils {
                     : cb(new NotAcceptableError('Not acceptable image format'), false);
             },
             limits: {
-                fileSize: 54525952
+                fileSize: 54525952, // 5mb
+                files: 1
             }
         };
         return options;
@@ -52,7 +54,7 @@ export class UploadUtils {
      * @param algorithm - Hash algorithm
      * @returns File hash
      */
-    public static getFileHash(filename, algorithm = 'md5'): Promise<string> {
+    public static getFileHash(filename: string, algorithm = 'md5'): Promise<string> {
         return new Promise((resolve, reject) => {
             // Algorithm depends on availability of OpenSSL on platform
             // Another algorithms: 'sha1', 'md5', 'sha256', 'sha512' ...

@@ -20,8 +20,8 @@
 <p align="center">
   <a href="#-features">Features</a> •
   <a href="#-how-to-use">How to use</a> •
-   <a href="#-structure">Structure</a> •
-     <a href="#-changelog">Changelog</a> •
+  <a href="#-structure">Structure</a> •
+  <a href="#-changelog">Changelog</a> •
   <a href="#-credits">Credits</a>
 </p>
 
@@ -42,7 +42,7 @@
 * dotEnv variables
 * pm2 ready
 
- And many other features
+And many other features
   
 ## ❓ How to use
 
@@ -73,7 +73,6 @@ You may want to use a standard response for all your API calls, you can import t
 example:
 
 ```typescript
-
 const response = new ApiResponse(response)
             .withData({msg: 'hello'}).withStatusCode(HTTP_STATUS_CODE.OK).build();
 ```
@@ -85,15 +84,15 @@ Method | Description | Note
 `.withStatusCode(HTTP_STATUS_CODE)` | HTTP Status code (see HTTP_STATUS_CODE class) | Defaults to 200
 `.build()` | Finish building request | Required to finish building request
 
-## 💥 How to add a new controller
+## 💥 How to add a new module (controller, service and repo)
 
-Adding a new controller it's easy with plop (https://github.com/amwmedia/plop), just open your console shell, execute:
+Adding a new module it's easy with plop (https://github.com/amwmedia/plop), just open your console shell, execute:
 ```
-npm add:controller
+npm add:module
 ```
 and follow the steps ✅
 
-![controller](https://user-images.githubusercontent.com/4296205/48928943-2acca480-eea1-11e8-8b60-42d30cbf4ffb.gif)
+![module](https://user-images.githubusercontent.com/4296205/48928943-2acca480-eea1-11e8-8b60-42d30cbf4ffb.gif)
 
 ## 🔐 Adding authorization or role protection to routes
 
@@ -101,11 +100,10 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 ```typescript
     @Post()
-    @Authorized({
-        roles: [RoleType.USER],
-        resolver: Resolver.OWN_ACCOUNT
-    })
+    @Authorized([RoleType.USER])
     public async blabla(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
+      ...
+    }
 ```
 
 ## 📂 Structure
@@ -122,17 +120,14 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     ├── plopfile.js
     ├── plop-templates
     │   ├── controller.hbs
+    │   ├── repository.hbs
     │   └── service.hbs
     ├── public
     │   └── index.html
     ├── src
-    │   ├── app.ts
-    │   ├── bin
-    │   │   └── www.ts
-    │   ├── components
+    │   ├── api
     │   │   ├── auth
     │   │   │   ├── auth.controller.ts
-    │   │   │   ├── authorization_checker.service.ts
     │   │   │   ├── jwt.service.ts
     │   │   │   ├── token.model.ts
     │   │   │   └── token.repository.ts
@@ -144,8 +139,6 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │   │   └── health.service.ts
     │   │   ├── index
     │   │   │   └── index.controller.ts
-    │   │   ├── logger
-    │   │   │   └── logger.service.ts
     │   │   ├── me
     │   │   │   └── me.controller.ts
     │   │   └── users
@@ -155,13 +148,20 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │       ├── user_role.model.ts
     │   │       ├── users.controller.ts
     │   │       └── user.service.ts
+    │   ├── app.ts
+    │   ├── bin
+    │   │   └── www.ts
     │   ├── database
     │   │   ├── database.ts
     │   │   └── redis.ts
     │   ├── handlers
     │   │   ├── api_error.handler.ts
-    │   │   ├── api_response.handler.ts
-    │   │   └── resolver.handler.ts
+    │   │   └── api_response.handler.ts
+    │   ├── helpers
+    │   │   ├── authorization_checker.helper.ts
+    │   │   └── current_user_checker.helper.ts
+    │   ├── logger
+    │   │   └── logger.service.ts
     │   ├── middleware
     │   │   ├── error.middleware.ts
     │   │   ├── http_logging.middleware.ts
@@ -184,7 +184,8 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 - [x] Add JWT token refresh
 - [x] Better authorization token flow
 - [x] Better project structure
-- [ ] Better readme
+- [x] Better readme
+- [ ] Create a config file
 - [ ] Add docker support
 - [ ] Add GraphQL?
 - [ ] Add unit test and integration tests (help wanted)
@@ -195,6 +196,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 - 0.1.1 - Refactored authorization function, moved JWT middleware to auth function
 - 0.1.2 - Refactored logging system, now it supports context for file, changed the way repositories are created (uses typedi injection), added current user checker, added some validation to me controller, tokens are now deleted when user changes his password or email. Refactored profile upload methods.
 - 0.1.3 - Better project structure
+- 0.1.4 - Better project structure again, removed graphics magick dependence and replaced it with sharp
 
 ## 🤗 Credits
 

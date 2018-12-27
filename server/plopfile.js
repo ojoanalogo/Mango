@@ -1,35 +1,34 @@
 const generator = (plop) => {
-    plop.setGenerator('controller', {
-        description: 'This profile adds a new controller to Mango',
+    plop.setGenerator('module', {
+        description: 'This profile adds a new module to Mango',
         prompts: [{
             type: 'input',
             name: 'name',
-            message: 'Controller name'
+            message: 'Module name'
         },
         {
             type: 'input',
             name: 'route',
             message: 'Controller route'
-        }],
+        }
+    ],
         actions: [{
             type: 'add',
-            path: './src/controllers/{{name}}.controller.ts',
+            path: './src/api/{{name}}/{{name}}.controller.ts',
             templateFile: './plop-templates/controller.hbs'
-        }]
-    });
-    plop.setGenerator('service', {
-        description: 'This profile adds a new service to Mango',
-        prompts: [{
-            type: 'input',
-            name: 'name',
-            message: 'Service name'
-        }],
-        actions: [{
+        },
+        {
             type: 'add',
-            path: './src/services/{{name}}.service.ts',
+            path: './src/api/{{name}}/{{name}}.service.ts',
             templateFile: './plop-templates/service.hbs'
-        }]
-    })
+        },
+        {
+            type: 'add',
+            path: './src/api/{{name}}/{{name}}.repository.ts',
+            templateFile: './plop-templates/repository.hbs'
+        }
+    ]
+    });
     // convert to upper case
     plop.setHelper('upperCase', (text) => text.toUpperCase());
     // convert first char to upper case

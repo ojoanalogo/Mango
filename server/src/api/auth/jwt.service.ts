@@ -3,7 +3,7 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 import { UnauthorizedError } from 'routing-controllers';
 import { User } from '../users/user.model';
 import { JwtToken } from './token.model';
-import { LoggerService, Logger } from '../logger/logger.service';
+import { LoggerService, Logger } from '../../logger/logger.service';
 import { TokenRepository } from './token.repository';
 import * as jwt from 'jsonwebtoken';
 import * as httpContext from 'express-http-context';

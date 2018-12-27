@@ -1,10 +1,19 @@
 import { App } from '../app';
-import { LoggerService } from '../components/logger/logger.service';
-import { Container } from 'typedi';
+import { LoggerService, Logger } from '../logger/logger.service';
 import { createServer } from 'http';
 
+interface NodeError {
+  Error: any;
+  errno: string;
+  code: string;
+  syscall: string;
+  address: string;
+  port: number;
+}
+
 class Server extends App {
-  constructor() {
+
+  constructor(@Logger(__filename) private serverLogger: LoggerService = new LoggerService(__filename)) {
     super();
     this.initialize();
     /**
@@ -12,10 +21,28 @@ class Server extends App {
      */
     const server = createServer(this.getAppInstance());
     server.listen(this.getPort(), () => {
-      const log = Container.get(LoggerService);
-      log.info('Running environment: ' + process.env.NODE_ENV);
-      log.info('Server is running in port: ' + this.getPort());
+      this.serverLogger.info(`Running environment: ${process.env.NODE_ENV}`);
+      this.serverLogger.info(`Server is running in port: ${this.getPort()}`);
     });
+    // Handle server errors
+    server.on('error', (error: any) => this.handleErrors(error));
+  }
+
+  private handleErrors(error: NodeError): void {
+    if (error.syscall !== 'listen') {
+      throw error;
+    }
+    switch (error.code) {
+      case 'EACCES':
+        this.serverLogger.error(`⚠ Server requires elevated privileges to run (using port: ${error.port})`, error);
+        break;
+      case 'EADDRINUSE':
+        this.serverLogger.error(`⚠ Port (${error.port}) already in use`, error);
+        break;
+      default:
+        throw error;
+    }
+    process.exit(1);
   }
 }
 

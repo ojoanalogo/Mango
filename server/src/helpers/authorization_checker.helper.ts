@@ -3,13 +3,11 @@ import { Repository } from 'typeorm';
 import { Service } from 'typedi';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { Request, Response } from 'express';
-import { RoleType, getWeight, Role } from '../users/user_role.model';
-import { User } from '../users/user.model';
-import { Resolver } from '../../handlers/resolver.handler';
 import { Logger, LoggerService } from '../logger/logger.service';
-import { JWTService } from '../auth/jwt.service';
-import { TokenRepository } from '../auth/token.repository';
-import { UserRepository } from '../users/user.repository';
+import { JWTService } from '../api/auth/jwt.service';
+import { RoleType, getWeight, Role } from '../api/users/user_role.model';
+import { User } from '../api/users/user.model';
+import { UserRepository } from '../api/users/user.repository';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
 
@@ -21,8 +19,6 @@ export class AuthChecker {
         private jwtService: JWTService,
         @InjectRepository(User)
         private userRepository: UserRepository,
-        @InjectRepository()
-        private tokenRepository: TokenRepository,
         @InjectRepository(Role)
         private rolesRepository: Repository<Role>) { }
 
@@ -102,24 +98,6 @@ export class AuthChecker {
     }
 
     /**
-     * Returns user from token
-     * @param action - Action object from routing controllers
-     * @returns User object
-     */
-    public getUserFromToken = async (action: Action) => {
-        const request: Request = action.request;
-        const token: string = request.headers['authorization'].split(' ')[1];
-        if (token == null) {
-            throw new UnauthorizedError('Authorization required');
-        }
-        const tokenDataWithUser = await this.tokenRepository.getTokenWithUser(token);
-        if (!tokenDataWithUser) {
-            throw new ForbiddenError('Cannot find user associated to token');
-        }
-        return tokenDataWithUser.user;
-    }
-
-    /**
     * Checks if user is authorized to access route
     *
     * TODO: Refactor this function
@@ -128,11 +106,10 @@ export class AuthChecker {
     * @param roles - Roles array
     * @returns Authorization result
     */
-    public authorizationChecker = async (action: Action, rolesParam?: any): Promise<boolean> => {
+    public authorizationChecker = async (action: Action, rolesParam?: RoleType[]): Promise<boolean> => {
         const request: Request = action.request;
         const response: Response = action.response;
-        const roles: RoleType[] = rolesParam[0] ? rolesParam[0].roles : [RoleType.USER];
-        const resolver: Resolver = rolesParam[0] ? rolesParam[0].resolver : Resolver.NONE;
+        const roles: RoleType[] = rolesParam ? rolesParam : [RoleType.USER];
         // first we verify the JWT token
         await this.checkToken(request, response);
         // user param should now be available
@@ -151,30 +128,9 @@ export class AuthChecker {
         }
         // filter and check if user has a role with enought weight to use controller
         const rolesMatches = roles.filter((routeRole) => getWeight(userRole) >= getWeight(routeRole));
-        const rolesResolver = getWeight(userRole) >= getWeight(RoleType.DEVELOPER) ?
-            true : this.roleResolver(user, action, resolver);
-        if (rolesMatches.length >= 1 && userRoleDB && rolesResolver) {
+        if (rolesMatches.length >= 1 && userRoleDB) {
             return true;
         }
-        if (!rolesResolver) {
-            throw new UnauthorizedError(
-                `You don't have authorization to modify this resource (${request.originalUrl} [${request.method}])`);
-        }
         throw new ForbiddenError(`Your role (${userRole}) lacks permission to use ${request.originalUrl} [${request.method}]`);
-    }
-
-    /**
-     * Resolve account (checks if resource is valid to modification)
-     * @returns Resource authorization check
-     */
-    private roleResolver = (user: User, action: Action, resolver: Resolver): boolean => {
-        const req: Request = action.request;
-        const reqType = req.method;
-        switch (resolver) {
-            case Resolver.OWN_ACCOUNT:
-                return user.id === parseInt(reqType === 'GET' ? req.params.id : req.body.id);
-            default:
-                return true;
-        }
     }
 }
