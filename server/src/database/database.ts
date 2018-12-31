@@ -38,7 +38,7 @@ export class Database {
                 password: this.db_password,
                 database: this.db_name,
                 entityPrefix: this.db_prefix,
-                entities: [__dirname + '../../**/*.model{.js,.ts}'],
+                entities: [__dirname + '../../api/**/*.model{.js,.ts}'],
                 migrations: [__dirname + '../../migration/**/*{.js,.ts}'],
                 synchronize: this.syncOption,
                 logging: false,
@@ -47,19 +47,28 @@ export class Database {
             this.logger.info(`Connected to database (${this.db_name}) successfully`);
             return this.connection;
         } catch (err) {
-            if (this.reconnectTry > this.reconnect_max_try) {
-                this.logger.error(`Timed out trying to connect to the ${this.db_type} database`, err);
-                throw err;
-            }
-            // we should try to reconnect a few times
-            this.logger.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${err}`);
-            this.logger.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
-                `| ${this.reconnectTry}/${this.reconnect_max_try}`);
-            this.reconnectTry = this.reconnectTry + 1;
-            await this.timeout(this.reconnect_seconds * 1000);
-            return this.setupDatabase();
+            await this.reloadDatabase(err);
         }
     }
+
+    /**
+     * Try to reconnect to database
+     * @param errorMsg - Error message from database
+     */
+    private async reloadDatabase(err) {
+        if (this.reconnectTry > this.reconnect_max_try) {
+            this.logger.error(`Timed out trying to connect to the ${this.db_type} database`, err);
+            throw err;
+        }
+        // we should try to reconnect a few times
+        this.logger.error(`Can't connect to the ${this.db_type} (${this.db_name}) database! Reason => ${err}`);
+        this.logger.warn(`Trying to reconnect in ${this.reconnect_seconds} seconds ` +
+            `| ${this.reconnectTry}/${this.reconnect_max_try}`);
+        this.reconnectTry = this.reconnectTry + 1;
+        await this.timeout(this.reconnect_seconds * 1000);
+        return this.setupDatabase();
+    }
+
     /**
      * Stop database
      */

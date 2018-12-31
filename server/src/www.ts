@@ -1,5 +1,5 @@
-import { App } from '../app';
-import { LoggerService, Logger } from '../logger/logger.service';
+import { App } from './app';
+import { LoggerService, Logger } from './logger/logger.service';
 import { createServer } from 'http';
 
 interface NodeError {
@@ -13,6 +13,8 @@ interface NodeError {
 
 class Server extends App {
 
+  private port: number = parseInt(process.env.PORT) || 3000;
+
   constructor(@Logger(__filename) private serverLogger: LoggerService = new LoggerService(__filename)) {
     super();
     this.initialize();
@@ -20,9 +22,9 @@ class Server extends App {
      * Create http server instance
      */
     const server = createServer(this.getAppInstance());
-    server.listen(this.getPort(), () => {
+    server.listen(this.port, () => {
       this.serverLogger.info(`Running environment: ${process.env.NODE_ENV}`);
-      this.serverLogger.info(`Server is running in port: ${this.getPort()}`);
+      this.serverLogger.info(`Server is listening in port: ${this.port}`);
     });
     // Handle server errors
     server.on('error', (error: any) => this.handleErrors(error));

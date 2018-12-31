@@ -17,9 +17,13 @@ export class CurrenUserChecker {
    */
    public getCurrentUserFromToken = async (action: Action) => {
       const request: Request = action.request;
-      const token: string = request.headers['authorization'].split(' ')[1];
+      let token: string = request.headers['authorization'].split(' ')[1];
       if (token == null) {
          throw new UnauthorizedError('Authorization required');
+      }
+      // if token was refreshed let's use the new token instead of the original one in the header request
+      if (request['token']) {
+         token = request['token'];
       }
       const tokenDataWithUser = await this.tokenRepository.getTokenWithUser(token);
       if (!tokenDataWithUser) {

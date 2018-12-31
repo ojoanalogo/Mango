@@ -48,17 +48,19 @@ export class LoggerService {
     * @returns LogFormat
     */
     private getFileLogFormat(): Format {
-        const addRequestUUID = winston.format(info => {
+        const addContext = winston.format(info => {
             const reqID = this.getRequestUUID();
             if (reqID) {
                 info.requestID = reqID;
             }
+            const origin = this.getOrigin();
+            info.from = origin;
             return info;
         });
         return winston.format.combine(
             winston.format.uncolorize(),
             winston.format.timestamp(),
-            addRequestUUID(),
+            addContext(),
             winston.format.json()
         );
     }
@@ -91,7 +93,7 @@ export class LoggerService {
      * Setup main logger
      */
     private setupLogger() {
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'development') {
             // setup transports
             const transportError = new DailyRotateFile({
                 level: 'error',

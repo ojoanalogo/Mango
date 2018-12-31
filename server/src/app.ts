@@ -24,7 +24,6 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 export class App {
 
   private app: express.Application;
-  private port: number = parseInt(process.env.PORT) || 3000;
 
   constructor(@Logger(__filename) private logger: LoggerService = new LoggerService(__filename)) { }
 
@@ -36,18 +35,21 @@ export class App {
     // use container from typeDI
     useContainerORM(Container);
     useContainerRouting(Container);
-    // setup database
-    const database: Database = Container.get(Database);
-    database.setupDatabase().then((cnx) => {
+    try {
+      // setup database
+      const database: Database = Container.get(Database);
+      await database.setupDatabase();
       // setup routing-controllers
       this.setupRouting();
-    }).catch((err) => {
-      // database setup failed
-
-    });
-    // setup redis
-    const redis: Redis = Container.get(Redis);
-    await redis.setupRedis();
+      // setup redis
+      const redis: Redis = Container.get(Redis);
+      await redis.setupRedis();
+    } catch (error) {
+      // shutdown app
+      this.logger.warn(`Something went wrong while initializing server, see log for details`);
+      this.logger.error(error);
+      process.exit(1);
+    }
   }
 
   /**
@@ -93,7 +95,7 @@ export class App {
     this.logger.info('Setting up routing-controllers...');
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
-      controllers: [__dirname + '/**/*.controller{.js,.ts}'],
+      controllers: [__dirname + '/api/**/*.controller{.js,.ts}'],
       middlewares: [ErrorMiddleware, NotFoundMiddleware],
       cors: true,                     // enable cors
       defaultErrorHandler: false,     // disables error handler so we can use ours
@@ -109,12 +111,5 @@ export class App {
    */
   public getAppInstance(): express.Application {
     return this.app;
-  }
-  /**
-   * Get desired express server port
-   * @returns The express server port
-   */
-  public getPort(): number {
-    return this.port;
   }
 }

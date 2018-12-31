@@ -1,17 +1,16 @@
 <h1 align="center">
   <br>
-  <img src="https://user-images.githubusercontent.com/4296205/48927424-010c8100-ee93-11e8-8ef5-257ca62035c6.png" alt="mango" width="120">
+  <img src="docs/mango.png" alt="mango" width="120">
   <br>
   Mango
   <h4 align="center">TypeScript server template with routing-controllers, typeorm and typedi</h4>
 </h1>
 
-
 <p align="center">  
 <img src="https://travis-ci.com/MrARC/Mango.svg?token=dsjyRm5j3xVPphZTyCrG&branch=master">
  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 </p>
- 
+
 <p align="center">
 ⚡ Mango is a server template which makes it easy to build backend powered by NodeJS, Express, typeorm, typedi and routing-controllers. It minimises the setup time and makes your development cycle faster by using TypeScript.
   If you were looking for a server template with useful things, Mango is for you 🤗
@@ -59,8 +58,8 @@ $ cd Mango/server
 # Install dependencies
 $ npm install
 
-# Rename .example.env to .env
-mv .example.env .env
+# Create .env file
+$ cp .example.env .env
 
 # Run the server
 $ npm run dev
@@ -68,6 +67,7 @@ $ npm run dev
 ```
 
 ## 👨‍💻 Creating an API response
+
 You may want to use a standard response for all your API calls, you can import the ApiResponse object from ```handlers/api_response.handler``` and create a new instance of it
 
 example:
@@ -76,6 +76,7 @@ example:
 const response = new ApiResponse(response)
             .withData({msg: 'hello'}).withStatusCode(HTTP_STATUS_CODE.OK).build();
 ```
+
 A request can have the following properties
 
 Method | Description | Note
@@ -86,21 +87,24 @@ Method | Description | Note
 
 ## 💥 How to add a new module (controller, service and repo)
 
-Adding a new module it's easy with plop (https://github.com/amwmedia/plop), just open your console shell, execute:
-```
+Adding a new module it's easy with [plop](https://github.com/amwmedia/plop), just open your console shell, execute:
+
+```bash
 npm add:module
 ```
+
 and follow the steps ✅
 
-![module](https://user-images.githubusercontent.com/4296205/48928943-2acca480-eea1-11e8-8b60-42d30cbf4ffb.gif)
+![module](docs/plop.gif)
 
 ## 🔐 Adding authorization or role protection to routes
 
-Adding authorization to a route it's easy, just use the @Authorized annotation and add a roles property (can be an array of roles (or null if you only want to verify if there's a JWT token in request), but there's a weight system in place so users with high role can use routes that are for lower roles)
+Adding authorization to a route it's easy, just use the @Authorized annotation and add a roles property (can be an array of roles or a single role (or null if you only want to verify if there's a valid JWT token in request), but there's a weight system in place so users with high role can use routes that are for lower roles)
 
 ```typescript
     @Post()
-    @Authorized([RoleType.USER])
+    // use only @Authorized() if you want to verify only jwt token
+    @Authorized(RoleType.USER)
     public async blabla(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
       ...
     }
@@ -108,8 +112,11 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 ## 📂 Structure
 
-```
+```text
 .
+├── docs
+│   ├── mango.png
+│   └── plop.gif
 ├── LICENSE
 ├── README.md
 └── server
@@ -149,8 +156,6 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │       ├── users.controller.ts
     │   │       └── user.service.ts
     │   ├── app.ts
-    │   ├── bin
-    │   │   └── www.ts
     │   ├── database
     │   │   ├── database.ts
     │   │   └── redis.ts
@@ -166,9 +171,10 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     │   │   ├── error.middleware.ts
     │   │   ├── http_logging.middleware.ts
     │   │   └── not_found.middleware.ts
-    │   └── utils
-    │       ├── json.utils.ts
-    │       └── upload.utils.ts
+    │   ├── utils
+    │   │   ├── json.utils.ts
+    │   │   └── upload.utils.ts
+    │   └── www.ts
     ├── tests
     │   ├── src
     │   │   ├── controllers
@@ -181,22 +187,23 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 ## 📋 ToDo
 
-- [x] Add JWT token refresh
-- [x] Better authorization token flow
-- [x] Better project structure
-- [x] Better readme
-- [ ] Create a config file
-- [ ] Add docker support
-- [ ] Add GraphQL?
-- [ ] Add unit test and integration tests (help wanted)
+* [x] Add JWT token refresh
+* [x] Better authorization token flow
+* [x] Better project structure
+* [x] Better readme
+* [ ] Create a config file
+* [ ] Add docker support
+* [ ] Add GraphQL?
+* [ ] Add unit test and integration tests (help wanted)
 
 ## ✍ Changelog
 
-- 0.1 - First release
-- 0.1.1 - Refactored authorization function, moved JWT middleware to auth function
-- 0.1.2 - Refactored logging system, now it supports context for file, changed the way repositories are created (uses typedi injection), added current user checker, added some validation to me controller, tokens are now deleted when user changes his password or email. Refactored profile upload methods.
-- 0.1.3 - Better project structure
-- 0.1.4 - Better project structure again, removed graphics magick dependence and replaced it with sharp
+* 0.1 - First release
+* 0.1.1 - Refactored authorization function, moved JWT middleware to auth function
+* 0.1.2 - Refactored logging system, now it supports context for file, changed the way repositories are created (uses typedi injection), added current user checker, added some validation to me controller, tokens are now deleted when user changes his password or email. Refactored profile upload methods.
+* 0.1.3 - Better project structure
+* 0.1.4 - Better project structure again, removed graphics magick dependence and replaced it with sharp
+* 0.1.5 - Fixed bug with refresh token flow, user would have to make request again to be found by user controller, improved logging
 
 ## 🤗 Credits
 
