@@ -110,6 +110,21 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
     }
 ```
 
+## ✅ JWT refresh in Mango
+
+I made a sequence diagram to try to explain this process:
+
+![diagram](docs/token_sequence.png)
+
+### 🤔 Explanation
+
+Basically there's only one JWT token you will store in the client (web, mobile app, whatever), this JWT token is short-lived (it has a life span of only a few minutes, 15 minutes in production mode), all requests made in that span of time will be passed if the JWT is valid.
+If the JWT token is expired, Mango will check if is not older than 1 week and will try to update the old token in database and issue a new JWT token with the new parameters, otherwise it will throw a ForbiddenError  with a 403 status code. The new JWT token will be present in the server response inside a custom header parameter (X-Auth-Token), this parameter will hold your new JWT token for the new requests.
+
+### 📝 Note
+
+You will have to implement some logic on your frontend or mobile app to replace the stored JWT token if the header X-Auth-Token is present in the server response, Mango will refuse to update any already updated JWT token and will throw a UnauthorizedError with a 401 status code.
+
 ## 📂 Structure
 
 ```text
