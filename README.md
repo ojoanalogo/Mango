@@ -136,6 +136,8 @@ You will have to implement some logic on your frontend or mobile app to replace 
 ├── README.md
 └── server
     ├── ecosystem.config.js
+    ├── .editorconfig
+    ├── .example.env
     ├── nodemon.json
     ├── package.json
     ├── package-lock.json
@@ -219,6 +221,7 @@ You will have to implement some logic on your frontend or mobile app to replace 
 * 0.1.3 - Better project structure
 * 0.1.4 - Better project structure again, removed graphics magick dependence and replaced it with sharp
 * 0.1.5 - Fixed bug with refresh token flow, user would have to make request again to be found by user controller, improved logging
+* 0.1.6 - Decoupled database from main server start, fixed load order error with repository injectors in routing-controllers helpers, indented with 2 spaces instead of 4, improved logging, fixed user profile update method
 
 ## 🤗 Credits
 

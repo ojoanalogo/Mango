@@ -5,15 +5,15 @@ import { CreateDateColumn, Column, UpdateDateColumn, PrimaryGeneratedColumn } fr
  */
 export abstract class CUID {
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @CreateDateColumn()
-    created_at: Date;
+  @CreateDateColumn()
+  created_at: Date;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+  @UpdateDateColumn()
+  updated_at: Date;
 
-    @Column('timestamp', {nullable: true})
-    deleted_at: Date;
+  @Column('timestamp', { nullable: true })
+  deleted_at: Date;
 }

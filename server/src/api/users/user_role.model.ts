@@ -3,12 +3,12 @@ import { User } from './user.model';
 import { CUID } from '../common/CUID';
 
 export enum RoleType {
-    CEO = 'ceo',
-    CTO = 'cto',
-    DEVELOPER = 'developer',
-    STAFF = 'staff',
-    SALES = 'sales',
-    USER = 'user'
+  CEO = 'ceo',
+  CTO = 'cto',
+  DEVELOPER = 'developer',
+  STAFF = 'staff',
+  SALES = 'sales',
+  USER = 'user'
 }
 
 /**
@@ -16,29 +16,29 @@ export enum RoleType {
  * @param role - RoleType
  */
 export function getWeight(role: RoleType) {
-    const weight = {
-        'ceo': 1000,
-        'cto': 999,
-        'developer': 666,
-        'staff': 150,
-        'sales': 100,
-        'user': 1
-    };
-    return weight[role] !== undefined ? weight[role] : 1;
+  const weight = {
+    'ceo': 1000,
+    'cto': 999,
+    'developer': 666,
+    'staff': 150,
+    'sales': 100,
+    'user': 1
+  };
+  return weight[role] !== undefined ? weight[role] : 1;
 }
 
 @Entity('roles')
 export class Role extends CUID {
 
-    @Column({
-        type: 'enum',
-        enum: RoleType
-    })
-    role: RoleType;
+  @Column({
+    type: 'enum',
+    enum: RoleType
+  })
+  role: RoleType;
 
-    @OneToOne(() => User, user => user.role, {
-        onDelete: 'CASCADE'
-    })
-    @JoinColumn()
-    user: User;
+  @OneToOne(() => User, user => user.role, {
+    onDelete: 'CASCADE'
+  })
+  @JoinColumn()
+  user: User;
 }

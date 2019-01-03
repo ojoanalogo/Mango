@@ -8,16 +8,16 @@ import { HealthService } from './health.service';
 @UseBefore(LoggingMiddleware)
 export class HealthController {
 
-    constructor(private healthService: HealthService) { }
+  constructor(private healthService: HealthService) { }
 
-    /**
-     * GET request for Health status
-     * @param response - Response object
-     * @returns Health status check
-     */
-    @Get()
-    public healthStatus(@Res() response: Response): Response {
-        return new ApiResponse(response)
-            .withData(this.healthService.getHealth()).withStatusCode(HTTP_STATUS_CODE.OK).build();
-    }
+  /**
+   * GET request for Health status
+   * @param response - Response object
+   * @returns Health status check
+   */
+  @Get()
+  public healthStatus(@Res() response: Response): Response {
+    return new ApiResponse(response)
+      .withData(this.healthService.getHealth()).withStatusCode(HTTP_STATUS_CODE.OK).build();
+  }
 }

@@ -5,12 +5,12 @@ import { CreateDateColumn, Column, UpdateDateColumn } from 'typeorm';
  */
 export abstract class CUD {
 
-    @CreateDateColumn()
-    created_at: Date;
+  @CreateDateColumn()
+  created_at: Date;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+  @UpdateDateColumn()
+  updated_at: Date;
 
-    @Column('timestamp', {nullable: true})
-    deleted_at: Date;
+  @Column('timestamp', { nullable: true })
+  deleted_at: Date;
 }

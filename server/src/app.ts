@@ -1,8 +1,6 @@
 import 'reflect-metadata'; // global, required by typeorm and typedi
-import { useExpressServer } from 'routing-controllers';
 import { Container } from 'typedi';
-import { useContainer as useContainerRouting } from 'routing-controllers';
-import { useContainer as useContainerORM } from 'typeorm';
+import { useExpressServer, useContainer } from 'routing-controllers';
 import { Database } from './database/database';
 import { Redis } from './database/redis';
 import { ErrorMiddleware } from './middleware/error.middleware';
@@ -25,37 +23,49 @@ export class App {
 
   private app: express.Application;
 
-  constructor(@Logger(__filename) private logger: LoggerService = new LoggerService(__filename)) { }
+  constructor(@Logger(__filename) private logger: LoggerService = new LoggerService(__filename)) {
+  }
 
-  public async initialize(): Promise<void> {
-    // create express app
-    this.app = express();
-    // setup express server
-    this.setupServer();
-    // use container from typeDI
-    useContainerORM(Container);
-    useContainerRouting(Container);
+  /**
+   * Initialize application with routing controllers
+   */
+  public async initApp(): Promise<void> {
+    try {
+      // create express app
+      this.app = express();
+      // setup express server
+      this.setupExpress();
+      // setup routing-controllers
+      await this.setupRouting();
+    } catch (error) {
+      // shutdown app
+      this.logger.warn(`Something went wrong while initializing server, see log for details`);
+      this.logger.error(error.stack);
+      process.exit(1);
+    }
+  }
+
+  /**
+   * Initialize database
+   */
+  public async initDatabase() {
     try {
       // setup database
       const database: Database = Container.get(Database);
       await database.setupDatabase();
-      // setup routing-controllers
-      this.setupRouting();
       // setup redis
       const redis: Redis = Container.get(Redis);
       await redis.setupRedis();
     } catch (error) {
-      // shutdown app
-      this.logger.warn(`Something went wrong while initializing server, see log for details`);
-      this.logger.error(error);
-      process.exit(1);
+      this.logger.warn(`Something went wrong while initializing database, see log for details`);
+      this.logger.error(error.stack);
     }
   }
 
   /**
   * Setup express server
   */
-  private setupServer(): void {
+  private setupExpress(): void {
     this.logger.info('Setting up express server...');
     // support application/json type post data
     this.app.use(bodyParser.json());
@@ -81,18 +91,21 @@ export class App {
     // point static path to public
     this.app.use(express.static(path.join(__dirname, '../public')));
     // catch uncaught exceptions
-    process.on('uncaughtException', (err) => {
-      this.logger.error(err.stack);
+    process.on('uncaughtException', (error) => {
+      this.logger.error(error.stack);
     });
   }
 
   /**
    * Setup routing-controlles
+   * @returns Express app
    */
-  private setupRouting(): void {
+  private async setupRouting(): Promise<express.Application> {
     const authChecker: AuthChecker = Container.get(AuthChecker);
     const currentUserChecker: CurrenUserChecker = Container.get(CurrenUserChecker);
     this.logger.info('Setting up routing-controllers...');
+    // use TypeDI container in routing-controllers
+    useContainer(Container);
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [__dirname + '/api/**/*.controller{.js,.ts}'],
@@ -103,6 +116,7 @@ export class App {
       currentUserChecker: currentUserChecker.getCurrentUserFromToken	// get user from request
     });
     this.logger.info('Routing setup successfully');
+    return this.app;
   }
 
   /**
