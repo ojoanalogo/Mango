@@ -9,8 +9,16 @@
       "type": "node",
       "request": "launch",
       "name": "Launch",
+      "useWSL": true,
       "protocol": "auto",
       "port": 9229,
+      "sourceMaps": true,
+      "timeout": 10000,
+      "restart": true,
+      "skipFiles": [
+        "${workspaceFolder}/node_modules/**/*.js",
+        "<node_internals>/**/*.js"
+      ]
     },
   ]
 }

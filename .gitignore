@@ -1,0 +1,27 @@
+# Ignored folders
+node_modules/
+dist/*
+!dist/.gitkeep
+
+# Other files
+npm-debug.log
+
+# Logs folder
+logs/*
+!logs/.gitkeep
+
+# Other files
+.env
+
+public/images/uploads/*
+!public/images/uploads/.gitkeep
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea
+
+# Coverage folder
+coverage/

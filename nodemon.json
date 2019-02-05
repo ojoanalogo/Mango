@@ -1,0 +1,14 @@
+{
+  "watch": [
+    "./src"
+  ],
+  "ext": "ts, json, js",
+  "ignore": [
+    "./src/**/*.spec.ts"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "exec": "node --inspect -r ts-node/register ./src/server"
+}
+

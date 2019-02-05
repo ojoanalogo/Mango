@@ -1,9 +1,0 @@
-node_modules/
-dist/
-logs/
-uploads/
-coverage/
-public/profile_pictures
-docs/
-.env
-npm-debug.log
