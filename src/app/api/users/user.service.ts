@@ -10,9 +10,10 @@ import { Logger } from '../../decorators';
 import { JSONUtils } from '../../utils/json.utils';
 import { UploadUtils } from '../../utils/upload.utils';
 import { ServerLogger } from '../../lib/logger';
-import * as fs from 'fs-extra';
-import * as sharp from 'sharp';
-import * as path from 'path';
+import fs = require('fs-extra');
+import sharp = require('sharp');
+import path = require('path');
+import { PROFILE_PICTURES_RESOLUTIONS } from '../../../config';
 
 @Service()
 export class UserService {
@@ -36,7 +37,7 @@ export class UserService {
    * @returns A list with users
    */
   public async findAll(page: number = 1, limit: number = 15): Promise<User[]> {
-    if (page === 0) {
+    if (page < 1) {
       page = 1;
     }
     const toSkip: number = limit * (page - 1);
@@ -114,14 +115,11 @@ export class UserService {
    *
    * @returns Update result
    */
-
   public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
     const userDB = await this.userRepository.findOne({ id: user.id });
     let profilePictureInstance = await this.profilePictureRepository.findOne({ user: userDB });
-    // profile picture resolutions
-    const profilePictureResolutions = ['480', '240', '96', '64', '32'];
     // delete old files if they exist
-    profilePictureInstance = this.deleteOldProfilePictures(profilePictureResolutions, profilePictureInstance);
+    profilePictureInstance = this.deleteOldProfilePictures(profilePictureInstance);
     // rename uploaded file with hash signature
     const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
     const newOriginalPicName = fileHash + '-' + user.id + path.extname(uploadedPicture.path);
@@ -129,7 +127,7 @@ export class UserService {
       + newOriginalPicName);
     fs.renameSync(uploadedPicture.path, newOriginalPicPath);
     // resize files
-    profilePictureInstance = await this.resizeProfilePictures(profilePictureResolutions,
+    profilePictureInstance = await this.resizeProfilePictures(
       newOriginalPicPath, newOriginalPicName, profilePictureInstance);
     // assign original resolution path to profile picture instance and update instance in database
     profilePictureInstance.res_original = '/public/profile_pictures/' + newOriginalPicName;
@@ -142,7 +140,7 @@ export class UserService {
    * @param profilePictureResolutions - Profile picture resolutions
    * @param profilePictureInstance - Profile picture instance
    */
-  private deleteOldProfilePictures(profilePictureResolutions: Array<string>, profilePictureInstance: ProfilePicture): ProfilePicture {
+  private deleteOldProfilePictures(profilePictureInstance: ProfilePicture): ProfilePicture {
     // delete original file
     const originalFilePath = path.join(__dirname, '../../../' +
       profilePictureInstance.res_original);
@@ -150,7 +148,8 @@ export class UserService {
       fs.unlinkSync(originalFilePath);
     }
     // delete the other profile pictures
-    profilePictureResolutions.forEach(resolution => {
+    const profilePicturesResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
+    profilePicturesResolutions.forEach(resolution => {
       if (profilePictureInstance['res_' + resolution]) {
         const filePathFromDB = path.join(__dirname, '../../../public/' + profilePictureInstance['res_' + resolution]);
         if (fs.existsSync(filePathFromDB)) {
@@ -184,12 +183,14 @@ export class UserService {
    * @param newOriginalPicName - Name for oroginal profile picture
    * @param profilePictureInstance - Profile picture instance
    */
-  private async resizeProfilePictures(resolutions: Array<string>, newOriginalPicPath: string,
+  private async resizeProfilePictures(newOriginalPicPath: string,
     newOriginalPicName: string, profilePictureInstance: ProfilePicture): Promise<ProfilePicture> {
     // get file dimension
     const dimensions: PictureSize = await this.getImageDimensions(newOriginalPicPath);
+    // profile picture resolutions
+    const profilePicturesResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
     // get only those resolutions we should resize
-    const newResolutions = resolutions.filter((val) => parseInt(val) <= dimensions.width);
+    const newResolutions = profilePicturesResolutions.filter((val) => parseInt(val) <= dimensions.width);
     for (const resElement of newResolutions) {
       const resolution = parseInt(resElement);
       const finalFileNameWithDir = path.join(__dirname, '../../../public/profile_pictures/' + resElement + '/' + newOriginalPicName);
@@ -237,8 +238,8 @@ export class UserService {
    * @returns User exists
    */
   public async userExistsByID(id: number): Promise<boolean> {
-    const exists = await this.userRepository.count({ id: id });
-    return exists > 0;
+    const userCount: number = await this.userRepository.count({ id: id });
+    return userCount > 0;
   }
 
   /**

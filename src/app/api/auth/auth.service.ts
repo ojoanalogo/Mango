@@ -8,8 +8,8 @@ import { UserRepository } from '../users/user.repository';
 import { ServerLogger } from '../../lib/logger';
 import { Logger } from '../../decorators';
 import { JSONUtils } from '../../utils';
-import * as jwt from 'jsonwebtoken';
-import * as httpContext from 'express-http-context';
+import jwt = require('jsonwebtoken');
+import httpContext = require('express-http-context');
 
 @Service()
 export class AuthService {

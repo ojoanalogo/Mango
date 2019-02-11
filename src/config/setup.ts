@@ -2,20 +2,22 @@
 * Config file, based on:
 * https://github.com/i0natan/nodebestpractices/blob/master/sections/projectstructre/configguide.md
 */
-import * as path from 'path';
-import * as dotenv from 'dotenv';
+import path = require('path');
+import dotenv = require('dotenv');
+
 // setup dotenv
 const dotEnvConfig = dotenv.config();
 
 if (dotEnvConfig.error) {
-  throw new Error('Error trying to load the .env file, did you copy the provided example?');
+  throw new Error('Error trying to load the .env file, did you copy the provided example? (run cp .example.env .env)');
 }
 
-import * as nconf from 'nconf';
+// import nconf after dotenv config
+import nconf = require('nconf');
 
 // Set node_env to development if node_env is undefined
 if (!process.env.NODE_ENV) {
-  process.stdout.write('NODE_ENV is not defined, using development as default\n');
+  process.stdout.write('! - NODE_ENV is not defined, using development as default\n');
   process.env['NODE_ENV'] = 'development';
 }
 
@@ -48,8 +50,11 @@ nconf.env({
 
 // setup file hierarchy, config file for environment (example: production.config.json) overrides the default config
 nconf.file('config', getConfigFile());
+
+// nconf defaults (less important, everything here is overridden by the upper configs)
 nconf.defaults({
   server: {
+    name: 'Mango',
     host: 'localhost',
     port: 3000,
     instance: 1
@@ -90,7 +95,16 @@ nconf.defaults({
   },
   jwt: {
     life: '3d',
-    maxlife: '7d'
+    refresh_allowed: '7d'
+  },
+  uploads: {
+    folder: '/public/uploads',
+    profile_pictures: {
+      resolutions: [32, 64, 96, 240, 480],
+      allowed_formats: ['jpg', 'jpeg', 'JPG', 'JPEG', 'png', 'PNG'],
+      folder: '/public/uploads/images',
+      max_size: 54525952,
+    }
   }
 });
 

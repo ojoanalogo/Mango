@@ -1,6 +1,6 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
-import { CUID } from '../misc/CUID';
+import { CUID } from '../common/CUID';
 
 export enum RoleType {
   CEO = 'ceo',

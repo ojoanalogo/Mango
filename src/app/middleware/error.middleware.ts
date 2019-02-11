@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { Middleware, ExpressErrorMiddlewareInterface} from 'routing-controllers';
+import { Middleware, ExpressErrorMiddlewareInterface } from 'routing-controllers';
 import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
 import { ApiError } from '../handlers/api_error.handler';
 import { EntityMetadataNotFoundError } from 'typeorm/error/EntityMetadataNotFoundError';
 import { ServerLogger } from '../lib/logger';
-import * as fs from 'fs-extra';
+import fs = require('fs-extra');
 
 @Middleware({ type: 'after' })
 export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {

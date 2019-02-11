@@ -2,10 +2,13 @@ import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { Response, Request } from 'express';
 import { ServerLogger } from '../lib/logger';
 import { IS_PRODUCTION } from '../../config';
-import * as morgan from 'morgan';
+import morgan = require('morgan');
 
 @Middleware({ type: 'before' })
 export class LoggingMiddleware implements ExpressMiddlewareInterface {
+
+
+  private morganLevel: string = IS_PRODUCTION ? 'common' : 'dev';
 
   /**
    * Overwrite stream function to throw messages to our http logger
@@ -15,7 +18,7 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
     stream: {
       write: (message: string) => {
         const logger = new ServerLogger(__filename);
-        logger.http().log('http', message.replace('\n', ''));
+        logger.getHttpLogger().log('http', message.replace('\n', ''));
       }
     }
   };
@@ -28,8 +31,7 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
    * @param next - Next function
    */
   use(request: Request, response: Response, next?: (err?: any) => any): any {
-    const morganLevel = IS_PRODUCTION ? 'common' : 'dev';
-    morgan(morganLevel, this.morganOptions)(request, response, next);
+    morgan(this.morganLevel, this.morganOptions)(request, response, next);
   }
 }
 

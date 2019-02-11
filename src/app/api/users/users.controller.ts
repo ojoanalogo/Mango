@@ -25,9 +25,13 @@ export class UserController {
    * @returns User list
    */
   @Get()
-  // @Authorized([RoleType.DEVELOPER])
+  @Authorized([RoleType.DEVELOPER])
   public async getUsers(@Res() response: Response, @QueryParam('page') page?: number,
     @QueryParam('limit') limit?: number): Promise<Response> {
+    const maxLimit = 300;
+    if (limit >= maxLimit) {
+      throw new BadRequestError(`Please request less users, max: ${maxLimit}`);
+    }
     const userData = await this.userService.findAll(page, limit);
     return new ApiResponse(response)
       .withData(userData)

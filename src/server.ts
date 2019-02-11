@@ -1,10 +1,11 @@
 import { App } from './app';
 import { ServerLogger } from './app/lib/logger';
 import { createServer, Server as HttpServer } from 'http';
-import { SERVER_PORT } from './config';
+import { SERVER_PORT, SERVER_HOST } from './config';
 
 class Server extends App {
 
+  private host: string = SERVER_HOST;
   private port: number = SERVER_PORT;
   private httpServer: HttpServer;
 
@@ -16,12 +17,16 @@ class Server extends App {
      * Create http server instance
      */
     this.httpServer = createServer(this.getAppInstance());
-    this.httpServer.listen(this.port, () => {
-      this.serverLogger.info(`Running environment: ${process.env.NODE_ENV}`);
-      this.serverLogger.info(`Server is listening in port: ${this.port}`);
-    });
-    // pass server runtime errors to our custom function
+    this.httpServer.listen(this.port, this.host, () => this.onListening());
     this.httpServer.on('error', (error) => this.handleErrors(error));
+  }
+
+  /**
+   * On listening event
+   */
+  private onListening(): void {
+    this.serverLogger.info(`Running environment: ${process.env.NODE_ENV}`);
+    this.serverLogger.info(`Server is listening in: ${this.port}`);
   }
 
   /**
@@ -34,10 +39,10 @@ class Server extends App {
     }
     switch (error.code) {
       case 'EACCES':
-        this.serverLogger.error(`⚠ Server requires elevated privileges to run (using port: ${error.port})`, error);
+        this.serverLogger.error(`Server requires elevated privileges to run (using port: ${error.port})`);
         break;
       case 'EADDRINUSE':
-        this.serverLogger.error(`⚠ Port (${error.port}) already in use`, error);
+        this.serverLogger.error(`Port (${error.port}) already in use`, error);
         break;
       default:
         throw error;

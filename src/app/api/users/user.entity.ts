@@ -2,8 +2,8 @@ import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, OneToMany } f
 import { JwtToken } from '../auth/token.entity';
 import { ProfilePicture } from './user_profile_picture.entity';
 import { Role } from './user_role.entity';
-import { CUID } from '../misc/CUID';
-import * as bcrypt from 'bcrypt';
+import { CUID } from '../common/CUID';
+import bcrypt = require('bcrypt');
 
 @Entity('users')
 export class User extends CUID {
@@ -39,7 +39,7 @@ export class User extends CUID {
    * Before insertion
    */
   @BeforeInsert()
-  async beforeInsertion() {
+  async beforeInsertion(): Promise<void> {
     // store password as a hash
     await this.updatePassword();
   }
@@ -49,19 +49,26 @@ export class User extends CUID {
    * @param passwordToCompare - Password to check against
    * @returns Returns is password is valid
    */
-  async comparePassword(passwordToCompare: string): Promise<boolean> {
+  public async comparePassword(passwordToCompare: string): Promise<boolean> {
     return await bcrypt.compare(passwordToCompare, this.password);
   }
 
   /**
    * Update password field with a hashed password
    */
-  async updatePassword() {
+  public async updatePassword(): Promise<void> {
     try {
       const hash = await bcrypt.hash(this.password, 12);
       this.password = hash;
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * Get user name
+   */
+  public getName(): string {
+    return `${this.first_name} ${this.second_name}`;
   }
 }

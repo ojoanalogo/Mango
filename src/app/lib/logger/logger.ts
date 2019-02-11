@@ -1,6 +1,7 @@
 import { Container } from 'typedi';
 import { LoggerService } from './logger.service';
-import * as path from 'path';
+import path = require('path');
+import winston = require('winston');
 
 /**
  * Logger Interface
@@ -39,7 +40,7 @@ export class ServerLogger implements ILogger {
     return origin;
   }
 
-  public http() {
+  public getHttpLogger(): winston.Logger {
     return this.logger.getHTTPLogger();
   }
 

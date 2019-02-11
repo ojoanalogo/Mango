@@ -1,10 +1,10 @@
-import { Format } from 'logform';
+import { Format, TransformableInfo } from 'logform';
 import { Service } from 'typedi';
 import { IS_PRODUCTION } from '../../../config';
-import * as winston from 'winston';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
-import * as path from 'path';
-import * as httpContext from 'express-http-context';
+import winston = require('winston');
+import DailyRotateFile = require('winston-daily-rotate-file');
+import path = require('path');
+import httpContext = require('express-http-context');
 
 @Service()
 export class LoggerService {
@@ -62,28 +62,26 @@ export class LoggerService {
     * formatted thanks to https://github.com/winstonjs/winston/issues/1135#issuecomment-343980350
     */
     return winston.format.combine(
-      winston.format.colorize(),
-      winston.format.timestamp(),
-      winston.format.align(),
-      winston.format.printf((info) => {
-        const {
-          timestamp, level, message, ...args
-        } = info;
+      winston.format.colorize(), // add color to the level tag
+      winston.format.timestamp(), // add timestamp key
+      winston.format.printf((info: TransformableInfo) => {
+        // unpack variables
+        const { timestamp, level, message, ...args } = info;
         const ts = timestamp.slice(0, 19).replace('T', ' ');
-        const format = `${ts} | ${level} ` +
-          `${this.getRequestUUID() ? ` | ${this.getRequestUUID()} ` : ''} »` +
-          ` ${message.replace('\t', '')} ${Object.keys(args).length ? ('\n' + JSON.stringify(args, null, 2)) : ''}`;
+        const format =
+          `${ts} |\t${level}` +
+          `${this.getRequestUUID() ? `\t| ${this.getRequestUUID()}` : ''}` +
+          `\t» ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
         return format;
-      })
-    );
+      }));
   }
 
   /**
    * Setup main logger
    */
   private setupLogger() {
-    this.logger = winston.createLogger();
-    this.loggerHTTP = winston.createLogger();
+    this.logger = winston.createLogger({ level: 'info' });
+    this.loggerHTTP = winston.createLogger({ level: 'http', levels: { http: 1 } });
     if (IS_PRODUCTION) {
       // setup transports
       const transportError = new DailyRotateFile({
@@ -105,6 +103,7 @@ export class LoggerService {
         maxFiles: '31d'
       });
       const transportHTTP = new DailyRotateFile({
+        level: 'http',
         format: winston.format.combine(
           winston.format.uncolorize(),
           winston.format.printf((info) => {
@@ -128,8 +127,11 @@ export class LoggerService {
    * Setup console stream
    */
   private setupConsoleStream() {
-    this.logger.add(new winston.transports.Console({ format: this.getConsoleLogFormat() }));
-    this.loggerHTTP.add(new winston.transports.Console({ format: this.getConsoleLogFormat() }));
+    const consoleFormat = {
+      format: this.getConsoleLogFormat()
+    };
+    this.logger.add(new winston.transports.Console(consoleFormat));
+    this.loggerHTTP.add(new winston.transports.Console(consoleFormat));
   }
 
   /**

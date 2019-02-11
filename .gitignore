@@ -13,8 +13,9 @@ logs/*
 # Other files
 .env
 
-public/images/uploads/*
-!public/images/uploads/.gitkeep
+# Public folder
+public/uploads/*
+!public/uploads/images/.gitkeep
 
 # System Files
 .DS_Store

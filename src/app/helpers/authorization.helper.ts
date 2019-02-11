@@ -8,8 +8,8 @@ import { User } from '../api/users/user.entity';
 import { RoleType, Role, getWeight } from '../api/users/user_role.entity';
 import { UserRepository } from '../api/users/user.repository';
 import { ServerLogger } from '../lib/logger';
-import * as jwt from 'jsonwebtoken';
-import * as moment from 'moment';
+import jwt = require('jsonwebtoken');
+import moment = require('moment');
 
 @Service()
 export class AuthHelper {
