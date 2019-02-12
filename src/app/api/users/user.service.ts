@@ -10,10 +10,10 @@ import { Logger } from '../../decorators';
 import { JSONUtils } from '../../utils/json.utils';
 import { UploadUtils } from '../../utils/upload.utils';
 import { ServerLogger } from '../../lib/logger';
+import { PROFILE_PICTURES_RESOLUTIONS } from '../../../config';
 import fs = require('fs-extra');
 import sharp = require('sharp');
 import path = require('path');
-import { PROFILE_PICTURES_RESOLUTIONS } from '../../../config';
 
 @Service()
 export class UserService {
