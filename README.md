@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <img src=".github/mango.png" alt="mango" width="120">
+  <img src="mango.png" alt="mango" width="120">
   <br>
   Mango
   <h4 align="center">TypeScript server template with routing-controllers, typeorm and typedi</h4>
@@ -95,7 +95,7 @@ npm add:module
 
 and follow the steps ✅
 
-![module](.github/plop.gif)
+![module](plop.gif)
 
 ## 🔐 Adding authorization or role protection to routes
 
@@ -114,7 +114,7 @@ Adding authorization to a route it's easy, just use the @Authorized annotation a
 
 I made a sequence diagram to try to explain this process:
 
-![diagram](.github/token_sequence.png)
+![diagram](token_sequence.png)
 
 ### 🤔 Explanation
 
