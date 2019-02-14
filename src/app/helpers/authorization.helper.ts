@@ -15,7 +15,7 @@ import moment = require('moment');
 export class AuthHelper {
 
   constructor(
-    @Logger(__filename) private logger: ServerLogger) { }
+    @Logger(__filename) private readonly logger: ServerLogger) { }
 
   /**
    * Try to refresh JWT token

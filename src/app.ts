@@ -70,13 +70,13 @@ export class App {
     // helmet middleware
     this.app.use(helmet());
     // spoof the stack used, just for fun
-    this.app.use((req, res, next) => {
+    this.app.use((_req, res, next) => {
       res.setHeader('X-Powered-By', 'Mango');
       next();
     });
     // support for UUID and route context
     this.app.use(httpContext.middleware);
-    this.app.use((req, res, next) => {
+    this.app.use((req, _res, next) => {
       httpContext.set('reqId', uuid.v1());
       httpContext.set('useragent', req.headers['user-agent']);
       httpContext.set('ip', req.ip);
@@ -95,11 +95,11 @@ export class App {
    * @returns Express app
    */
   private async setupRouting(): Promise<express.Application> {
-    const authChecker: AuthHelper = Container.get(AuthHelper);
-    const currentUserChecker: CurrentUserHelper = Container.get(CurrentUserHelper);
     this.logger.info('Setting up routing-controllers...');
     // use TypeDI container in routing-controllers
     useContainer(Container);
+    const authChecker: AuthHelper = Container.get(AuthHelper);
+    const currentUserChecker: CurrentUserHelper = Container.get(CurrentUserHelper);
     this.app = useExpressServer(this.app, {
       routePrefix: '/api/v1',
       controllers: [path.join(__dirname, '/app/api/**/*.controller{.js,.ts}')],

@@ -10,7 +10,7 @@ export class Database {
   private connection: Connection;
   private reconnectTry = 1;
 
-  constructor(@Logger(__filename) private logger: ServerLogger) { }
+  constructor(@Logger(__filename) private readonly logger: ServerLogger) { }
 
   private timeout(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));

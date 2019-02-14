@@ -9,7 +9,7 @@ export class Redis {
 
   private client: RedisClient;
 
-  constructor(@Logger(__filename) private logger: ServerLogger) { }
+  constructor(@Logger(__filename) private readonly logger: ServerLogger) { }
 
   public async setupRedis() {
     this.client = createClient(REDIS_OPTIONS);

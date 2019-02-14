@@ -1,6 +1,7 @@
 import { Service } from 'typedi';
 import { Logger } from '../../decorators/logger.decorator';
 import { ServerLogger } from '../../lib/logger';
+import { IHealth } from './health.interface';
 
 
 @Service()
@@ -16,7 +17,7 @@ export class HealthService {
    * Returns health status
    * @returns Health status
    */
-  public getHealth(): Health {
+  public getHealth(): IHealth {
     function pad(time: number): string {
       return (time < 10 ? '0' : '') + time;
     }
@@ -32,14 +33,4 @@ export class HealthService {
       uptime_formatted: formatted
     };
   }
-}
-
-/**
- * Health response interface
- */
-interface Health {
-  ping: string;
-  start: Date;
-  uptime: number;
-  uptime_formatted: string;
 }

@@ -17,7 +17,8 @@ export class HealthController {
    */
   @Get()
   public healthStatus(@Res() response: Response): Response {
+    const serviceHealth = this.healthService.getHealth();
     return new ApiResponse(response)
-      .withData(this.healthService.getHealth()).withStatusCode(HTTP_STATUS_CODE.OK).build();
+      .withData(serviceHealth).withStatusCode(HTTP_STATUS_CODE.OK).build();
   }
 }

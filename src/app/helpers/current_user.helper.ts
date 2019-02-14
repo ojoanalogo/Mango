@@ -10,7 +10,7 @@ import { ServerLogger } from '../lib/logger';
 export class CurrentUserHelper {
 
   constructor(
-    @Logger(__filename) private logger: ServerLogger) { }
+    @Logger(__filename) private readonly logger: ServerLogger) { }
 
   /**
   * Returns user from token

@@ -2,7 +2,7 @@ import {
   Body, Get, Delete, Post, Res, UseBefore,
   JsonController, Param, NotFoundError,
   BadRequestError, InternalServerError,
-  Authorized, Patch, QueryParam
+  Authorized, Patch, QueryParam, ForbiddenError
 } from 'routing-controllers';
 import { Response } from 'express';
 import { Validator } from 'class-validator';
@@ -35,7 +35,7 @@ export class UserController {
     const userData = await this.userService.findAll(page, limit);
     return new ApiResponse(response)
       .withData(userData)
-      .withStatusCode(HTTP_STATUS_CODE.OK).build();
+      .build();
   }
 
   /**
@@ -68,7 +68,7 @@ export class UserController {
     if (!validator.isEmail(user.email) || validator.isEmpty(user.email)) {
       throw new BadRequestError('Not valid email');
     }
-    if (user.password !== undefined || validator.isEmpty(user.password)) {
+    if (user.password === undefined || validator.isEmpty(user.password)) {
       throw new BadRequestError('Password field empty');
     }
     if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(user.password)) {
@@ -76,14 +76,17 @@ export class UserController {
     }
     const userExists = await this.userService.userExistsByEmail(user.email);
     if (userExists) {
+      throw new ForbiddenError('User alreadyExists')
+    }
+    if (userExists) {
       return new ApiResponse(response)
         .withData('User already registered')
         .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
         .build();
     }
-    const result = await this.userService.createUser(user);
+    const userCreated = await this.userService.createUser(user);
     return new ApiResponse(response)
-      .withData(result)
+      .withData(userCreated)
       .withStatusCode(HTTP_STATUS_CODE.CREATED)
       .build();
   }

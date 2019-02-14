@@ -11,11 +11,12 @@
       "name": "Launch",
       "protocol": "inspector",
       "port": 9229,
-      "sourceMaps": true,
       "timeout": 10000,
+      "sourceMaps": true,
       "restart": true,
       "skipFiles": [
-        "${workspaceFolder}/node_modules/**/*.js",
+        "/node_modules/**/*.js",
+        "/node_modules/**/*.ts",
         "<node_internals>/**/*.js"
       ]
     },

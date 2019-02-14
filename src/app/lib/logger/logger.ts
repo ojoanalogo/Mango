@@ -1,19 +1,9 @@
 import { Container } from 'typedi';
 import { LoggerService } from './logger.service';
+import { ILogger } from './logger.interface';
 import path = require('path');
 import winston = require('winston');
 
-/**
- * Logger Interface
- */
-interface ILogger {
-  error(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  verbose(message: string, ...args: any[]): void;
-  info(message: string, ...args: any[]): void;
-  debug(message: string, ...args: any[]): void;
-  silly(message: string, ...args: any[]): void;
-}
 
 export class ServerLogger implements ILogger {
 
