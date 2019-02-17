@@ -4,6 +4,7 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from './user.repository';
 import { User } from './user.entity';
+import { UserResponse } from './user_response.interface';
 import { Role, RoleType } from './user_role.entity';
 import { ProfilePicture } from './user_profile_picture.entity';
 import { Logger } from '../../decorators';
@@ -62,11 +63,6 @@ export class UserService {
     const userInstance: User = await this.userRepository.save(userReq);
     // create JWT tokens
     const jwtToken = await this.authService.createJWT(userInstance);
-    // create profile picture entity
-    const profilePicture: ProfilePicture = new ProfilePicture();
-    profilePicture.user = userInstance;
-    // save profile picture in profile picture repository
-    await this.profilePictureRepository.save(profilePicture);
     // now assign default Role
     const role: Role = new Role();
     role.role = RoleType.USER;
@@ -74,7 +70,7 @@ export class UserService {
     // save role in role repository
     await this.rolesRepository.save(role);
     // pass full JWT tokens
-    userInstance.token = jwtToken;
+    userInstance.token = <any>jwtToken;
     this.logger.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
     // return user model object
     return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
@@ -103,7 +99,7 @@ export class UserService {
       await this.authService.deleteTokens(userUpdated);
       // create JWT tokens
       const jwtToken = await this.authService.createJWT(userUpdated);
-      userUpdated.token = jwtToken;
+      userDB.token = <any>jwtToken;
     }
     return userUpdated;
   }
@@ -118,6 +114,14 @@ export class UserService {
   public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
     const userDB = await this.userRepository.findOne({ id: user.id });
     let profilePictureInstance = await this.profilePictureRepository.findOne({ user: userDB });
+    // user doesn't have a profile picture stored
+    if (!profilePictureInstance) {
+      // create profile picture entity
+      const profilePicture: ProfilePicture = new ProfilePicture();
+      profilePicture.user = userDB;
+      // save profile picture in profile picture repository
+      profilePictureInstance = await this.profilePictureRepository.save(profilePicture);
+    }
     // delete old files if they exist
     profilePictureInstance = this.deleteOldProfilePictures(profilePictureInstance);
     // rename uploaded file with hash signature

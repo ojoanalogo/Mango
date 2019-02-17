@@ -2,7 +2,7 @@ import {
   Body, Get, Delete, Post, Res, UseBefore,
   JsonController, Param, NotFoundError,
   BadRequestError, InternalServerError,
-  Authorized, Patch, QueryParam, ForbiddenError
+  Authorized, Patch, QueryParam, ForbiddenError,
 } from 'routing-controllers';
 import { Response } from 'express';
 import { Validator } from 'class-validator';
@@ -28,12 +28,13 @@ export class UserController {
   @Authorized([RoleType.DEVELOPER])
   public async getUsers(@Res() response: Response, @QueryParam('page') page?: number,
     @QueryParam('limit') limit?: number): Promise<Response> {
-    const maxLimit = 300;
-    if (limit >= maxLimit) {
-      throw new BadRequestError(`Please request less users, max: ${maxLimit}`);
+    const maxLimit = 100;
+    if (limit > maxLimit) {
+      throw new BadRequestError(`Please request less users, max quantity: ${maxLimit}`);
     }
     const userData = await this.userService.findAll(page, limit);
     return new ApiResponse(response)
+      .withStatusCode(HTTP_STATUS_CODE.OK)
       .withData(userData)
       .build();
   }
@@ -49,7 +50,7 @@ export class UserController {
   public async getUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
     const userDB = await this.userService.getUserByID(id);
     if (!userDB) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError(`User ID (${id}) not found`);
     }
     return new ApiResponse(response)
       .withData(userDB)
@@ -65,6 +66,9 @@ export class UserController {
   @Post()
   public async createUser(@Res() response: Response, @Body({ required: true }) user: User): Promise<Response> {
     const validator = new Validator();
+    if (!user.email) {
+      throw new BadRequestError('Please provide a valid email field');
+    }
     if (!validator.isEmail(user.email) || validator.isEmpty(user.email)) {
       throw new BadRequestError('Not valid email');
     }
@@ -76,7 +80,7 @@ export class UserController {
     }
     const userExists = await this.userService.userExistsByEmail(user.email);
     if (userExists) {
-      throw new ForbiddenError('User alreadyExists')
+      throw new ForbiddenError(`User with email (${user.email}) already exists`);
     }
     if (userExists) {
       return new ApiResponse(response)
@@ -105,7 +109,7 @@ export class UserController {
     }
     const userDB = await this.userService.getUserByID(id);
     if (!userDB) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError(`User ID (${id}) not found`);
     }
     const rs = await this.userService.deleteUserByID(id);
     if (!rs) {
@@ -126,12 +130,13 @@ export class UserController {
   @Patch(':id')
   @Authorized([RoleType.DEVELOPER])
   public async updateUserByID(@Res() response: Response, @Param('id') id: number, @Body({ required: true }) user: User): Promise<Response> {
+    const validator = new Validator();
     if (!id) {
       throw new BadRequestError('ID field is required');
     }
     const userDB = await this.userService.getUserByID(id);
     if (!userDB) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError(`User ID (${id}) not found`);
     }
     if (user.email) {
       const usedEmail = await this.userService.getUserByEmail(user.email);
@@ -140,6 +145,9 @@ export class UserController {
           .withData('Email already in use')
           .withStatusCode(HTTP_STATUS_CODE.CONFLICT)
           .build();
+      }
+      if (!validator.isEmail(user.email) || validator.isEmpty(user.email)) {
+        throw new BadRequestError('Not valid email');
       }
     }
     await this.userService.updateUser(id, user);

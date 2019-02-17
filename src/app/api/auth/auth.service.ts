@@ -2,12 +2,14 @@ import { Service } from 'typedi';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { UnauthorizedError } from 'routing-controllers';
 import { User } from '../users/user.entity';
-import { JwtToken } from './token.entity';
+import { Token } from './token.entity';
 import { TokenRepository } from './token.repository';
 import { UserRepository } from '../users/user.repository';
 import { ServerLogger } from '../../lib/logger';
 import { Logger } from '../../decorators';
 import { JSONUtils } from '../../utils';
+import { JWTPayload } from './jwt_payload.interface';
+import { JWT_SECRET, IS_PRODUCTION, JWT_TOKEN_LIFE } from '../../../config';
 import jwt = require('jsonwebtoken');
 import httpContext = require('express-http-context');
 
@@ -16,7 +18,7 @@ export class AuthService {
 
   constructor(
     @Logger(__filename) private readonly logger: ServerLogger,
-    @InjectRepository(JwtToken) private readonly tokenRepository: TokenRepository,
+    @InjectRepository(Token) private readonly tokenRepository: TokenRepository,
     @InjectRepository(User) private readonly userRepository: UserRepository,
     private readonly jsonUtils: JSONUtils) { }
 
@@ -26,24 +28,28 @@ export class AuthService {
    * @param refresh - Should be refresh the token?
    * @returns Promise with the result of the operation
    */
-  public async createJWT(user: User, refresh?: boolean): Promise<any> {
-    const duration = process.env.NODE_ENV === 'production' ? '30m' : '3d';
-    const token = await jwt.sign({
+  public async createJWT(user: User, refresh?: boolean): Promise<string> {
+    const duration = JWT_TOKEN_LIFE;
+    const payload: Partial<JWTPayload> = {
       user: {
-        id: user.id
-      },
-    }, process.env.JWT_SECRET, { expiresIn: duration });
+        id: user.id,
+        email: user.email
+      }
+    };
+    // sign a new JWT token with a payload and a custom duration
+    const token: string = await jwt.sign(payload, JWT_SECRET, { expiresIn: duration });
+    // new token logic
     if (!refresh) {
       // create JWT entity instance to store in database
       const userAgent = httpContext.get('useragent');
-      const tokenInstance = new JwtToken();
+      const tokenInstance = new Token();
       tokenInstance.token = token;
       tokenInstance.agent = userAgent;
       tokenInstance.user = user; // asign relationship
       this.logger.info(`Creating new token for user id: ${user.id}, agent: ${userAgent}`);
       // now we save the token in our token repository
       await this.tokenRepository.save(tokenInstance);
-    }
+    };
     return token;
   }
 
@@ -61,7 +67,7 @@ export class AuthService {
       // update token in repo
       const jwtToken = await this.createJWT(userDB);
       // return user data with token
-      userDB.token = jwtToken;
+      userDB.token = <any>jwtToken;
       // return user model object
       return this.jsonUtils.filterDataFromObject(userDB, this.jsonUtils.commonUserProperties);
     } else {
@@ -75,8 +81,12 @@ export class AuthService {
    * @param user - User object
    */
   public async deleteTokens(user: User): Promise<any> {
-    await this.tokenRepository.delete({ user: user });
-    this.logger.info('Deleted tokens for user id: ' + user.id);
+    try {
+      await this.tokenRepository.delete({ user: user });
+      this.logger.info('Deleted tokens for user id: ' + user.id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**

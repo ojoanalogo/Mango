@@ -1,6 +1,6 @@
 import { Format, TransformableInfo } from 'logform';
 import { Service } from 'typedi';
-import { IS_PRODUCTION } from '../../../config';
+import { LOG_TO_FILE, LOG_LEVEL, LOG_FOLDER } from '../../../config';
 import winston = require('winston');
 import DailyRotateFile = require('winston-daily-rotate-file');
 import path = require('path');
@@ -40,8 +40,12 @@ export class LoggerService {
   private getFileLogFormat(): Format {
     const addContext = winston.format(info => {
       const reqID = this.getRequestUUID();
+      const clusterID = this.getClusterID();
       if (reqID) {
         info.requestID = reqID;
+      }
+      if (clusterID) {
+        info.clusterID = clusterID;
       }
       return info;
     });
@@ -80,13 +84,13 @@ export class LoggerService {
    * Setup main logger
    */
   private setupLogger() {
-    this.logger = winston.createLogger({ level: 'info' });
+    this.logger = winston.createLogger({ level: LOG_LEVEL });
     this.loggerHTTP = winston.createLogger({ level: 'http', levels: { http: 1 } });
-    if (IS_PRODUCTION) {
+    if (LOG_TO_FILE) {
       // setup transports
       const transportError = new DailyRotateFile({
         level: 'error',
-        filename: path.join(__dirname, `../../logs/error-%DATE%.log`),
+        filename: path.join(process.cwd(), `${LOG_FOLDER}/error-%DATE%.log`),
         format: this.getFileLogFormat(),
         datePattern: 'YYYY-MM-DD-HH',
         zippedArchive: true,
@@ -95,7 +99,7 @@ export class LoggerService {
       });
       const transportCombined = new DailyRotateFile({
         level: 'info',
-        filename: path.join(__dirname, `../../logs/combined-%DATE%.log`),
+        filename: path.join(process.cwd(), `${LOG_FOLDER}/combined-%DATE%.log`),
         format: this.getFileLogFormat(),
         datePattern: 'YYYY-MM-DD-HH',
         zippedArchive: true,
@@ -111,7 +115,7 @@ export class LoggerService {
             return message;
           })
         ),
-        filename: path.join(__dirname, `../../logs/http-%DATE%.log`),
+        filename: path.join(process.cwd(), `${LOG_FOLDER}/http/http-%DATE%.log`),
         datePattern: 'YYYY-MM-DD-HH',
         zippedArchive: true,
         maxSize: '20m',
@@ -141,6 +145,15 @@ export class LoggerService {
   private getRequestUUID(): string {
     const reqId = httpContext.get('reqId');
     return reqId;
+  }
+
+  /**
+   * Get cluster ID if present
+   * @returns cluster ID
+   */
+  private getClusterID(): string {
+    const clusterID = process.env.pm_id;
+    return clusterID ? clusterID : '1';
   }
 
 }

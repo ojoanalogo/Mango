@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { Action, UnauthorizedError, ForbiddenError } from 'routing-controllers';
+import { Action, UnauthorizedError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { getCustomRepository } from 'typeorm';
 import { Logger } from '../decorators';
 import { User } from '../api/users/user.entity';
@@ -32,7 +32,7 @@ export class CurrentUserHelper {
     // get token object with user data
     const tokenDataWithUser = await tokenRepository.getTokenWithUser(token);
     if (!tokenDataWithUser) {
-      throw new ForbiddenError('Can not find user associated with token');
+      throw new NotFoundError('Can not find user associated with token');
     }
     return tokenDataWithUser.user;
   }

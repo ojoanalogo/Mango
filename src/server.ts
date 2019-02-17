@@ -1,7 +1,7 @@
 import { App } from './app';
 import { ServerLogger } from './app/lib/logger';
 import { createServer, Server as HttpServer } from 'http';
-import { SERVER_PORT, SERVER_HOST } from './config';
+import { SERVER_PORT, SERVER_HOST, ENV } from './config';
 
 class Server extends App {
 
@@ -25,7 +25,7 @@ class Server extends App {
    * On listening event
    */
   private onListening(): void {
-    this.serverLogger.info(`Running environment: ${process.env.NODE_ENV}`);
+    this.serverLogger.info(`Running environment: ${ENV}`);
     this.serverLogger.info(`Server is listening in: ${this.port}`);
   }
 

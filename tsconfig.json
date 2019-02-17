@@ -2,21 +2,24 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "module": "commonjs",
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": false,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "removeComments": true,
     "allowJs": true,
-    "target": "es6",
+    "target": "es2017",
     "lib": [
+      "es2017",
       "es7",
       "dom"
     ]
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "./src/**/*.json"
   ],
   "exclude": [
     "node_modules",

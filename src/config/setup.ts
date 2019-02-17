@@ -17,7 +17,7 @@ import nconf = require('nconf');
 
 // Set node_env to development if node_env is undefined
 if (!process.env.NODE_ENV) {
-  process.stdout.write('! - NODE_ENV is not defined, using development as default\n');
+  process.stdout.write('NODE_ENV is not defined, using development as default\n');
   process.env['NODE_ENV'] = 'development';
 }
 
@@ -57,7 +57,7 @@ nconf.defaults({
     name: 'Mango',
     host: 'localhost',
     port: 3000,
-    instance: 1
+    api_prefix: '/api/v1/'
   },
   database: {
     host: 'localhost',
@@ -81,21 +81,20 @@ nconf.defaults({
     auth: ''
   },
   logging: {
-    level: 'debug',
+    level: 'info',
     file: {
-      enabled: true,
+      enabled: false,
+      folder: '/logs',
       size: '50m',
       duration: '7d'
     }
   },
   auth: {
-    saltRounds: 12,
-    tokenDuration: '10m',
-    refreshToken: '7d'
+    salt_rounds: 12,
   },
   jwt: {
-    life: '3d',
-    refresh_allowed: '7d'
+    token_life: '7d',
+    refresh_token_max_life: '14d'
   },
   uploads: {
     folder: '/public/uploads',

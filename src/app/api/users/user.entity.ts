@@ -1,8 +1,9 @@
 import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
-import { JwtToken } from '../auth/token.entity';
+import { Token } from '../auth/token.entity';
 import { ProfilePicture } from './user_profile_picture.entity';
 import { Role } from './user_role.entity';
 import { CUID } from '../common/CUID';
+import { PASSWORD_SALT_ROUNDS } from '../../../config';
 import bcrypt = require('bcrypt');
 
 @Entity('users')
@@ -26,8 +27,8 @@ export class User extends CUID {
   @UpdateDateColumn()
   last_login: Date;
 
-  @OneToMany(() => JwtToken, token => token.user)
-  token: JwtToken;
+  @OneToMany(() => Token, token => token.user)
+  token: Token;
 
   @OneToOne(() => Role, role => role.user)
   role: Role;
@@ -58,7 +59,7 @@ export class User extends CUID {
    */
   public async updatePassword(): Promise<void> {
     try {
-      const hash = await bcrypt.hash(this.password, 12);
+      const hash = await bcrypt.hash(this.password, PASSWORD_SALT_ROUNDS);
       this.password = hash;
     } catch (error) {
       throw error;

@@ -1,5 +1,11 @@
 {
-  "logger": {
-    "file": true
+  "jwt": {
+    "token_life": "15m",
+    "refresh_token_max_life": "14d"
+  },
+  "logging": {
+    "file": {
+      "enabled": true
+    }
   }
 }

@@ -129,77 +129,104 @@ You will have to implement some logic on your frontend or mobile app to replace 
 
 ```text
 .
+├── CHANGELOG.md
 ├── docs
-│   ├── mango.png
-│   └── plop.gif
+├── ecosystem.config.js
+├── jest.json
 ├── LICENSE
+├── logs
+├── mango.png
+├── nodemon.json
+├── package.json
+├── package-lock.json
+├── plopfile.js
+├── plop.gif
+├── plop-templates
+│   ├── controller.hbs
+│   ├── repository.hbs
+│   └── service.hbs
+├── public
+│   ├── index.html
+│   └── uploads
 ├── README.md
-└── server
-    ├── ecosystem.config.js
-    ├── .editorconfig
-    ├── .example.env
-    ├── nodemon.json
-    ├── package.json
-    ├── package-lock.json
-    ├── plopfile.js
-    ├── plop-templates
-    │   ├── controller.hbs
-    │   ├── repository.hbs
-    │   └── service.hbs
-    ├── public
-    │   └── index.html
-    ├── src
-    │   ├── api
-    │   │   ├── auth
-    │   │   │   ├── auth.controller.ts
-    │   │   │   ├── jwt.service.ts
-    │   │   │   ├── token.model.ts
-    │   │   │   └── token.repository.ts
-    │   │   ├── common
-    │   │   │   ├── CUD.ts
-    │   │   │   └── CUID.ts
-    │   │   ├── health
-    │   │   │   ├── health.controller.ts
-    │   │   │   └── health.service.ts
-    │   │   ├── index
-    │   │   │   └── index.controller.ts
-    │   │   ├── me
-    │   │   │   └── me.controller.ts
-    │   │   └── users
-    │   │       ├── user.model.ts
-    │   │       ├── user_profile_picture.model.ts
-    │   │       ├── user.repository.ts
-    │   │       ├── user_role.model.ts
-    │   │       ├── users.controller.ts
-    │   │       └── user.service.ts
-    │   ├── app.ts
-    │   ├── database
-    │   │   ├── database.ts
-    │   │   └── redis.ts
-    │   ├── handlers
-    │   │   ├── api_error.handler.ts
-    │   │   └── api_response.handler.ts
-    │   ├── helpers
-    │   │   ├── authorization_checker.helper.ts
-    │   │   └── current_user_checker.helper.ts
-    │   ├── logger
-    │   │   └── logger.service.ts
-    │   ├── middleware
-    │   │   ├── error.middleware.ts
-    │   │   ├── http_logging.middleware.ts
-    │   │   └── not_found.middleware.ts
-    │   ├── utils
-    │   │   ├── json.utils.ts
-    │   │   └── upload.utils.ts
-    │   └── www.ts
-    ├── tests
-    │   ├── src
-    │   │   ├── controllers
-    │   │   │   └── index.controller.spec.ts
-    │   │   └── setup.ts
-    │   └── tsconfig.json
-    ├── tsconfig.json
-    └── tslint.json
+├── src
+│   ├── app
+│   │   ├── api
+│   │   │   ├── auth
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── jwt_payload.interface.ts
+│   │   │   │   ├── token.entity.ts
+│   │   │   │   └── token.repository.ts
+│   │   │   ├── common
+│   │   │   │   ├── CUD.ts
+│   │   │   │   └── CUID.ts
+│   │   │   ├── health
+│   │   │   │   ├── health.controller.ts
+│   │   │   │   ├── health.interface.ts
+│   │   │   │   └── health.service.ts
+│   │   │   ├── index
+│   │   │   │   └── index.controller.ts
+│   │   │   ├── me
+│   │   │   │   └── me.controller.ts
+│   │   │   └── users
+│   │   │       ├── user.entity.ts
+│   │   │       ├── user_profile_picture.entity.ts
+│   │   │       ├── user.repository.ts
+│   │   │       ├── user_response.interface.ts
+│   │   │       ├── user_role.entity.ts
+│   │   │       ├── users.controller.ts
+│   │   │       └── user.service.ts
+│   │   ├── database
+│   │   │   ├── database.ts
+│   │   │   ├── migrations
+│   │   │   └── redis.ts
+│   │   ├── decorators
+│   │   │   ├── index.ts
+│   │   │   └── logger.decorator.ts
+│   │   ├── handlers
+│   │   │   ├── api_error.handler.ts
+│   │   │   └── api_response.handler.ts
+│   │   ├── helpers
+│   │   │   ├── authorization.helper.ts
+│   │   │   ├── current_user.helper.ts
+│   │   │   └── index.ts
+│   │   ├── lib
+│   │   │   └── logger
+│   │   │       ├── index.ts
+│   │   │       ├── logger.interface.ts
+│   │   │       ├── logger.service.ts
+│   │   │       └── logger.ts
+│   │   ├── middleware
+│   │   │   ├── error.middleware.ts
+│   │   │   ├── http_logging.middleware.ts
+│   │   │   └── not_found.middleware.ts
+│   │   └── utils
+│   │       ├── index.ts
+│   │       ├── json.utils.ts
+│   │       └── upload.utils.ts
+│   ├── app.ts
+│   ├── config
+│   │   ├── environments
+│   │   │   ├── production.config.json
+│   │   │   ├── staging.config.json
+│   │   │   └── test.config.json
+│   │   ├── globals.ts
+│   │   ├── index.ts
+│   │   └── setup.ts
+│   └── server.ts
+├── tests
+│   ├── src
+│   │   ├── controllers
+│   │   │   └── index.controller.spec.ts
+│   │   └── setup.ts
+│   └── tsconfig.json
+├── token_sequence.png
+├── tsconfig.json
+└── tslint.json
+
+34 directories, 69 files
+
 ```
 
 ## 📋 ToDo

@@ -7,6 +7,7 @@ import { Redis } from './app/database/redis';
 import { AuthHelper, CurrentUserHelper } from './app/helpers';
 import { ErrorMiddleware } from './app/middleware/error.middleware';
 import { NotFoundMiddleware } from './app/middleware/not_found.middleware';
+import { API_PREFIX } from './config';
 import express = require('express');
 import httpContext = require('express-http-context');
 import bodyParser = require('body-parser');
@@ -83,7 +84,7 @@ export class App {
       next();
     });
     // point static path to public
-    this.app.use(express.static(path.join(__dirname, '../public')));
+    this.app.use(express.static(path.join(process.cwd(), '/public')));
     // catch uncaught exceptions
     process.on('uncaughtException', (error) => {
       this.logger.error(error.stack);
@@ -101,7 +102,7 @@ export class App {
     const authChecker: AuthHelper = Container.get(AuthHelper);
     const currentUserChecker: CurrentUserHelper = Container.get(CurrentUserHelper);
     this.app = useExpressServer(this.app, {
-      routePrefix: '/api/v1',
+      routePrefix: API_PREFIX,
       controllers: [path.join(__dirname, '/app/api/**/*.controller{.js,.ts}')],
       middlewares: [ErrorMiddleware, NotFoundMiddleware],
       cors: true,                     // enable cors

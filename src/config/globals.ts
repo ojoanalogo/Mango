@@ -20,6 +20,11 @@ export const SERVER_HOST: string = nconf.any(['host', 'server:host']) || 'localh
 export const SERVER_PORT: number = parseInt(nconf.any(['port', 'server:port'])) || 3000;
 
 /**
+ * API URL prefix
+ */
+export const API_PREFIX: string = nconf.get('server:api_prefix');
+
+/**
  * NODE_ENV
  */
 export const ENV: string = nconf.get('node_env');
@@ -47,12 +52,17 @@ export const IS_TEST: boolean = ENV === 'test';
 /**
  * Returns logger level (e.g: info)
  */
-export const LOG_LEVEL: string = nconf.get('loggin:level');
+export const LOG_LEVEL: string = nconf.get('logging:level');
 
 /**
  * Returns if logging to file is enabled
  */
 export const LOG_TO_FILE: boolean = nconf.get('logging:file:enabled');
+
+/**
+ * Returns logs folder
+ */
+export const LOG_FOLDER: string = nconf.get('logging:file:folder');
 
 /**
  * Max size per log file
@@ -72,12 +82,17 @@ export const JWT_SECRET: string = process.env.JWT_SECRET || 'mango';
 /**
  * Max JWT token life before it needs to be refreshed
  */
-export const JWT_TOKEN_LIFE: string = nconf.get('jwt:life');
+export const JWT_TOKEN_LIFE: string = nconf.get('jwt:token_life');
 
 /**
  * Max old age since token expired to be allowed to be refreshed
  */
-export const JWT_MAX_DIFFERENCE_REFRESH: string = nconf.get('jwt:refresh_allowed');
+export const JWT_MAX_DIFFERENCE_REFRESH: string = nconf.get('jwt:refresh_token_max_life');
+
+/**
+ *
+ */
+export const PASSWORD_SALT_ROUNDS: number = nconf.get('auth:salt_rounds');
 
 /**
  * Uploads folder

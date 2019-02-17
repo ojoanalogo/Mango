@@ -2,7 +2,7 @@ import { Entity, Column, JoinColumn, ManyToOne, CreateDateColumn, UpdateDateColu
 import { User } from '../users/user.entity';
 
 @Entity('tokens')
-export class JwtToken {
+export class Token {
 
   @PrimaryGeneratedColumn()
   id: number;
