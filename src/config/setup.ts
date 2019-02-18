@@ -9,7 +9,8 @@ import dotenv = require('dotenv');
 const dotEnvConfig = dotenv.config();
 
 if (dotEnvConfig.error) {
-  throw new Error('Error trying to load the .env file, did you copy the provided example? (run cp .example.env .env)');
+  throw new Error(`Error trying to load the .env file, did you copy the provided example ` +
+    ` run "cp .example.env .env" from your command line)`);
 }
 
 // import nconf after dotenv config
@@ -57,7 +58,7 @@ nconf.defaults({
     name: 'Mango',
     host: 'localhost',
     port: 3000,
-    api_prefix: '/api/v1/'
+    api_prefix: '/api/v1'
   },
   database: {
     host: 'localhost',
@@ -97,10 +98,10 @@ nconf.defaults({
     refresh_token_max_life: '14d'
   },
   uploads: {
-    folder: '/public/uploads',
+    public_folder: '/public/',
+    uploads_folder: 'uploads/',
     profile_pictures: {
       resolutions: [32, 64, 96, 240, 480],
-      allowed_formats: ['jpg', 'jpeg', 'JPG', 'JPEG', 'png', 'PNG'],
       folder: '/public/uploads/images',
       max_size: 54525952,
     }

@@ -22,7 +22,6 @@
     "./src/**/*.json"
   ],
   "exclude": [
-    "node_modules",
-    "./src/**/*.spect.ts"
+    "node_modules"
   ]
 }

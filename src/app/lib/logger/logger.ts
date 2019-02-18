@@ -45,7 +45,7 @@ export class ServerLogger implements ILogger {
   /**
    * Log error to winston
    * @param message - Message
-   * @param args - args
+   * @param args - optional args
    */
   public error(message: string, args?: any): void {
     this.log('error', message, args);
@@ -53,7 +53,7 @@ export class ServerLogger implements ILogger {
   /**
    * Log warning to winston
    * @param message - Message
-   * @param args - args
+   * @param args - optional args
    */
   public warn(message: string, args?: any): void {
     this.log('warn', message, args);
@@ -61,7 +61,7 @@ export class ServerLogger implements ILogger {
   /**
    * Log verbose to winston
    * @param message - Message
-   * @param args - args
+   * @param args - optional args
    */
   public verbose(message: string, args?: any): void {
     this.log('verbose', message, args);
@@ -69,7 +69,7 @@ export class ServerLogger implements ILogger {
   /**
    * Log info to winston
    * @param message - Message
-   * @param args - args
+   * @param args - optional args
    */
   public info(message: string, args?: any): void {
     this.log('info', message, args);
@@ -77,7 +77,7 @@ export class ServerLogger implements ILogger {
   /**
    * Log debug to winston
    * @param message - Message
-   * @param args - args
+   * @param args - optional args
    */
   public debug(message: string, args?: any): void {
     this.log('debug', message, args);
@@ -85,7 +85,7 @@ export class ServerLogger implements ILogger {
   /**
    * Log silly to winston
    * @param message - Message
-   * @param args - args
+   * @param args - optional args
    */
   public silly(message: string, args?: any): void {
     this.log('silly', message, args);

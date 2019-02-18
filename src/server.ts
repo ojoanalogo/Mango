@@ -1,13 +1,13 @@
 import { App } from './app';
 import { ServerLogger } from './app/lib/logger';
-import { createServer, Server as HttpServer } from 'http';
-import { SERVER_PORT, SERVER_HOST, ENV } from './config';
+import { createServer, Server as HTTPServer } from 'http';
+import { SERVER_PORT, SERVER_HOST, ENV, API_PREFIX } from './config';
 
 class Server extends App {
 
   private host: string = SERVER_HOST;
   private port: number = SERVER_PORT;
-  private httpServer: HttpServer;
+  private httpServer: HTTPServer;
 
   constructor(private readonly serverLogger: ServerLogger = new ServerLogger(__filename)) {
     super();
@@ -25,8 +25,9 @@ class Server extends App {
    * On listening event
    */
   private onListening(): void {
+    const url = `http://${this.host}:${this.port}`;
     this.serverLogger.info(`Running environment: ${ENV}`);
-    this.serverLogger.info(`Server is listening in: ${this.port}`);
+    this.serverLogger.info(`Server is listening in: ${url}`);
   }
 
   /**

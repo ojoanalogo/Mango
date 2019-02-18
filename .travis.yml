@@ -1,9 +1,9 @@
 language: node_js
 branches:
-   only:
+  only:
       - master
 node_js:
- - "node"
+  - "node"
 before_install:
   - mysql -e 'CREATE DATABASE mango;'
   - cd server

@@ -28,14 +28,13 @@ export class AuthController {
     if (validator.isEmpty(user.password)) {
       throw new BadRequestError('Password field empty');
     }
-    const userDB = await this.userService.getUserByEmail(user.email);
-    const apiResponse = new ApiResponse(response);
+    const userDB = await this.userService.userExistsByEmail(user.email);
     if (!userDB) {
       throw new NotFoundError('User not exists');
     }
     const loginResponse = await this.authService.loginUser(user);
     if (loginResponse) {
-      return apiResponse
+      return new ApiResponse(response)
         .withData(loginResponse)
         .withStatusCode(HTTP_STATUS_CODE.OK)
         .build();

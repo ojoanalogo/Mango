@@ -15,7 +15,7 @@ export class UserRepository extends Repository<User> {
   public async getProfile(conditions: string, conditionsValues: any): Promise<User> {
     return await this.createQueryBuilder('user')
       .innerJoin('user.role', 'role')
-      .innerJoin('user.profile_picture', 'profile_picture')
+      .leftJoin('user.profile_picture', 'profile_picture')
       .select(['user.id', 'user.email', 'user.first_name',
         'user.second_name',
         'profile_picture.res_480', 'profile_picture.res_240', 'profile_picture.res_96',

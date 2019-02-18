@@ -9,7 +9,7 @@ import { UserService } from '../users/user.service';
 import { User } from '../users/user.entity';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
 import { UploadUtils } from '../../utils/upload.utils';
-import multer = require('multer');
+import * as multer from 'multer';
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)
 export class MeController {

@@ -17,7 +17,7 @@ export const SERVER_HOST: string = nconf.any(['host', 'server:host']) || 'localh
 /**
  * Server port (e.g: 3000)
  */
-export const SERVER_PORT: number = parseInt(nconf.any(['port', 'server:port'])) || 3000;
+export const SERVER_PORT: number = parseInt(nconf.any(['port', 'server:port']));
 
 /**
  * API URL prefix
@@ -95,9 +95,14 @@ export const JWT_MAX_DIFFERENCE_REFRESH: string = nconf.get('jwt:refresh_token_m
 export const PASSWORD_SALT_ROUNDS: number = nconf.get('auth:salt_rounds');
 
 /**
+ * Public folder
+ */
+export const PUBLIC_FOLDER: string = nconf.get('public:folder');
+
+/**
  * Uploads folder
  */
-export const UPLOADS_FOLDER: string = nconf.get('uploads:folder');
+export const UPLOADS_FOLDER: string = PUBLIC_FOLDER + nconf.get('uploads:folder');
 
 /**
  * Profile pictures resolutions
@@ -105,14 +110,9 @@ export const UPLOADS_FOLDER: string = nconf.get('uploads:folder');
 export const PROFILE_PICTURES_RESOLUTIONS: number[] = nconf.get('uploads:profile_pictures:resolutions');
 
 /**
- * Allowed formats for profile pictures
- */
-export const PROFILE_PICTURES_ALLOWED_FORMATS: string[] = nconf.get('uploads:profile_pictures:allowed_formats');
-
-/**
  * Profile pictures folder
  */
-export const PROFILE_PICTURES_FOLDER: string = nconf.get('uploads:profile_pictures:folder');
+export const PROFILE_PICTURES_FOLDER: string = UPLOADS_FOLDER + nconf.get('uploads:profile_pictures:folder');
 
 /**
  * Profile pictures max size allowed per file

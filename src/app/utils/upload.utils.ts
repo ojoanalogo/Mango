@@ -1,7 +1,10 @@
 
 
 import { NotAcceptableError, InternalServerError } from 'routing-controllers';
-import config = require('../../config');
+import {
+  PROFILE_PICTURES_FOLDER,
+  PROFILE_PICTURES_RESOLUTIONS, PROFILE_PICTURES_MAX_SIZE
+} from '../../config';
 import fs = require('fs-extra');
 import path = require('path');
 import multer = require('multer');
@@ -14,33 +17,49 @@ export class UploadUtils {
 	 * @returns Multer options
 	 */
   public static getProfileUploadMulterOptions(): multer.Options {
+    // multer options object
     const options: multer.Options = {
+      /** storage options */
       storage: multer.diskStorage({
+        /** set destination for uploaded file */
         async destination(_req, _file: Express.Multer.File, cb: (error: Error, destination: string) => void) {
-          const profilePicturesFolder = path.join(process.cwd(), config.PROFILE_PICTURES_FOLDER);
           try {
+            const profilePicturesFolder = path.join(process.cwd(), PROFILE_PICTURES_FOLDER);
             await UploadUtils.checkUploadsFolder(profilePicturesFolder);
             cb(null, profilePicturesFolder);
           } catch (error) {
             cb(new InternalServerError('Error trying to create uploads folder'), null);
           }
         },
-        filename(_req, file, cb) {
-          cb(null, Date.now() + file.originalname);
-        },
+        /** rename filename (temporal) */
+        async filename(_req, file, cb) {
+          const newName = Date.now() + file.originalname;
+          cb(null, newName);
+        }
       }),
+
+      /* file filter options */
       fileFilter: (_req, file: Express.Multer.File, cb: (error: Error, acceptFile: boolean) => void) => {
-        const admitedFormats = config.PROFILE_PICTURES_ALLOWED_FORMATS;
-        const imageFormat = path.extname(file.originalname).split('.')[1];
-        admitedFormats.includes(imageFormat)
-          ? cb(null, true)
-          : cb(new NotAcceptableError('Not acceptable image format'), false);
+        // check mimetype
+        const fileTypes = /jpeg|jpg|JPG|JPEG|png|PNG/;
+        const mimetype = fileTypes.test(file.mimetype);
+        // get format from image
+        const extName = fileTypes.test(path.extname(file.originalname).split('.')[1]);
+        // must pass mimetype and extname tests
+        mimetype && extName ?
+          // ok
+          cb(null, true) :
+          // wrong type
+          cb(new NotAcceptableError('Not acceptable image format'), false);
       },
+
+      /** file limits */
       limits: {
-        fileSize: config.PROFILE_PICTURES_MAX_SIZE,
+        fileSize: PROFILE_PICTURES_MAX_SIZE,
         files: 1
       }
     };
+
     return options;
   }
 
@@ -50,10 +69,16 @@ export class UploadUtils {
 	 */
   private static async checkUploadsFolder(profilePicturesFolder: string): Promise<void> {
     await fs.ensureDir(profilePicturesFolder);
-    const resolutions: Array<number> = config.PROFILE_PICTURES_RESOLUTIONS;
+    const resolutions: Array<number> = PROFILE_PICTURES_RESOLUTIONS;
+    // map each resolution and convert to string type
     resolutions.map((res: number) => res.toString())
+      // iterate each resolution and check if directory exists in the profile pictures folder
       .forEach(async (res: string) => {
-        await fs.mkdir(profilePicturesFolder + '/' + res);
+        const pathExists = await fs.pathExists(profilePicturesFolder + path.sep + res);
+        if (!pathExists) {
+          // create a folder
+          await fs.mkdir(profilePicturesFolder + path.sep + res);
+        }
       });
   }
 
@@ -63,18 +88,18 @@ export class UploadUtils {
 	 * @param algorithm - Hash algorithm
 	 * @returns File hash
 	 */
-  public static getFileHash(filename: string, algorithm = 'md5'): Promise<string> {
+  public static async getFileHash(filename: string, algorithm: HashAlgorithm = HashAlgorithm.MD5): Promise<string> {
     return new Promise((resolve, reject) => {
       // Algorithm depends on availability of OpenSSL on platform
       // Another algorithms: 'sha1', 'md5', 'sha256', 'sha512' ...
       const shasum = crypto.createHash(algorithm);
       try {
         const s = fs.createReadStream(filename);
-        s.on('data', function (data) {
+        s.on('data', (data) => {
           shasum.update(data);
         });
         // making digest
-        s.on('end', function () {
+        s.on('end', () => {
           const hash = shasum.digest('hex');
           return resolve(hash);
         });
@@ -84,4 +109,12 @@ export class UploadUtils {
     });
   }
 
+}
+
+/** hash algorithm types */
+export enum HashAlgorithm {
+  SHA_1 = 'sha1',
+  MD5 = 'md5',
+  SHA_256 = 'sha256',
+  SHA_512 = 'sha512'
 }

@@ -107,7 +107,7 @@ export class UserController {
     if (!id) {
       throw new BadRequestError('ID field is required');
     }
-    const userDB = await this.userService.getUserByID(id);
+    const userDB = await this.userService.userExistsByID(id);
     if (!userDB) {
       throw new NotFoundError(`User ID (${id}) not found`);
     }
@@ -134,7 +134,7 @@ export class UserController {
     if (!id) {
       throw new BadRequestError('ID field is required');
     }
-    const userDB = await this.userService.getUserByID(id);
+    const userDB = await this.userService.userExistsByID(id);
     if (!userDB) {
       throw new NotFoundError(`User ID (${id}) not found`);
     }
