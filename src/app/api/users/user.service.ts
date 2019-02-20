@@ -4,14 +4,13 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 import { AuthService } from '../auth/auth.service';
 import { UserRepository } from './user.repository';
 import { User } from './user.entity';
-import { UserResponse } from './user_response.interface';
 import { Role, RoleType } from './user_role.entity';
 import { ProfilePicture } from './user_profile_picture.entity';
 import { Logger } from '../../decorators';
 import { JSONUtils } from '../../utils/json.utils';
-import { UploadUtils } from '../../utils/upload.utils';
+import { UploadUtils, HashAlgorithm } from '../../utils/upload.utils';
 import { ServerLogger } from '../../lib/logger';
-import { PROFILE_PICTURES_RESOLUTIONS, PROFILE_PICTURES_FOLDER, UPLOADS_FOLDER, PUBLIC_FOLDER } from '../../../config';
+import { PROFILE_PICTURES_RESOLUTIONS, PROFILE_PICTURES_FOLDER } from '../../../config';
 import fs = require('fs-extra');
 import sharp = require('sharp');
 import path = require('path');
@@ -122,8 +121,79 @@ export class UserService {
       profilePictureInstance = await this.profilePictureRepository.save(profilePicture);
     }
 
+    /** delete old profile pictures first */
+    const deletePictures = async () => {
+      /** possible image resolutions */
+      const possibleResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
+      possibleResolutions.forEach(async resolution => {
+        try {
+          const picURL = PROFILE_PICTURES_FOLDER +
+            `/${resolution}/${profilePictureInstance['res_' + resolution]}`;
+          const picExists = await fs.pathExists
+            (path.join(process.cwd(), picURL));
+          if (picExists) {
+            await fs.unlink(picURL);
+          }
+        } catch (error) {
+          throw Error('Could not remove profile picture');
+        }
+      });
+      // delete original picture
+      try {
+        const picURL = PROFILE_PICTURES_FOLDER + profilePictureInstance.res_original;
+        const picExists = await fs.pathExists(picURL);
+        if (picExists) {
+          await fs.unlink(picURL);
+        }
+      } catch (error) {
+      }
+    };
+    await deletePictures();
+
+    const renameFileWithHash = async () => {
+      const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, HashAlgorithm.SHA_256);
+      try {
+        const newName = `${fileHash}-${user.id}${path.extname(uploadedPicture.path)}`;
+        const newPath = path.join(process.cwd(), PROFILE_PICTURES_FOLDER, newName);
+        await fs.rename(uploadedPicture.path, newPath);
+        // change path property
+        uploadedPicture.filename = newName;
+        uploadedPicture.path = newPath;
+      } catch (error) {
+        throw error;
+      }
+    };
+    await renameFileWithHash();
+
+    /** get image resolution */
+    const metadata = await sharp(uploadedPicture.path).metadata();
+    const imageResolution: PictureSize = { height: metadata.height, width: metadata.width };
+    /** get only those resolutions we should resize */
+    const newResolutions = PROFILE_PICTURES_RESOLUTIONS.filter((res) => res <= imageResolution.width);
+
+    const resizeProfilePictures = async () => {
+      for (const resolution of newResolutions) {
+        const finalPath = path.join(process.cwd(), PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename);
+        try {
+          await sharp(uploadedPicture.path)
+            .resize(resolution, resolution, {
+              position: 'centre'
+            })
+            .toFile(finalPath);
+          this.logger.info(`Image resized (${resolution}x${resolution})`);
+        } catch (error) {
+          throw new Error('Error trying to resize image');
+        }
+        // set profile picture instance resolution path
+        profilePictureInstance['res_' + resolution] =
+          path.join(PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename);
+      }
+    };
+
+    await resizeProfilePictures();
+    await this.profilePictureRepository.update({ user: user }, profilePictureInstance);
+
     return 'aa';
-    // we rename the uploaded profile picture
 
   }
 

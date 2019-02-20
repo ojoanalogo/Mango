@@ -24,6 +24,7 @@ export class UploadUtils {
         /** set destination for uploaded file */
         async destination(_req, _file: Express.Multer.File, cb: (error: Error, destination: string) => void) {
           try {
+            // join profile pictures folder with the main path of server
             const profilePicturesFolder = path.join(process.cwd(), PROFILE_PICTURES_FOLDER);
             await UploadUtils.checkUploadsFolder(profilePicturesFolder);
             cb(null, profilePicturesFolder);
