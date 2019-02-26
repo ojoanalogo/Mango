@@ -150,6 +150,7 @@ export class UserService {
     };
     await deletePictures();
 
+    /** rename uploaded file with a hash signature and append user ID */
     const renameFileWithHash = async () => {
       const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, HashAlgorithm.SHA_256);
       try {
@@ -170,7 +171,6 @@ export class UserService {
     const imageResolution: PictureSize = { height: metadata.height, width: metadata.width };
     /** get only those resolutions we should resize */
     const newResolutions = PROFILE_PICTURES_RESOLUTIONS.filter((res) => res <= imageResolution.width);
-
     const resizeProfilePictures = async () => {
       for (const resolution of newResolutions) {
         const finalPath = path.join(process.cwd(), PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename);
@@ -189,138 +189,11 @@ export class UserService {
           path.join(PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename);
       }
     };
-
     await resizeProfilePictures();
-    await this.profilePictureRepository.update({ user: user }, profilePictureInstance);
 
-    return 'aa';
-
+    const updateResult = await this.profilePictureRepository.update({ user: user }, profilePictureInstance);
+    return updateResult;
   }
-
-  // /**
-  //  * Update user profile picture in database
-  //  * @param user - User object
-  //  * @param uploadedPicture - Picture object (file data)
-  //  *
-  //  * @returns Update result
-  //  */
-  // public async updateUserProfilePicture(user: User, uploadedPicture: Express.Multer.File): Promise<any> {
-  //   let profilePictureInstance = await this.profilePictureRepository.findOne({ user: user });
-  //   // user doesn't have a profile picture stored, create a new row in the database
-  //   if (!profilePictureInstance) {
-  //     // create profile picture entity
-  //     const profilePicture: ProfilePicture = new ProfilePicture();
-  //     profilePicture.user = user;
-  //     // save profile picture instance in profile picture repository
-  //     profilePictureInstance = await this.profilePictureRepository.save(profilePicture);
-  //   }
-  //   // delete old files if they exist
-  //   if (profilePictureInstance.res_original) {
-  //     profilePictureInstance = await this.deleteOldProfilePictures(profilePictureInstance);
-  //   }
-  //   // rename uploaded file with hash signature
-  //   const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, 'sha256');
-  //   const newOriginalPicName = fileHash + '-' + user.id + path.extname(uploadedPicture.path);
-  //   const newOriginalPicPath = path.join(process.cwd(), PROFILE_PICTURES_FOLDER + '/' +
-  //     + newOriginalPicName);
-  //   await fs.rename(uploadedPicture.path, newOriginalPicPath);
-  //   // resize files
-  //   profilePictureInstance = await this.resizeProfilePictures(
-  //     newOriginalPicPath, newOriginalPicName, profilePictureInstance);
-  //   // assign original resolution path to profile picture instance and update instance in database
-  //   profilePictureInstance.res_original = '/uploads/images/' + newOriginalPicName;
-  //   const updateResult = await this.profilePictureRepository.update({ user: user }, profilePictureInstance);
-  //   return updateResult;
-  // }
-
-  // /**
-  //  *
-  //  * @param profilePictureResolutions - Profile picture resolutions
-  //  * @param profilePictureInstance - Profile picture instance
-  //  */
-  // private async deleteOldProfilePictures(profilePictureInstance: ProfilePicture): Promise<ProfilePicture> {
-  //   // delete original file
-  //   const originalFilePath = path.join(process.cwd(), '/public/' +
-  //     profilePictureInstance.res_original);
-  //   console.log(originalFilePath);
-  //   const originalPictureExists = await fs.pathExists(originalFilePath);
-  //   if (originalPictureExists) {
-  //     console.log('IT EXISTS ORIGINAL: ' + originalFilePath);
-  //     await fs.unlink(originalFilePath);
-  //   }
-  //   // delete the other profile pictures
-  //   const profilePicturesResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
-  //   profilePicturesResolutions.forEach(async resolution => {
-  //     console.log('RES:' + resolution);
-  //     const profileResolution = profilePictureInstance['res_' + resolution];
-  //     if (profileResolution) {
-  //       console.log('yes it exists in database');
-  //       const filePathFromDB = path.join(process.cwd(), PUBLIC_FOLDER + profileResolution);
-  //       console.log('Path: ' + filePathFromDB);
-  //       const fileExists = await fs.pathExists(filePathFromDB);
-  //       if (fileExists) {
-  //         console.log('Deleting...');
-  //         await fs.unlink(filePathFromDB);
-  //       } else {
-  //         console.log('file not exists');
-  //       }
-  //       profilePictureInstance['res_' + resolution] = null;
-  //     }
-  //   });
-  //   return profilePictureInstance;
-  // }
-
-  // /**
-  //  * Checks profile picture image dimensions
-  //  * @param picPath - Profile picture path
-  //  * @returns Profile picture image dimensions
-  //  */
-  // private async getImageDimensions(picPath: string): Promise<PictureSize> {
-  //   // we should only resize file to lower resolutions
-  //   try {
-  //     const metadata = await sharp(picPath).metadata();
-  //     return { width: metadata.width, height: metadata.height };
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
-  // /**
-  //  * Resize profile pictures in every possible resolution
-  //  * @param resolutions - Profile picture resolutions
-  //  * @param newOriginalPicPath - Path for original profile picture
-  //  * @param newOriginalPicName - Name for oroginal profile picture
-  //  * @param profilePictureInstance - Profile picture instance
-  //  */
-  // private async resizeProfilePictures(newOriginalPicPath: string,
-  //   newOriginalPicName: string, profilePictureInstance: ProfilePicture): Promise<ProfilePicture> {
-  //   // get file dimension
-  //   const dimensions: PictureSize = await this.getImageDimensions(newOriginalPicPath);
-  //   // profile picture resolutions
-  //   const profilePicturesResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
-  //   // get only those resolutions we should resize
-  //   const newResolutions = profilePicturesResolutions.filter((val) => parseInt(val) <= dimensions.width);
-  //   for (const resElement of newResolutions) {
-  //     const resolution = parseInt(resElement);
-  //     const finalFileNameWithDir = path.join(process.cwd(), PROFILE_PICTURES_FOLDER + '/' + resElement + '/' + newOriginalPicName);
-  //     try {
-  //       await sharp(newOriginalPicPath)
-  //         .resize(resolution, resolution, {
-  //           position: 'centre'
-  //         })
-  //         .toFile(finalFileNameWithDir);
-  //       this.logger.info(`Image resized (${resolution}x${resolution})`);
-  //     } catch (error) {
-  //       throw new Error('Error trying to resize image');
-
-  //     }
-  //     profilePictureInstance['res_' + resElement] = '/uploads/images/' + resElement + '/' + newOriginalPicName;
-  //   }
-  //   // rename original picture
-  //   await fs.rename(newOriginalPicPath, path.join(process.cwd(),
-  //     PROFILE_PICTURES_FOLDER + '/' + newOriginalPicName));
-  //   return profilePictureInstance;
-  // }
 
   /**
    * Deletes user from database given ID

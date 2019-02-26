@@ -26,10 +26,10 @@ export class UploadUtils {
           try {
             // join profile pictures folder with the main path of server
             const profilePicturesFolder = path.join(process.cwd(), PROFILE_PICTURES_FOLDER);
-            await UploadUtils.checkUploadsFolder(profilePicturesFolder);
+            await UploadUtils.checkProfilePicturesUploadsFolder(profilePicturesFolder);
             cb(null, profilePicturesFolder);
           } catch (error) {
-            cb(new InternalServerError('Error trying to create uploads folder'), null);
+            cb(new InternalServerError('Error trying to create the uploads folder'), null);
           }
         },
         /** rename filename (temporal) */
@@ -68,7 +68,7 @@ export class UploadUtils {
 	 * Create uploads folder if not exists
 	 * @param profilePicturesFolder Profile pictures folder url
 	 */
-  private static async checkUploadsFolder(profilePicturesFolder: string): Promise<void> {
+  private static async checkProfilePicturesUploadsFolder(profilePicturesFolder: string): Promise<void> {
     await fs.ensureDir(profilePicturesFolder);
     const resolutions: Array<number> = PROFILE_PICTURES_RESOLUTIONS;
     // map each resolution and convert to string type
