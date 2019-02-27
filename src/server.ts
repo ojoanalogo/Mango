@@ -1,7 +1,7 @@
 import { App } from './app';
 import { ServerLogger } from './app/lib/logger';
 import { createServer, Server as HTTPServer } from 'http';
-import { SERVER_PORT, SERVER_HOST, ENV, API_PREFIX } from './config';
+import { SERVER_PORT, SERVER_HOST, ENV } from './config';
 
 class Server extends App {
 
