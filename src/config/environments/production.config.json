@@ -1,9 +1,13 @@
 {
+  "server": {
+    "api_prefix": "/v1"
+  },
   "jwt": {
     "token_life": "15m",
-    "refresh_token_max_life": "14d"
+    "refresh_token_max_life": "31d"
   },
   "logging": {
+    "level": "info",
     "file": {
       "enabled": true
     }

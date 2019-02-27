@@ -95,16 +95,6 @@ export const JWT_MAX_DIFFERENCE_REFRESH: string = nconf.get('jwt:refresh_token_m
 export const PASSWORD_SALT_ROUNDS: number = nconf.get('auth:salt_rounds');
 
 /**
- * Public folder
- */
-export const PUBLIC_FOLDER: string = nconf.get('public:folder');
-
-/**
- * Uploads folder
- */
-export const UPLOADS_FOLDER: string = PUBLIC_FOLDER + nconf.get('uploads:folder');
-
-/**
  * Profile pictures resolutions
  */
 export const PROFILE_PICTURES_RESOLUTIONS: number[] = nconf.get('uploads:profile_pictures:resolutions');
@@ -112,7 +102,7 @@ export const PROFILE_PICTURES_RESOLUTIONS: number[] = nconf.get('uploads:profile
 /**
  * Profile pictures folder
  */
-export const PROFILE_PICTURES_FOLDER: string = UPLOADS_FOLDER + nconf.get('uploads:profile_pictures:folder');
+export const PROFILE_PICTURES_FOLDER: string =  nconf.get('uploads:profile_pictures:folder');
 
 /**
  * Profile pictures max size allowed per file

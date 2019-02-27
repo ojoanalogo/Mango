@@ -98,8 +98,6 @@ nconf.defaults({
     refresh_token_max_life: '14d'
   },
   uploads: {
-    public_folder: '/public/',
-    uploads_folder: 'uploads/',
     profile_pictures: {
       resolutions: [32, 64, 96, 240, 480],
       folder: '/public/uploads/images',

@@ -70,8 +70,9 @@ export class LoggerService {
       winston.format.timestamp(), // add timestamp key
       winston.format.printf((info: TransformableInfo) => {
         // unpack variables
-        const { timestamp, level, message, ...args } = info;
+        const { timestamp, level, message, clusterID, requestID, ...args } = info;
         const ts = timestamp.slice(0, 19).replace('T', ' ');
+        // logger format to console
         const format =
           `${ts} |\t${level}` +
           `${this.getRequestUUID() ? `\t| ${this.getRequestUUID()}` : ''}` +
@@ -153,7 +154,7 @@ export class LoggerService {
    */
   private getClusterID(): string {
     const clusterID = process.env.pm_id;
-    return clusterID ? clusterID : '1';
+    return clusterID;
   }
 
 }
