@@ -2,8 +2,6 @@ import { Container } from 'typedi';
 import { LoggerService } from './logger.service';
 import { ILogger } from './logger.interface';
 import path = require('path');
-import winston = require('winston');
-
 
 export class ServerLogger implements ILogger {
 
@@ -14,6 +12,7 @@ export class ServerLogger implements ILogger {
    * @param fileName - fileName scope
    */
   constructor(private fileName: string = 'app') {
+    // get logger service from Container
     this.logger = Container.get(LoggerService);
   }
 
@@ -28,10 +27,6 @@ export class ServerLogger implements ILogger {
     origin = origin.replace(`${path.sep}dist${path.sep}`, '');
     origin = origin.replace(/([.]ts)|([.]js)/, '');
     return origin;
-  }
-
-  public getHttpLogger(): winston.Logger {
-    return this.logger.getHTTPLogger();
   }
 
   /**

@@ -1,5 +1,3 @@
-
-
 import { NotAcceptableError, InternalServerError } from 'routing-controllers';
 import {
   PROFILE_PICTURES_FOLDER,

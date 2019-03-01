@@ -13,12 +13,10 @@ class Server extends App {
     super();
     this.initApp();
     this.initDatabase();
-    /**
-     * Create http server instance
-     */
+    /** Create http server instance */
     this.httpServer = createServer(this.getAppInstance());
     this.httpServer.listen(this.port, this.host, () => this.onListening());
-    this.httpServer.on('error', (error) => this.handleErrors(error));
+    this.httpServer.on('error', (error) => this.handleErrors(<any>error));
   }
 
   /**
@@ -28,28 +26,36 @@ class Server extends App {
     const url = `http://${this.host}:${this.port}`;
     this.serverLogger.info(`Running environment: ${ENV}`);
     this.serverLogger.info(`Server is listening in: ${url}`);
+    this.serverLogger.info(`API URL: ${url}/${API_PREFIX}`);
   }
 
   /**
    * Handle server runtime errors
    * @param error error object
    */
-  private handleErrors(error: any): void {
+  private handleErrors(error: ErrnoException): void {
+    console.log(error);
     if (error.syscall !== 'listen') {
       throw error;
     }
     switch (error.code) {
       case 'EACCES':
-        this.serverLogger.error(`Server requires elevated privileges to run (using port: ${error.port})`);
+        this.serverLogger.error(`Server requires elevated privileges to run (using port: ${this.port})`);
         break;
       case 'EADDRINUSE':
-        this.serverLogger.error(`Port (${error.port}) already in use`, error);
+        this.serverLogger.error(`Port (${this.port}) already in use`, error);
         break;
       default:
         throw error;
     }
     process.exit(1);
   }
+}
+
+/** ErrnoException http error */
+interface ErrnoException extends NodeJS.ErrnoException {
+  address: string;
+  port: number;
 }
 
 export default new Server();
