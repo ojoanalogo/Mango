@@ -17,7 +17,7 @@ import path = require('path');
 
 export class App {
 
-  private app: express.Application;
+  private app: express.Application = express();
 
   constructor(private readonly logger: ServerLogger = new ServerLogger(__filename)) { }
 
@@ -59,8 +59,6 @@ export class App {
   * Setup express server
   */
   private async setupExpress(): Promise<void> {
-    // create express app
-    this.app = express();
     this.logger.info('Setting up express server...');
     // support application/json type post data
     this.app.use(bodyParser.json());
