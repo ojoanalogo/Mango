@@ -18,9 +18,10 @@ export class HealthService {
    * @returns Health status
    */
   public getHealth(): Health {
-    function pad(time: number): string {
+    /** pad number string, add leading zero */
+    const pad = (time: number): string => {
       return (time < 10 ? '0' : '') + time;
-    }
+    };
     const uptime = process.uptime();
     const hours = Math.floor(uptime / (60 * 60));
     const minutes = Math.floor(uptime % (60 * 60) / 60);

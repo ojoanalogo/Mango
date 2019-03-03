@@ -1,7 +1,7 @@
 import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
 import { Token } from '../auth/token.entity';
 import { ProfilePicture } from './user_profile_picture.entity';
-import { Role } from './user_role.entity';
+import { Role, RoleType } from './user_role.entity';
 import { CUID } from '../common/CUID';
 import { PASSWORD_SALT_ROUNDS } from '../../../config';
 import bcrypt = require('bcrypt');
@@ -27,13 +27,13 @@ export class User extends CUID {
   @UpdateDateColumn()
   last_login: Date;
 
-  @OneToMany(() => Token, token => token.user)
+  @OneToMany(() => Token, token => token.user, { eager: true })
   token: Token;
 
-  @OneToOne(() => Role, role => role.user)
+  @OneToOne(() => Role, role => role.user, { eager: true })
   role: Role;
 
-  @OneToOne(() => ProfilePicture, profile_picture => profile_picture.user)
+  @OneToOne(() => ProfilePicture, profile_picture => profile_picture.user, { eager: true })
   profile_picture: ProfilePicture;
 
   /**

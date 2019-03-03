@@ -10,6 +10,7 @@ import { User } from '../users/user.entity';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
 import { UploadUtils } from '../../utils/upload.utils';
 import * as multer from 'multer';
+
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)
 export class MeController {
@@ -24,7 +25,7 @@ export class MeController {
    */
   @Get()
   @Authorized()
-  public async getProfile(@Res() response: Response, @CurrentUser({required: true}) user: User): Promise<Response> {
+  public async getProfile(@Res() response: Response, @CurrentUser({ required: true }) user: User): Promise<Response> {
     const userProfile = await this.userService.getUserByID(user.id);
     return new ApiResponse(response)
       .withData(userProfile)

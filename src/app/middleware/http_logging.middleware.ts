@@ -16,7 +16,7 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
    */
   private morganOptions: Partial<morgan.Options> = {
     stream: {
-      write: (message: string) => {
+      write: (message: string): void => {
         const logger = new HTTPLogger();
         logger.getHttpLogger().log('http', message.replace('\n', ''));
       }

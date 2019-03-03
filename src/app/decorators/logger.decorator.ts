@@ -5,9 +5,9 @@ import { ServerLogger } from '../lib/logger/';
  * @Logger decorator
  * @param fileName - Filename context
  */
-export function Logger(fileName: string) {
-  return function (object: Object, propertyName: string, index?: number) {
+export const Logger = (fileName: string): (object: Object, propertyName: string, index?: number) => void => {
+  return (object: Object, propertyName: string, index?: number) => {
     const logger = new ServerLogger(fileName);
     Container.registerHandler({ object, propertyName, index, value: () => logger });
   };
-}
+};
