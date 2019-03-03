@@ -1,7 +1,7 @@
 /**
  * Health response interface
  */
-export interface IHealth {
+export interface Health {
   ping: string;
   start: Date;
   uptime: number;

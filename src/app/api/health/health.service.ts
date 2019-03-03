@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { Logger } from '../../decorators/logger.decorator';
 import { ServerLogger } from '../../lib/logger';
-import { IHealth } from './health.interface';
+import { Health } from './health.interface';
 
 
 @Service()
@@ -17,7 +17,7 @@ export class HealthService {
    * Returns health status
    * @returns Health status
    */
-  public getHealth(): IHealth {
+  public getHealth(): Health {
     function pad(time: number): string {
       return (time < 10 ? '0' : '') + time;
     }

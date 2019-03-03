@@ -41,12 +41,12 @@ export class Database {
    * Try to reconnect to database
    * @param errorMsg - Error message from database
    */
-  private async retryConnection(err: Error) {
+  private async retryConnection(error: Error) {
     if (this.reconnectTry > DB_RETRY_MAX_ATTEMPTS) {
-      throw err;
+      throw error;
     }
     // we should try to reconnect a few times
-    this.logger.warn(`Can't connect to the mysql (${DB_NAME}) database! Reason => ${err.message}`);
+    this.logger.warn(`Can't connect to the mysql (${DB_NAME}) database! Reason => ${error.message}`);
     this.logger.warn(`Trying to reconnect in ${DB_RETRY_SECCONDS} seconds ` +
       `| ${this.reconnectTry}/${DB_RETRY_MAX_ATTEMPTS}`);
     this.reconnectTry = this.reconnectTry + 1;

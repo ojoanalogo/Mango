@@ -37,7 +37,9 @@ export class Role extends CUID {
   role: RoleType;
 
   @OneToOne(() => User, user => user.role, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
+    nullable: false,
+    eager: true
   })
   @JoinColumn()
   user: User;

@@ -28,8 +28,7 @@ export class UserService {
     @InjectRepository(ProfilePicture)
     private readonly profilePictureRepository: Repository<ProfilePicture>,
     // other services
-    private readonly authService: AuthService,
-    private readonly jsonUtils: JSONUtils) { }
+    private readonly authService: AuthService) { }
 
   /**
    * Returns users from database
@@ -46,7 +45,7 @@ export class UserService {
         .skip(toSkip)
         .take(limit)
         .getMany();
-    return <User[]>(this.jsonUtils.filterDataFromObjects(users, this.jsonUtils.commonUserProperties));
+    return <User[]>(JSONUtils.filterDataFromObjects(users, JSONUtils.commonUserProperties));
   }
 
   /**
@@ -72,7 +71,7 @@ export class UserService {
     userInstance.token = <any>jwtToken;
     this.logger.info(`User ${userInstance.email}(ID: ${userInstance.id}) was created`);
     // return user model object
-    return this.jsonUtils.filterDataFromObject(userInstance, this.jsonUtils.commonUserProperties);
+    return JSONUtils.filterDataFromObject(userInstance, JSONUtils.commonUserProperties);
   }
 
   /**
@@ -125,27 +124,20 @@ export class UserService {
     const deletePictures = async () => {
       /** possible image resolutions */
       const possibleResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
-      possibleResolutions.forEach(async resolution => {
+      possibleResolutions.push('original');
+      for (const resolution of possibleResolutions) {
         try {
-          const picURL = PROFILE_PICTURES_FOLDER +
-            `/${resolution}/${profilePictureInstance['res_' + resolution]}`;
-          const picExists = await fs.pathExists
-            (path.join(process.cwd(), picURL));
-          if (picExists) {
-            await fs.unlink(picURL);
+          if (profilePictureInstance['res_' + resolution]) {
+            const picURL = path.join(process.cwd(), 'public', profilePictureInstance['res_' + resolution]);
+            const picExists = await fs.pathExists(picURL);
+            if (picExists) {
+              await fs.unlink(picURL);
+            }
           }
         } catch (error) {
+          this.logger.warn(`Could not remove profile picture for user id ${user.id}, res: ${resolution}`);
           throw Error('Could not remove profile picture');
         }
-      });
-      // delete original picture
-      try {
-        const picURL = PROFILE_PICTURES_FOLDER + profilePictureInstance.res_original;
-        const picExists = await fs.pathExists(picURL);
-        if (picExists) {
-          await fs.unlink(picURL);
-        }
-      } catch (error) {
       }
     };
     await deletePictures();
@@ -161,7 +153,7 @@ export class UserService {
         uploadedPicture.filename = newName;
         uploadedPicture.path = newPath;
       } catch (error) {
-        throw error;
+        throw Error('Could not rename profile picture with hash');
       }
     };
     await renameFileWithHash();
@@ -184,14 +176,23 @@ export class UserService {
         } catch (error) {
           throw new Error('Error trying to resize image');
         }
+        // this will join multiple directories and return a path
+        const dbImagePath =
+          path.join(PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename)
+            .replace(`${path.sep}public`, '');
         // set profile picture instance resolution path
-        profilePictureInstance['res_' + resolution] =
-          path.join(PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename);
+        profilePictureInstance['res_' + resolution] = dbImagePath;
       }
     };
     await resizeProfilePictures();
 
+    // set original resolution path
+    const originalDbImagePath = path.join(PROFILE_PICTURES_FOLDER, uploadedPicture.filename)
+      .replace(`${path.sep}public`, '');
+    profilePictureInstance.res_original = originalDbImagePath;
+
     const updateResult = await this.profilePictureRepository.update({ user: user }, profilePictureInstance);
+    this.logger.info(`User (ID: ${user.id}) updated his profile picture`);
     return updateResult;
   }
 
@@ -245,6 +246,8 @@ export class UserService {
 }
 
 interface PictureSize {
+  /** Represents profile picture width */
   width: number;
+  /** Represents profile picture height */
   height: number;
 }

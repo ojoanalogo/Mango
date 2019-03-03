@@ -25,7 +25,7 @@ export class UserController {
    * @returns User list
    */
   @Get()
-  @Authorized([RoleType.DEVELOPER])
+  // @Authorized([RoleType.DEVELOPER])
   public async getUsers(@Res() response: Response, @QueryParam('page') page?: number,
     @QueryParam('limit') limit?: number): Promise<Response> {
     const maxLimit = 100;
@@ -46,7 +46,7 @@ export class UserController {
    * @returns User specified from ID
    */
   @Get(':id')
-  @Authorized([RoleType.DEVELOPER])
+  // @Authorized([RoleType.DEVELOPER])
   public async getUserByID(@Res() response: Response, @Param('id') id: number): Promise<Response> {
     const userDB = await this.userService.getUserByID(id);
     if (!userDB) {

@@ -10,12 +10,13 @@ npm-debug.log
 logs/*
 !logs/.gitkeep
 
-# Other files
-.env
-
 # Public folder
 public/uploads/*
 !public/uploads/images/.gitkeep
+
+# Other files
+.env
+
 
 # System Files
 .DS_Store

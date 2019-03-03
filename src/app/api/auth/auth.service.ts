@@ -7,11 +7,11 @@ import { TokenRepository } from './token.repository';
 import { UserRepository } from '../users/user.repository';
 import { ServerLogger } from '../../lib/logger';
 import { Logger } from '../../decorators';
-import { JSONUtils } from '../../utils';
 import { JWTPayload } from './jwt_payload.interface';
-import { JWT_SECRET, IS_PRODUCTION, JWT_TOKEN_LIFE } from '../../../config';
+import { JWT_SECRET, JWT_TOKEN_LIFE } from '../../../config';
 import jwt = require('jsonwebtoken');
 import httpContext = require('express-http-context');
+import { JSONUtils } from '../../utils';
 
 @Service()
 export class AuthService {
@@ -19,8 +19,7 @@ export class AuthService {
   constructor(
     @Logger(__filename) private readonly logger: ServerLogger,
     @InjectRepository(Token) private readonly tokenRepository: TokenRepository,
-    @InjectRepository(User) private readonly userRepository: UserRepository,
-    private readonly jsonUtils: JSONUtils) { }
+    @InjectRepository(User) private readonly userRepository: UserRepository) { }
 
   /**
    * Create a JWT token for specified user
@@ -49,7 +48,7 @@ export class AuthService {
       this.logger.info(`Creating new token for user id: ${user.id}, agent: ${userAgent}`);
       // now we save the token in our token repository
       await this.tokenRepository.save(tokenInstance);
-    };
+    }
     return token;
   }
 
@@ -69,7 +68,7 @@ export class AuthService {
       // return user data with token
       userDB.token = <any>jwtToken;
       // return user model object
-      return this.jsonUtils.filterDataFromObject(userDB, this.jsonUtils.commonUserProperties);
+      return JSONUtils.filterDataFromObject(userDB, JSONUtils.commonUserProperties);
     } else {
       // wrong password mate
       return false;

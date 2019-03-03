@@ -66,17 +66,22 @@ export class LoggerService {
     * formatted thanks to https://github.com/winstonjs/winston/issues/1135#issuecomment-343980350
     */
     return winston.format.combine(
-      winston.format.colorize(), // add color to the level tag
+      winston.format.colorize({
+        colors: {
+          http: 'magenta'
+        }
+      }), // add color to the level tag
       winston.format.timestamp(), // add timestamp key
+      /** custom log format */
       winston.format.printf((info: TransformableInfo) => {
         // unpack variables
         const { timestamp, level, message, clusterID, requestID, ...args } = info;
         const ts = timestamp.slice(0, 19).replace('T', ' ');
         // logger format to console
         const format =
-          `${ts} |\t${level}` +
-          `${this.getRequestUUID() ? `\t| ${this.getRequestUUID()}` : ''}` +
-          `\t» ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+          `${ts} |\t${level}\t»` +
+          `${this.getRequestUUID() ? ` reqId: ${this.getRequestUUID()}` : ''} ` +
+          `${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
         return format;
       }));
   }

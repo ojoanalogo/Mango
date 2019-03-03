@@ -88,7 +88,7 @@ export class UploadUtils {
 	 * @returns File hash
 	 */
   public static async getFileHash(filename: string, algorithm: HashAlgorithm = HashAlgorithm.MD5): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       // Algorithm depends on availability of OpenSSL on platform
       // Another algorithms: 'sha1', 'md5', 'sha256', 'sha512' ...
       const shasum = crypto.createHash(algorithm);

@@ -24,7 +24,7 @@ export class MeController {
    */
   @Get()
   @Authorized()
-  public async getProfile(@Res() response: Response, @CurrentUser() user: User): Promise<Response> {
+  public async getProfile(@Res() response: Response, @CurrentUser({required: true}) user: User): Promise<Response> {
     const userProfile = await this.userService.getUserByID(user.id);
     return new ApiResponse(response)
       .withData(userProfile)

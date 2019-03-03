@@ -25,7 +25,8 @@ export class ProfilePicture extends CUID {
 
   @OneToOne(() => User, user => user.profile_picture, {
     onDelete: 'CASCADE',
-    nullable: false
+    nullable: true,
+    eager: true
   })
   @JoinColumn()
   user: User;

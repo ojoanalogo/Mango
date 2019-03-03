@@ -8,7 +8,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch",
+      "name": "Launch debugger",
+      "useWSL": true,
+      "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "port": 9229,
       "timeout": 10000,

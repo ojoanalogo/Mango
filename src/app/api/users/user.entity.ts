@@ -51,7 +51,11 @@ export class User extends CUID {
    * @returns Returns is password is valid
    */
   public async comparePassword(passwordToCompare: string): Promise<boolean> {
-    return await bcrypt.compare(passwordToCompare, this.password);
+    try {
+      return await bcrypt.compare(passwordToCompare, this.password);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**

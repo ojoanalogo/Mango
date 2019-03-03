@@ -1,19 +1,25 @@
 import { App } from './app';
 import { ServerLogger } from './app/lib/logger';
 import { createServer, Server as HTTPServer } from 'http';
-import { SERVER_PORT, SERVER_HOST, ENV } from './config';
+import { SERVER_PORT, SERVER_HOST, ENV, API_PREFIX } from './config';
 
 class Server extends App {
 
+  private httpServer: HTTPServer;
   private host: string = SERVER_HOST;
   private port: number = SERVER_PORT;
-  private httpServer: HTTPServer;
 
   constructor(private readonly serverLogger: ServerLogger = new ServerLogger(__filename)) {
     super();
     this.initApp();
     this.initDatabase();
-    /** Create http server instance */
+    this.createServer();
+  }
+
+  /**
+   * Create http server instance
+   */
+  private createServer(): void {
     this.httpServer = createServer(this.getAppInstance());
     this.httpServer.listen(this.port, this.host, () => this.onListening());
     this.httpServer.on('error', (error) => this.handleErrors(<any>error));
@@ -26,7 +32,7 @@ class Server extends App {
     const url = `http://${this.host}:${this.port}`;
     this.serverLogger.info(`Running environment: ${ENV}`);
     this.serverLogger.info(`Server is listening in: ${url}`);
-    this.serverLogger.info(`API URL: ${url}/${API_PREFIX}`);
+    this.serverLogger.info(`API URL: ${url}${API_PREFIX}`);
   }
 
   /**
@@ -34,7 +40,6 @@ class Server extends App {
    * @param error error object
    */
   private handleErrors(error: ErrnoException): void {
-    console.log(error);
     if (error.syscall !== 'listen') {
       throw error;
     }
@@ -58,4 +63,5 @@ interface ErrnoException extends NodeJS.ErrnoException {
   port: number;
 }
 
+/** export default new Server instance */
 export default new Server();
