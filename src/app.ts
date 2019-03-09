@@ -1,10 +1,10 @@
 import 'reflect-metadata'; // global, required by typeorm and typedi
+import { useContainer, useExpressServer } from 'routing-controllers';
 import { Container } from 'typedi';
-import { useExpressServer, useContainer } from 'routing-controllers';
-import { ServerLogger } from './app/lib/logger';
 import { Database } from './app/database/database';
 import { Redis } from './app/database/redis';
 import { AuthHelper, CurrentUserHelper } from './app/helpers';
+import { ServerLogger } from './app/lib/logger';
 import { ErrorMiddleware } from './app/middleware/error.middleware';
 import { NotFoundMiddleware } from './app/middleware/not_found.middleware';
 import { API_PREFIX } from './config';

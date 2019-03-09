@@ -1,5 +1,5 @@
-import { Middleware, ExpressMiddlewareInterface } from 'routing-controllers';
 import { NextFunction, Request, Response } from 'express';
+import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { ApiResponse } from '../handlers/api_response.handler';
 
 @Middleware({ type: 'after' })

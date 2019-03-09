@@ -1,5 +1,5 @@
-import { Response } from 'express';
 import { serialize } from 'class-transformer';
+import { Response } from 'express';
 
 export class ApiResponse {
 

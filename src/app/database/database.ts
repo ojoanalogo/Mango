@@ -1,8 +1,8 @@
 import { Container, Service } from 'typedi';
-import { Connection, createConnection, useContainer, QueryRunner } from 'typeorm';
+import { Connection, createConnection, QueryRunner, useContainer } from 'typeorm';
+import { DB_NAME, DB_OPTIONS, DB_RETRY_MAX_ATTEMPTS, DB_RETRY_SECCONDS } from '../../config';
 import { Logger } from '../decorators';
 import { ServerLogger } from '../lib/logger';
-import { DB_OPTIONS, DB_NAME, DB_RETRY_SECCONDS, DB_RETRY_MAX_ATTEMPTS } from '../../config';
 
 @Service()
 export class Database {

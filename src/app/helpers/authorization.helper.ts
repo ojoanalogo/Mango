@@ -1,12 +1,12 @@
-import { Action, ForbiddenError, UnauthorizedError, NotAcceptableError } from 'routing-controllers';
-import { getCustomRepository, getRepository } from 'typeorm';
-import { Container, Service } from 'typedi';
 import { Request, Response } from 'express';
-import { Logger } from '../decorators';
+import { Action, ForbiddenError, NotAcceptableError, UnauthorizedError } from 'routing-controllers';
+import { Container, Service } from 'typedi';
+import { getCustomRepository, getRepository } from 'typeorm';
 import { AuthService } from '../api/auth/auth.service';
 import { User } from '../api/users/user.entity';
-import { RoleType, Role, getWeight } from '../api/users/user_role.entity';
 import { UserRepository } from '../api/users/user.repository';
+import { getWeight, Role, RoleType } from '../api/users/user_role.entity';
+import { Logger } from '../decorators';
 import { ServerLogger } from '../lib/logger';
 import jwt = require('jsonwebtoken');
 import moment = require('moment');

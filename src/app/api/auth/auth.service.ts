@@ -1,17 +1,17 @@
+import { UnauthorizedError } from 'routing-controllers';
 import { Service } from 'typedi';
 import { InjectRepository } from 'typeorm-typedi-extensions';
-import { UnauthorizedError } from 'routing-controllers';
+import { JWT_SECRET, JWT_TOKEN_LIFE } from '../../../config';
+import { Logger } from '../../decorators';
+import { ServerLogger } from '../../lib/logger';
+import { JSONUtils } from '../../utils';
 import { User } from '../users/user.entity';
+import { UserRepository } from '../users/user.repository';
+import { JWTPayload } from './jwt_payload.interface';
 import { Token } from './token.entity';
 import { TokenRepository } from './token.repository';
-import { UserRepository } from '../users/user.repository';
-import { ServerLogger } from '../../lib/logger';
-import { Logger } from '../../decorators';
-import { JWTPayload } from './jwt_payload.interface';
-import { JWT_SECRET, JWT_TOKEN_LIFE } from '../../../config';
 import jwt = require('jsonwebtoken');
 import httpContext = require('express-http-context');
-import { JSONUtils } from '../../utils';
 
 @Service()
 export class AuthService {

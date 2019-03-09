@@ -1,16 +1,14 @@
-import {
-  Body, Get, Delete, Post, Res, UseBefore,
-  JsonController, Param, NotFoundError,
-  BadRequestError, InternalServerError,
-  Authorized, Patch, QueryParam, ForbiddenError,
-} from 'routing-controllers';
-import { Response } from 'express';
 import { Validator } from 'class-validator';
+import { Response } from 'express';
+import {
+  Authorized, BadRequestError, Body, Delete, ForbiddenError, Get,
+  InternalServerError, JsonController, NotFoundError, Param, Patch, Post, QueryParam, Res, UseBefore
+} from 'routing-controllers';
 import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
-import { UserService } from './user.service';
-import { User } from './user.entity';
-import { RoleType } from './user_role.entity';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
+import { User } from './user.entity';
+import { UserService } from './user.service';
+import { RoleType } from './user_role.entity';
 
 @JsonController('/users/')
 @UseBefore(LoggingMiddleware)

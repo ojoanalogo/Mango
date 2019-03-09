@@ -1,8 +1,5 @@
-import { NotAcceptableError, InternalServerError } from 'routing-controllers';
-import {
-  PROFILE_PICTURES_FOLDER,
-  PROFILE_PICTURES_RESOLUTIONS, PROFILE_PICTURES_MAX_SIZE
-} from '../../config';
+import { InternalServerError, NotAcceptableError } from 'routing-controllers';
+import { PROFILE_PICTURES_FOLDER, PROFILE_PICTURES_MAX_SIZE, PROFILE_PICTURES_RESOLUTIONS } from '../../config';
 import fs = require('fs-extra');
 import path = require('path');
 import multer = require('multer');
@@ -11,9 +8,9 @@ import crypto = require('crypto');
 export class UploadUtils {
 
   /**
-	 * Gets Multer options for profile picture upload
-	 * @returns Multer options
-	 */
+   * Gets Multer options for profile picture upload
+   * @returns Multer options
+   */
   public static getProfileUploadMulterOptions(): multer.Options {
     // multer options object
     const options: multer.Options = {
@@ -63,9 +60,9 @@ export class UploadUtils {
   }
 
   /**
-	 * Create uploads folder if not exists
-	 * @param profilePicturesFolder Profile pictures folder url
-	 */
+   * Create uploads folder if not exists
+   * @param profilePicturesFolder Profile pictures folder url
+   */
   private static async checkProfilePicturesUploadsFolder(profilePicturesFolder: string): Promise<void> {
     await fs.ensureDir(profilePicturesFolder);
     const resolutions: Array<number> = PROFILE_PICTURES_RESOLUTIONS;
@@ -82,11 +79,11 @@ export class UploadUtils {
   }
 
   /**
-	 * Returns hash for file
-	 * @param filename - Filename
-	 * @param algorithm - Hash algorithm
-	 * @returns File hash
-	 */
+   * Returns hash for file
+   * @param filename - Filename
+   * @param algorithm - Hash algorithm
+   * @returns File hash
+   */
   public static async getFileHash(filename: string, algorithm: HashAlgorithm = HashAlgorithm.MD5): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       // Algorithm depends on availability of OpenSSL on platform

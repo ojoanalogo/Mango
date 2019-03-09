@@ -1,9 +1,9 @@
+import { Action, NotFoundError, UnauthorizedError } from 'routing-controllers';
 import { Service } from 'typedi';
-import { Action, UnauthorizedError, ForbiddenError, NotFoundError } from 'routing-controllers';
 import { getCustomRepository } from 'typeorm';
-import { Logger } from '../decorators';
-import { User } from '../api/users/user.entity';
 import { TokenRepository } from '../api/auth/token.repository';
+import { User } from '../api/users/user.entity';
+import { Logger } from '../decorators';
 import { ServerLogger } from '../lib/logger';
 
 @Service()

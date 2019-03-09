@@ -1,5 +1,5 @@
+import { Request, Response } from 'express';
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
-import { Response, Request } from 'express';
 import { IS_PRODUCTION } from '../../config';
 import { HTTPLogger } from '../lib/logger';
 import morgan = require('morgan');

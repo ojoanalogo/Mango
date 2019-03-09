@@ -1,9 +1,9 @@
-import { Entity, Column, BeforeInsert, UpdateDateColumn, OneToOne, OneToMany } from 'typeorm';
-import { Token } from '../auth/token.entity';
-import { ProfilePicture } from './user_profile_picture.entity';
-import { Role, RoleType } from './user_role.entity';
-import { CUID } from '../common/CUID';
+import { BeforeInsert, Column, Entity, OneToMany, OneToOne, UpdateDateColumn } from 'typeorm';
 import { PASSWORD_SALT_ROUNDS } from '../../../config';
+import { Token } from '../auth/token.entity';
+import { CUID } from '../common/CUID';
+import { ProfilePicture } from './user_profile_picture.entity';
+import { Role } from './user_role.entity';
 import bcrypt = require('bcrypt');
 
 @Entity('users')
@@ -74,6 +74,9 @@ export class User extends CUID {
    * Get user name
    */
   public getName(): string {
-    return `${this.first_name} ${this.second_name}`;
+    if (this.first_name && this.second_name) {
+      return `${this.first_name} ${this.second_name}`;
+    }
+    return 'no name';
   }
 }

@@ -1,5 +1,5 @@
-import { Get, UseBefore, JsonController, Res } from 'routing-controllers';
 import { Response } from 'express';
+import { Get, JsonController, Res, UseBefore } from 'routing-controllers';
 import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
 

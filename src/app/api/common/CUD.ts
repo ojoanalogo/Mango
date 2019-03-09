@@ -1,4 +1,4 @@
-import { CreateDateColumn, Column, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * Abstract class for Created, updated and Deleted at columns with ID field

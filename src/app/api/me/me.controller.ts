@@ -1,15 +1,12 @@
-import {
-  Body, Get, Res, UseBefore,
-  JsonController, BadRequestError, Authorized, Req, Put, CurrentUser
-} from 'routing-controllers';
-import { Response, Request } from 'express';
 import { Validator } from 'class-validator';
+import { Request, Response } from 'express';
+import { Authorized, BadRequestError, Body, CurrentUser, Get, JsonController, Put, Req, Res, UseBefore } from 'routing-controllers';
 import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
-import { UserService } from '../users/user.service';
-import { User } from '../users/user.entity';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
 import { UploadUtils } from '../../utils/upload.utils';
-import * as multer from 'multer';
+import { User } from '../users/user.entity';
+import { UserService } from '../users/user.service';
+import multer = require('multer');
 
 @JsonController('/me')
 @UseBefore(LoggingMiddleware)

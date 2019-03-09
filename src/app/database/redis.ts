@@ -1,8 +1,8 @@
-import { Service } from 'typedi';
 import { createClient, RedisClient } from 'redis';
+import { Service } from 'typedi';
+import { REDIS_OPTIONS } from '../../config';
 import { Logger } from '../decorators';
 import { ServerLogger } from '../lib/logger';
-import { REDIS_OPTIONS } from '../../config';
 
 @Service()
 export class Redis {

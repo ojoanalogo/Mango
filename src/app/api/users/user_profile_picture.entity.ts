@@ -1,6 +1,6 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
-import { User } from './user.entity';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { CUID } from '../common/CUID';
+import { User } from './user.entity';
 
 @Entity('users_profile_pictures')
 export class ProfilePicture extends CUID {
@@ -25,8 +25,7 @@ export class ProfilePicture extends CUID {
 
   @OneToOne(() => User, user => user.profile_picture, {
     onDelete: 'CASCADE',
-    nullable: true,
-    eager: true
+    nullable: true
   })
   @JoinColumn()
   user: User;

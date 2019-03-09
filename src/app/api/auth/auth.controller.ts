@@ -1,11 +1,11 @@
-import { Post, UseBefore, JsonController, Res, Body, NotFoundError, BadRequestError, UnauthorizedError } from 'routing-controllers';
-import { Response } from 'express';
 import { Validator } from 'class-validator';
+import { Response } from 'express';
+import { BadRequestError, Body, JsonController, NotFoundError, Post, Res, UnauthorizedError, UseBefore } from 'routing-controllers';
 import { ApiResponse, HTTP_STATUS_CODE } from '../../handlers/api_response.handler';
 import { LoggingMiddleware } from '../../middleware/http_logging.middleware';
-import { AuthService } from './auth.service';
-import { UserService } from '../users/user.service';
 import { User } from '../users/user.entity';
+import { UserService } from '../users/user.service';
+import { AuthService } from './auth.service';
 
 @JsonController('/auth/')
 @UseBefore(LoggingMiddleware)

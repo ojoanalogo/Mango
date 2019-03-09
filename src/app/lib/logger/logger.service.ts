@@ -1,6 +1,6 @@
 import { Format, TransformableInfo } from 'logform';
 import { Service } from 'typedi';
-import { LOG_TO_FILE, LOG_LEVEL, LOG_FOLDER } from '../../../config';
+import { LOG_FOLDER, LOG_LEVEL, LOG_TO_FILE } from '../../../config';
 import winston = require('winston');
 import DailyRotateFile = require('winston-daily-rotate-file');
 import path = require('path');

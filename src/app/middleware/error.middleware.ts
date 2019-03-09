@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
+import { ExpressErrorMiddlewareInterface, Middleware } from 'routing-controllers';
 import { EntityMetadataNotFoundError } from 'typeorm/error/EntityMetadataNotFoundError';
-import { Middleware, ExpressErrorMiddlewareInterface } from 'routing-controllers';
-import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
-import { ApiError } from '../handlers/api_error.handler';
-import { ServerLogger } from '../lib/logger';
 import { IS_DEVELOPMENT, IS_TEST } from '../../config';
+import { ApiError } from '../handlers/api_error.handler';
+import { HTTP_STATUS_CODE } from '../handlers/api_response.handler';
+import { ServerLogger } from '../lib/logger';
 import fs = require('fs-extra');
 
 @Middleware({ type: 'after' })

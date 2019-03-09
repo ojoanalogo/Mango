@@ -1,6 +1,6 @@
 import { Container } from 'typedi';
-import { LoggerService } from './logger.service';
 import { ILogger } from './logger.interface';
+import { LoggerService } from './logger.service';
 import path = require('path');
 
 export class ServerLogger implements ILogger {
