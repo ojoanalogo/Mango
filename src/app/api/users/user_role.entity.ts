@@ -11,6 +11,23 @@ export enum RoleType {
   USER = 'user'
 }
 
+@Entity('roles')
+export class Role extends CUID {
+
+  @Column({
+    type: 'enum',
+    enum: RoleType
+  })
+  public role: RoleType;
+
+  @OneToOne(() => User, user => user.role, {
+    onDelete: 'CASCADE',
+    nullable: false
+  })
+  @JoinColumn()
+  public user: User;
+}
+
 /**
  * Returns weight for the user role
  * @param role - RoleType
@@ -26,20 +43,3 @@ export const getWeight = (role: RoleType): number => {
   };
   return weight[role] !== undefined ? weight[role] : 1;
 };
-
-@Entity('roles')
-export class Role extends CUID {
-
-  @Column({
-    type: 'enum',
-    enum: RoleType
-  })
-  role: RoleType;
-
-  @OneToOne(() => User, user => user.role, {
-    onDelete: 'CASCADE',
-    nullable: false
-  })
-  @JoinColumn()
-  user: User;
-}

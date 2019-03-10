@@ -61,7 +61,7 @@ export class ErrorMiddleware implements ExpressErrorMiddlewareInterface {
             this.log.info(`Done removing file (${parseInt(i) + 1})`);
           }
         } catch (error) {
-          this.log.error(`Something went wrong deleting uploaded files (${i + 1})`);
+          this.log.error(`Something went wrong deleting uploaded file (${i + 1} | ${request.files[i].filename})`);
           this.log.error(error.stack);
         }
       }

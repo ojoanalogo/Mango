@@ -1,40 +1,42 @@
-import { BeforeInsert, Column, Entity, OneToMany, OneToOne, UpdateDateColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany, OneToOne, UpdateDateColumn, Any } from 'typeorm';
 import { PASSWORD_SALT_ROUNDS } from '../../../config';
 import { Token } from '../auth/token.entity';
 import { CUID } from '../common/CUID';
 import { ProfilePicture } from './user_profile_picture.entity';
-import { Role } from './user_role.entity';
+import { Role, RoleType } from './user_role.entity';
 import bcrypt = require('bcrypt');
 
 @Entity('users')
 export class User extends CUID {
 
   @Column()
-  first_name: string;
+  public first_name: string;
 
   @Column()
-  second_name: string;
+  public second_name: string;
 
   @Column({ unique: true })
-  email: string;
+  public email: string;
 
   @Column()
-  password: string;
+  public password: string;
 
   @Column({ default: true })
-  is_active: boolean;
+  public is_active: boolean;
 
   @UpdateDateColumn()
-  last_login: Date;
+  public last_login: Date;
 
   @OneToMany(() => Token, token => token.user, { eager: true })
-  token: Token;
+  public token: Token;
+
+  public userRole: RoleType;
 
   @OneToOne(() => Role, role => role.user, { eager: true })
-  role: Role;
+  public role: Role;
 
   @OneToOne(() => ProfilePicture, profile_picture => profile_picture.user, { eager: true })
-  profile_picture: ProfilePicture;
+  public profile_picture: ProfilePicture;
 
   /**
    * Before insertion

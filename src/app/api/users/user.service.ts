@@ -39,13 +39,15 @@ export class UserService {
     if (page < 1) {
       page = 1;
     }
+    if (limit < 1) {
+      limit = 1;
+    }
     const toSkip: number = limit * (page - 1);
-    const users = await
-      this.userRepository.createQueryBuilder().where('is_active= :is_active', { is_active: 1 })
-        .skip(toSkip)
-        .take(limit)
-        .getMany();
-    return <User[]>(JSONUtils.filterDataFromObjects(users, JSONUtils.commonUserProperties));
+    const users = await this.userRepository.find({
+      skip: toSkip,
+      take: limit
+    });
+    return users;
   }
 
   /**
@@ -121,7 +123,7 @@ export class UserService {
     }
 
     /** delete old profile pictures first */
-    const deletePictures = async () => {
+    const deletePictures = async (): Promise<void> => {
       /** possible image resolutions */
       const possibleResolutions = PROFILE_PICTURES_RESOLUTIONS.map((res) => res.toString());
       possibleResolutions.push('original');
@@ -143,7 +145,7 @@ export class UserService {
     await deletePictures();
 
     /** rename uploaded file with a hash signature and append user ID */
-    const renameFileWithHash = async () => {
+    const renameFileWithHash = async (): Promise<void> => {
       const fileHash = await UploadUtils.getFileHash(uploadedPicture.path, HashAlgorithm.SHA_256);
       try {
         const newName = `${fileHash}-${user.id}${path.extname(uploadedPicture.path)}`;
@@ -163,7 +165,9 @@ export class UserService {
     const imageResolution: PictureSize = { height: metadata.height, width: metadata.width };
     /** get only those resolutions we should resize */
     const newResolutions = PROFILE_PICTURES_RESOLUTIONS.filter((res) => res <= imageResolution.width);
-    const resizeProfilePictures = async () => {
+
+    /** now resize each profile picture */
+    const resizeProfilePictures = async (): Promise<void> => {
       for (const resolution of newResolutions) {
         const finalPath = path.join(process.cwd(), PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename);
         try {

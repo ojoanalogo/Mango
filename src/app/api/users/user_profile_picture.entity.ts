@@ -6,28 +6,28 @@ import { User } from './user.entity';
 export class ProfilePicture extends CUID {
 
   @Column({ nullable: true })
-  res_original: string;
+  public res_original: string;
 
   @Column({ nullable: true })
-  res_480: string;
+  public res_480: string;
 
   @Column({ nullable: true })
-  res_240: string;
+  public res_240: string;
 
   @Column({ nullable: true })
-  res_96: string;
+  public res_96: string;
 
   @Column({ nullable: true })
-  res_64: string;
+  public res_64: string;
 
   @Column({ nullable: true })
-  res_32: string;
+  public res_32: string;
 
   @OneToOne(() => User, user => user.profile_picture, {
     onDelete: 'CASCADE',
     nullable: true
   })
   @JoinColumn()
-  user: User;
+  public user: User;
 
 }

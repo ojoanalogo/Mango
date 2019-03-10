@@ -25,13 +25,13 @@ class Server extends App {
     this.httpServer.on('error', (error) => this.handleErrors(<any>error));
   }
 
-  /**
+/**
    * On listening event
    */
   private onListening(): void {
     const url = `http://${this.host}:${this.port}`;
     this.serverLogger.info(`Running environment: ${ENV}`);
-    this.serverLogger.info(`Server is listening in: ${url}`);
+    this.serverLogger.info(`Server is listening on: ${url}`);
     this.serverLogger.info(`API URL: ${url}${API_PREFIX}`);
   }
 

@@ -6,11 +6,11 @@ import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 export abstract class CUD {
 
   @CreateDateColumn()
-  created_at: Date;
+  public created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  public updated_at: Date;
 
   @Column('timestamp', { nullable: true })
-  deleted_at: Date;
+  public deleted_at: Date;
 }

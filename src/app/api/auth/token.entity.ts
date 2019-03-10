@@ -5,24 +5,24 @@ import { User } from '../users/user.entity';
 export class Token {
 
   @PrimaryGeneratedColumn()
-  id: number;
+  public id: number;
 
   @Column()
-  token: string;
+  public token: string;
 
   @CreateDateColumn()
-  issued_at: Date;
+  public issued_at: Date;
 
   @UpdateDateColumn()
-  last_time_refreshed: Date;
+  public last_time_refreshed: Date;
 
   @Column()
-  agent: string;
+  public agent: string;
 
   @ManyToOne(() => User, user => user.token, {
     onDelete: 'CASCADE',
     nullable: false
   })
   @JoinColumn()
-  user: User;
+  public user: User;
 }
