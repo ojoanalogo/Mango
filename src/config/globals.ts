@@ -182,7 +182,7 @@ export const DB_OPTIONS: typeORM.ConnectionOptions = {
   database: DB_NAME,
   entityPrefix: DB_PREFIX,
   entities: [path.join(__dirname, '../app/api/**/*.entity{.js,.ts}')],
-  migrations: [path.join(__dirname, '../app/database/migrations/**/*{.js,.ts}')],
+  migrations: [path.join(__dirname, '../app/database/migration/**/*{.js,.ts}')],
   synchronize: DB_SYNC,
   logging: DB_LOGGING,
   cache: DB_CACHE
