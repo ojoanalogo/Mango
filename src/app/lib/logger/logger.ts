@@ -1,11 +1,11 @@
 import { Container } from 'typedi';
-import { ILogger } from './logger.interface';
-import { LoggerService } from './logger.service';
+import { LoggerInterface } from './logger.interface';
+import { WinstonLogger } from './logger.service';
 import path = require('path');
 
-export class ServerLogger implements ILogger {
+export class ServerLogger implements LoggerInterface {
 
-  private logger: LoggerService;
+  private logger: WinstonLogger;
 
   /**
    * Creates a log object
@@ -13,7 +13,7 @@ export class ServerLogger implements ILogger {
    */
   constructor(private fileName: string = 'app') {
     // get logger service from Container
-    this.logger = Container.get(LoggerService);
+    this.logger = Container.get(WinstonLogger);
   }
 
   /**

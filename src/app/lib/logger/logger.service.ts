@@ -7,7 +7,7 @@ import path = require('path');
 import httpContext = require('express-http-context');
 
 @Service()
-export class LoggerService {
+export class WinstonLogger {
 
   private logger: winston.Logger;
   private loggerHTTP: winston.Logger;

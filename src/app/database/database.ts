@@ -1,7 +1,6 @@
 import { Container, Service } from 'typedi';
 import { Connection, createConnection, QueryRunner, useContainer } from 'typeorm';
 import { DB_NAME, DB_OPTIONS, DB_RETRY_MAX_ATTEMPTS, DB_RETRY_SECCONDS } from '../../config';
-import { User } from '../api/users/user.entity';
 import { Logger } from '../decorators';
 import { ServerLogger } from '../lib/logger';
 
@@ -58,20 +57,6 @@ export class Database {
   public async executeQuery(query: string, ...args: any[]): Promise<QueryRunner> {
     try {
       return this.connection.createQueryRunner().query(query, args);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Seed database
-   */
-  public async seedDatabase(data: User[]) {
-    try {
-      for (const user in data) {
-
-      }
-      await this.connection.createEntityManager().save(User, );
     } catch (error) {
       throw error;
     }

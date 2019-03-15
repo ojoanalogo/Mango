@@ -4,6 +4,7 @@
 */
 import path = require('path');
 import dotenv = require('dotenv');
+import fs = require('fs');
 
 // setup dotenv
 const dotEnvConfig = dotenv.config();
@@ -18,7 +19,7 @@ import nconf = require('nconf');
 
 // Set node_env to development if node_env is undefined
 if (!process.env.NODE_ENV) {
-  process.stdout.write('NODE_ENV is not defined, using development as default\n');
+  console.log('NODE_ENV is not defined, using development as default\n');
   process.env['NODE_ENV'] = 'development';
 }
 
@@ -28,7 +29,11 @@ if (!process.env.NODE_ENV) {
 */
 const getConfigFile = (): string => {
   const env = process.env.NODE_ENV.toLowerCase();
-  const configPath = path.join(__dirname, `/environments/${env}.config.json`.replace('/', path.sep));
+  const configPath = path.join(__dirname, `environments`, `${env}.config.json`);
+  const fileExists = fs.existsSync(configPath);
+  if (!fileExists) {
+    console.log(`No configuration file found for ${env} (${env}.config.json), will be using defaults instead`);
+  }
   return configPath;
 };
 
@@ -37,9 +42,10 @@ const getConfigFile = (): string => {
 * load in order, most important first
 */
 
-// argv is the most important, env variables are second
+/** argv is the most important, env variables are second */
 nconf.argv();
 
+/** configure environment variables */
 nconf.env({
   // convert all input keys to lowercase
   lowerCase: true,
@@ -49,10 +55,10 @@ nconf.env({
   parseValues: true
 });
 
-// setup file hierarchy, config file for environment (example: production.config.json) overrides the default config
+/** setup file hierarchy, config file for environment (example: production.config.json) overrides the default config */
 nconf.file('config', getConfigFile());
 
-// nconf defaults (less important, everything here is overridden by the upper configs)
+/** nconf defaults (less important, everything here is overridden by the upper configs) */
 nconf.defaults({
   server: {
     name: 'Mango',
@@ -82,7 +88,7 @@ nconf.defaults({
     auth: ''
   },
   logging: {
-    level: 'info',
+    level: 'debug',
     file: {
       enabled: false,
       folder: '/logs',

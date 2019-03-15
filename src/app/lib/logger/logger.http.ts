@@ -1,5 +1,5 @@
 import { Container } from 'typedi';
-import { LoggerService } from './logger.service';
+import { WinstonLogger } from './logger.service';
 import winston = require('winston');
 
 export class HTTPLogger {
@@ -8,7 +8,7 @@ export class HTTPLogger {
    * Returns Winston HTTP logger instance
    */
   public getHttpLogger(): winston.Logger {
-    const logger = Container.get(LoggerService);
+    const logger = Container.get(WinstonLogger);
     return logger.getHTTPLogger();
   }
 }

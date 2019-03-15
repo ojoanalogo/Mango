@@ -2,8 +2,9 @@
   "name": "mango",
   "version": "0.1.7",
   "description": "Server template",
-  "main": "./dist/app.js",
+  "main": "./dist/server.js",
   "scripts": {
+    "postinstall": "npm run build",
     "build": "rimraf dist && tsc --project ./tsconfig.json",
     "start": "pm2 start ./ecosystem.config.js --env production",
     "build-start": "npm run build && npm run start",

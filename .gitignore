@@ -15,8 +15,8 @@ public/uploads/*
 !public/uploads/images/.gitkeep
 
 # Other files
+# do not commit your .env file
 .env
-
 
 # System Files
 .DS_Store

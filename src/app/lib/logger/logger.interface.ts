@@ -2,7 +2,7 @@
 /**
  * Logger Interface
  */
-export interface ILogger {
+export interface LoggerInterface {
   error(message: string, ...args: any[]): void;
   warn(message: string, ...args: any[]): void;
   verbose(message: string, ...args: any[]): void;

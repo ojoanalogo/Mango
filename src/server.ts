@@ -1,15 +1,27 @@
+#!/usr/bin/env node
 import { createServer, Server as HTTPServer } from 'http';
 import { App } from './app';
+import { Logger, LoggerInterface } from './app/decorators';
 import { ServerLogger } from './app/lib/logger';
 import { API_PREFIX, ENV, SERVER_HOST, SERVER_PORT } from './config';
 
+/**
+ * ⚡ Mango server template
+ * ------------------------------------------------------
+ *
+ * - 📚 Repo: https://github.com/MrARC/Mango
+ * - 🤔 Issues: https://github.com/MrARC/Mango/issues
+ *
+ * Read the 'README.md' file for more information
+ * Here our app gets bootstrapped
+ */
 class Server extends App {
 
   private httpServer: HTTPServer;
   private host: string = SERVER_HOST;
   private port: number = SERVER_PORT;
 
-  constructor(private readonly serverLogger: ServerLogger = new ServerLogger(__filename)) {
+  constructor(@Logger(__filename) private readonly serverLogger: LoggerInterface = new ServerLogger(__filename)) {
     super();
     this.initApp();
     this.initDatabase();
@@ -25,14 +37,19 @@ class Server extends App {
     this.httpServer.on('error', (error) => this.handleErrors(<any>error));
   }
 
-/**
+  /**
    * On listening event
    */
   private onListening(): void {
+    const log = (msg) => this.serverLogger.info(msg);
     const url = `http://${this.host}:${this.port}`;
-    this.serverLogger.info(`Running environment: ${ENV}`);
-    this.serverLogger.info(`Server is listening on: ${url}`);
-    this.serverLogger.info(`API URL: ${url}${API_PREFIX}`);
+    const version = 1.0;
+    log(`✅  Server is running`);
+    log(`🔌  To shut it down press <CTRL> + C from console`);
+    log(`✨  Environment: ${ENV}`);
+    log(`🚪  Server is listening on: ${url}`);
+    log(`📜  Version: ${version}`)
+    log(`🌍  API URL: ${url}${API_PREFIX}`);
   }
 
   /**

@@ -11,3 +11,5 @@ export const Logger = (fileName: string): (object: Object, propertyName: string,
     Container.registerHandler({ object, propertyName, index, value: () => logger });
   };
 };
+
+export { LoggerInterface } from '../lib/logger/logger.interface';

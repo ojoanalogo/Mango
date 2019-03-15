@@ -3,6 +3,7 @@ import { useContainer, useExpressServer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { Database } from './app/database/database';
 import { Redis } from './app/database/redis';
+import { Logger, LoggerInterface } from './app/decorators';
 import { AuthHelper, CurrentUserHelper } from './app/helpers';
 import { ServerLogger } from './app/lib/logger';
 import { ErrorMiddleware } from './app/middleware/error.middleware';
@@ -19,7 +20,7 @@ export class App {
 
   private app: express.Application = express();
 
-  constructor(private readonly logger: ServerLogger = new ServerLogger(__filename)) { }
+  constructor(@Logger(__filename) private readonly logger: LoggerInterface = new ServerLogger(__filename)) { }
 
   /**
    * Initialize application with routing controllers
@@ -82,7 +83,7 @@ export class App {
       next();
     });
     // point static path to public
-    this.app.use(express.static(path.join(process.cwd(), '/public')));
+    this.app.use(express.static(path.join(process.cwd(), 'public')));
     // catch uncaught exceptions
     process.on('uncaughtException', (error) => {
       this.logger.error(error.stack);
