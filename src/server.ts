@@ -41,7 +41,7 @@ class Server extends App {
    * On listening event
    */
   private onListening(): void {
-    const log = (msg) => this.serverLogger.info(msg);
+    const log = (msg: string) => this.serverLogger.info(msg);
     const url = `http://${this.host}:${this.port}`;
     const version = 1.0;
     log(`✅  Server is running`);
