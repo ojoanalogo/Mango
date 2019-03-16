@@ -1,7 +1,7 @@
 {
   "name": "mango",
-  "version": "0.1.7",
-  "description": "Server template",
+  "version": "1.0.0",
+  "description": "Mango server template",
   "main": "./dist/server.js",
   "scripts": {
     "postinstall": "npm run build",
