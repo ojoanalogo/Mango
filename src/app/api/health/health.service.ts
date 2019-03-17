@@ -3,7 +3,6 @@ import { Logger } from '../../decorators/logger.decorator';
 import { ServerLogger } from '../../lib/logger';
 import { Health } from './health.interface';
 
-
 @Service()
 export class HealthService {
 
