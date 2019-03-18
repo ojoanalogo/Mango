@@ -1,5 +1,7 @@
 {
   "recommendations": [
-    "EditorConfig.editorconfig"
+    "EditorConfig.editorconfig",
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "mikestead.dotenv"
   ]
 }
