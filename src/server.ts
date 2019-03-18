@@ -54,7 +54,7 @@ class Server extends App {
 
   /**
    * Handle server runtime errors
-   * @param error error object
+   * @param error - Error object
    */
   private handleErrors(error: ErrnoException): void {
     if (error.syscall !== 'listen') {
