@@ -48,7 +48,7 @@ class Server extends App {
     log(`🔌  To shut it down press <CTRL> + C from console`);
     log(`✨  Environment: ${ENV}`);
     log(`🚪  Server is listening on: ${url}`);
-    log(`📜  Version: ${version}`)
+    log(`📜  Version: ${version}`);
     log(`🌍  API URL: ${url}${API_PREFIX}`);
   }
 
