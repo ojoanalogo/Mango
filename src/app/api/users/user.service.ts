@@ -176,7 +176,7 @@ export class UserService {
               position: 'centre'
             })
             .toFile(finalPath);
-          this.logger.info(`Image resized (${resolution}x${resolution})`);
+          this.logger.verbose(`Image resized (${resolution}x${resolution})`);
         } catch (error) {
           throw new Error('Error trying to resize image');
         }
