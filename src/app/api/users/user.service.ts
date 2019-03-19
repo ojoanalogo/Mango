@@ -138,7 +138,7 @@ export class UserService {
           }
         } catch (error) {
           this.logger.warn(`Could not remove profile picture for user id ${user.id}, res: ${resolution}`);
-          throw Error('Could not remove profile picture');
+          throw Error('Could not remove profile picture from storage');
         }
       }
     };
@@ -155,7 +155,7 @@ export class UserService {
         uploadedPicture.filename = newName;
         uploadedPicture.path = newPath;
       } catch (error) {
-        throw Error('Could not rename profile picture with hash');
+        throw Error('Could not rename profile picture file with hash string');
       }
     };
     await renameFileWithHash();
@@ -183,7 +183,7 @@ export class UserService {
         // this will join multiple directories and return a path
         const dbImagePath =
           path.join(PROFILE_PICTURES_FOLDER, resolution.toString(), uploadedPicture.filename)
-            .replace(`${path.sep}public`, '');
+            .replace(`/public`, '');
         // set profile picture instance resolution path
         profilePictureInstance['res_' + resolution] = dbImagePath;
       }
@@ -192,7 +192,7 @@ export class UserService {
 
     // set original resolution path
     const originalDbImagePath = path.join(PROFILE_PICTURES_FOLDER, uploadedPicture.filename)
-      .replace(`${path.sep}public`, '');
+      .replace(`/public`, '');
     profilePictureInstance.res_original = originalDbImagePath;
 
     const updateResult = await this.profilePictureRepository.update({ user: user }, profilePictureInstance);
