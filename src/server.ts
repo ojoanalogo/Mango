@@ -33,7 +33,7 @@ class Server extends App {
    */
   private createServer(): void {
     this.httpServer = createServer(this.getAppInstance());
-    this.httpServer.listen(this.port, this.host, () => this.onListening());
+    this.httpServer.listen(this.port, () => this.onListening());
     this.httpServer.on('error', (error) => this.handleErrors(<any>error));
   }
 
@@ -41,7 +41,7 @@ class Server extends App {
    * On listening event
    */
   private onListening(): void {
-    const log = (msg: string) => this.serverLogger.info(msg);
+    const log = (msg: string, ...args: any) => this.serverLogger.info(msg, ...args);
     const url = `http://${this.host}:${this.port}`;
     const version = 1.0;
     log(`✅  Server is running`);

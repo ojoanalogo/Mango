@@ -98,8 +98,8 @@ export class UserService {
       // delete old tokens
       await this.authService.deleteTokens(userUpdated);
       // create JWT tokens
-      const jwtToken = await this.authService.createJWT(userUpdated);
-      userDB.token = <any>jwtToken;
+      const jwtToken: string = await this.authService.createJWT(userUpdated);
+      userDB.token = jwtToken;
     }
     return userUpdated;
   }
@@ -206,8 +206,7 @@ export class UserService {
    * @returns DeleteResult object
    */
   public async deleteUserByID(id: number): Promise<DeleteResult> {
-    const deleteResult = await this.userRepository.delete(id);
-    return deleteResult;
+    return await this.userRepository.delete(id);
   }
 
   /**

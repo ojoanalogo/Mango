@@ -12,7 +12,7 @@ export class Database {
 
   constructor(@Logger(__filename) private readonly logger: ServerLogger) { }
 
-  private timeout(ms: number) {
+  private timeout(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 

@@ -27,10 +27,11 @@ export class User extends CUID {
   @UpdateDateColumn()
   public last_login: Date;
 
+  // accept both Token object or string (for API response object)
   @OneToMany(() => Token, token => token.user, { eager: true })
-  public token: Token;
+  public token: Token | string;
 
-  public userRole: RoleType;
+  public userRole: RoleType | string;
 
   @OneToOne(() => Role, role => role.user, { eager: true })
   public role: Role;
