@@ -34,4 +34,3 @@ export class LoggingMiddleware implements ExpressMiddlewareInterface {
     morgan(this.morganLevel, this.morganOptions)(request, response, next);
   }
 }
-
